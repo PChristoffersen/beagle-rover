@@ -14,7 +14,8 @@ typedef struct {
 
 int rc_ext_pru_init(void);
 void rc_ext_pru_cleanup(void);
-int rc_ext_pru_fd(void);
+int rc_ext_pru_send_message(void *data, size_t size);
+
 
 #ifdef __cplusplus
 }

@@ -1,14 +1,19 @@
 #include <iostream>
+#include <exception>
 #include <boost/asio.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/exception/all.hpp>
 #include <boost/bind.hpp>
 
 #include "robot.h"
 
-
+using namespace std;
+using namespace boost;
 using namespace boost::asio;
+using namespace boost::chrono;
 
+#if 0
 class printer {
 public:
   printer(boost::asio::io_context& io)
@@ -47,32 +52,37 @@ public:
   }
 
 private:
-  io_context::strand strand_;
-  steady_timer timer1_;
-  steady_timer timer2_;
-  int count_;
+    io_context::strand strand_;
+    steady_timer timer1_;
+    steady_timer timer2_;
+    int count_;
 };
 
+#endif
 
 
 int main() {
     io_context io;
 
     signal_set signals(io, SIGINT, SIGTERM);
-    signals.async_wait(boost::bind(&io_service::stop, &io));
+    signals.async_wait(bind(&io_service::stop, &io));
 
     Robot robot{io};
 
-    robot.init();
-    robot.motor_control().start();
+    try {
+        robot.init();
 
-    #if 0
-    boost::thread t(boost::bind(&io_context::run, &io));
-    io.run();
-    t.join();
-    #else
-    io.run();
-    #endif
+        boost::thread t(boost::bind(&io_context::run, &io));
+        #if 0
+        io.run();
+        t.join();
+        #else
+        io.run();
+        #endif
+    }
+    catch (std::exception const &e) {
+        cerr << diagnostic_information(e) << endl;
+    }
 
     robot.cleanup();
 

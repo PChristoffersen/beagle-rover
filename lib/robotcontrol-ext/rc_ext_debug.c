@@ -42,12 +42,12 @@ void rc_ext_debug_cleanup() {
 }
 
 
-
-void rc_ext_debug_update() {
+const char *rc_ext_debug_next() {
     uint32_t ctl = shared_mem_ptr->ctl;
-    while (ctl!=debug_ctl_last) {
-        printf("%s\n", shared_mem_ptr->buffer+(ctl*DEBUG_CHUNK_SIZE));
-        debug_ctl_last = (debug_ctl_last + 1) & DEBUG_CHUNK_MASK;
+    if (ctl==debug_ctl_last) {
+        return NULL;
     }
-
+    const char *msg = (const char*)(shared_mem_ptr->buffer+(ctl*DEBUG_CHUNK_SIZE));
+    debug_ctl_last = (debug_ctl_last + 1) & DEBUG_CHUNK_MASK;
+    return msg;
 }

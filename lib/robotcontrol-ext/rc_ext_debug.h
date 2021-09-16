@@ -7,7 +7,7 @@ extern "C" {
 
 int rc_ext_debug_init();
 void rc_ext_debug_cleanup();
-void rc_ext_debug_update();
+const char *rc_ext_debug_next();
 
 #ifdef __cplusplus
 }

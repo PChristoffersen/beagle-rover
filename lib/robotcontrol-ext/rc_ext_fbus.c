@@ -41,23 +41,12 @@ typedef struct {
 
 
 
-static int send_message(void *msg, size_t len) {
-    int fd = rc_ext_pru_fd();
-    int ret = write(fd, msg, len);
-    if (ret<0) {
-   		perror("ERROR in rc_ext_fbus, failed to write to PRU device");
-        return -1;
-    }
-    return 0;
-}
-
-
 static int send_telemetry(uint16_t app_id, uint32_t data) {
     telemetry_msg_t msg;
     msg.msg.type = MSG_TYPE_FBUS_TELEMERTY;
     msg.app_id = app_id;
     msg.data = data;
-    return send_message(&msg, sizeof(msg));
+    return rc_ext_pru_send_message(&msg, sizeof(msg));
 }
 
 
@@ -113,20 +102,15 @@ void rc_ext_fbus_set_servo_map(uint8_t map[FBUS_CHANNELS]) {
     servo_msg_t msg;
     msg.msg.type = MSG_TYPE_FBUS_SERVO;
     memcpy(msg.map, map, sizeof(msg.map));
-    send_message(&msg, sizeof(msg));
+    rc_ext_pru_send_message(&msg, sizeof(msg));
 }
 
 
-void rc_ext_fbus_telemetry_send_battery(uint8_t id, float *cells, uint8_t n_cells) {
-    for (int i=0; i<n_cells; i+=2) {
-        uint32_t cv1 = cells[i]*500;
-        uint32_t cv2 = 0;
-        
-        if (i+1<n_cells) {
-            cv2 = cells[i]*500;
-        }
-        
-        uint32_t data = ((uint32_t) cv1 & 0x0fff) << 20 | ((uint32_t) cv2 & 0x0fff) << 8 | n_cells << 4 | id;
-        send_telemetry(0x0300 + i/2, data);
-    }
+void rc_ext_fbus_send_telemetry(uint16_t app_id, uint32_t data) {
+    telemetry_msg_t msg;
+    msg.msg.type = MSG_TYPE_FBUS_TELEMERTY;
+    msg.app_id = app_id;
+    msg.data = data;
+    rc_ext_pru_send_message(&msg, sizeof(msg));
 }
+

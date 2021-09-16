@@ -1,24 +1,42 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <rc/pru.h>
 #include <rc/time.h>
 #include <rc/encoder_eqep.h>
 
+#include "rc_ext_pru.h"
 #include "rc_ext_encoder.h"
 
+#define MSG_TYPE_ENCODER_START  0x30
+#define MSG_TYPE_ENCODER_STOP   0x31
 
-
-#define ENCODER_PRU_CH		0 // PRU0
-#define ENCODER_PRU_FW		"am335x-pru0-rc-encoder-fw"
 #define ENCODER_MEM_OFFSET	16
 
 // pru shared memory pointer
 static volatile unsigned int* shared_mem_32bit_ptr = NULL;
 static int init_flag=0;
 
+static int encoder_stop() {
+	message_t msg;
+	msg.type = MSG_TYPE_ENCODER_STOP;
+	return rc_ext_pru_send_message(&msg, sizeof(msg));
+}
+
+static int encoder_start() {
+	message_t msg;
+	msg.type = MSG_TYPE_ENCODER_START;
+	return rc_ext_pru_send_message(&msg, sizeof(msg));
+}
+
+
 
 void rc_ext_encoder_pru_cleanup(void)
 {
+	encoder_stop();
+
 	// zero out shared memory
 	if(shared_mem_32bit_ptr != NULL){
 		shared_mem_32bit_ptr[ENCODER_MEM_OFFSET]=0;
@@ -42,18 +60,16 @@ int rc_ext_encoder_pru_init(void)
 		return -1;
 	}
 
-#if 0
 	// set first channel to be nonzero, PRU binary will zero this out later
-	shared_mem_32bit_ptr[ENCODER_MEM_OFFSET]=42;
-
-	// start pru
-	if(rc_pru_start(ENCODER_PRU_CH, ENCODER_PRU_FW)){
-		fprintf(stderr,"ERROR in rc_encoder_pru_init, failed to start PRU%d\n", ENCODER_PRU_CH);
+	if (encoder_stop()<0) {
 		return -1;
 	}
-#endif
+	shared_mem_32bit_ptr[ENCODER_MEM_OFFSET]=42;
 
 	// make sure memory actually got zero'd out
+	if (encoder_start()<0) {
+		return -1;
+	}
 	for(i=0;i<40;i++){
 		if(shared_mem_32bit_ptr[ENCODER_MEM_OFFSET]==0){
 			init_flag=1;
@@ -62,11 +78,8 @@ int rc_ext_encoder_pru_init(void)
 		rc_usleep(100000);
 	}
 
-	fprintf(stderr, "ERROR in rc_ext_encoder_pru_init, %s failed to load\n", ENCODER_PRU_FW);
-#if 0
-	fprintf(stderr, "attempting to stop PRU%d\n", ENCODER_PRU_CH);
-	rc_pru_stop(ENCODER_PRU_CH);
-#endif
+	fprintf(stderr, "ERROR in rc_ext_encoder_pru_init, failed to wait for start\n");
+
 	init_flag=0;
 	return -1;
 }
@@ -74,13 +87,13 @@ int rc_ext_encoder_pru_init(void)
 
 
 
-int rc_ext_encoder_pru_read(void)
+int32_t rc_ext_encoder_pru_read(void)
 {
 	if(shared_mem_32bit_ptr==NULL || init_flag==0){
 		fprintf(stderr, "ERROR in rc_ext_encoder_pru_read, call rc_encoder_pru_init first\n");
 		return -1;
 	}
-	return (int) shared_mem_32bit_ptr[ENCODER_MEM_OFFSET];
+	return (int32_t)shared_mem_32bit_ptr[ENCODER_MEM_OFFSET];
 }
 
 
@@ -119,7 +132,7 @@ int rc_ext_encoder_cleanup(void)
 
 
 
-int rc_ext_encoder_read(int ch)
+int32_t rc_ext_encoder_read(int ch)
 {
 	// sanity check
 	if(ch<1 || ch >4){

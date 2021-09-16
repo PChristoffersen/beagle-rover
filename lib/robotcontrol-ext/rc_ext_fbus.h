@@ -24,8 +24,7 @@ void rc_ext_fbus_cleanup(void);
 volatile shm_fbus_t *rc_ext_fbus_get_channels(void);
 
 void rc_ext_fbus_set_servo_map(uint8_t map[FBUS_CHANNELS]);
-
-void rc_ext_fbus_telemetry_send_battery(uint8_t id, float *cells, uint8_t n_cells);
+void rc_ext_fbus_send_telemetry(uint16_t app_id, uint32_t data);
 
 #ifdef __cplusplus
 }

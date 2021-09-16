@@ -1,23 +1,22 @@
-#ifndef _BATTERY_H_
-#define _BATTERY_H_
+#ifndef _PRU_DEBUG_H_
+#define _PRU_DEBUG_H_
 
 #include <boost/asio.hpp>
 
 #include "component.h"
 
-class Battery : public Component{
+class PRUDebug : public Component {
     public:
-        Battery(boost::asio::io_context &io);
-        ~Battery();
+        PRUDebug(boost::asio::io_context &io);
 
         void init() override;
         void cleanup() override;
+
     private:
         boost::asio::steady_timer m_timer;
 
         void timer();
 };
 
+
 #endif
-
-
