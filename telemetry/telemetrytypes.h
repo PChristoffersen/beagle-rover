@@ -1,0 +1,6 @@
+#ifndef _TELEMETRYTYPES_H_
+#define _TELEMETRYTYPES_H_
+
+#define TELEMETRY_BATTERY 0x0300
+
+#endif
