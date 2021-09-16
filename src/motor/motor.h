@@ -5,13 +5,14 @@
 #include <chrono>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
+#include <boost/shared_ptr.hpp>
 #include <PID.h>
 
-#include "component.h"
+#include "../component.h"
 
 class Motor : public Component {
     public:
-        Motor(uint8_t index, boost::asio::io_context &io);
+        Motor(uint8_t index, boost::shared_ptr<boost::asio::io_context> io);
         ~Motor();
 
         void init() override;

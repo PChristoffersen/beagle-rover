@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <robotcontrol-ext.h>
 #include "../component.h"
@@ -12,7 +13,7 @@
 
 class LEDControl : public Component, public boost::enable_shared_from_this<LEDControl> {
     public:
-        LEDControl(boost::asio::io_context &io);
+        LEDControl(boost::shared_ptr<boost::asio::io_context> io);
 
         void init() override;
         void cleanup() override;
@@ -26,7 +27,6 @@ class LEDControl : public Component, public boost::enable_shared_from_this<LEDCo
         void setAll(uint8_t r, uint8_t g, uint8_t b);
 
     private:
-        boost::asio::io_context &m_io;
 
 };
 

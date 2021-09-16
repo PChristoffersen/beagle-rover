@@ -64,13 +64,15 @@ private:
 int main() {
     io_context io;
 
-    signal_set signals(io, SIGINT, SIGTERM);
-    signals.async_wait(bind(&io_service::stop, &io));
 
-    Robot robot{io};
+    signal_set signals(io, SIGINT, SIGTERM);
+    signals.async_wait(bind(&io_context::stop, &io));
+
+    Robot robot;
 
     try {
         robot.init();
+
 
         boost::thread t(boost::bind(&io_context::run, &io));
         #if 0
@@ -79,12 +81,17 @@ int main() {
         #else
         io.run();
         #endif
+
+        std::cout << "Stopping..." << std::endl;
+
     }
     catch (std::exception const &e) {
         cerr << diagnostic_information(e) << endl;
     }
 
+    std::cout << "Cleanup..." << std::endl;
     robot.cleanup();
+    std::cout << "Done" << std::endl;
 
     return 0;
 }

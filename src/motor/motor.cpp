@@ -7,7 +7,6 @@
 
 #include "motor.h"
 
-using namespace std;
 using namespace std::chrono;
 using namespace boost;
 using namespace boost::asio;
@@ -33,12 +32,13 @@ using namespace boost::asio;
 
 
 
-Motor::Motor(uint8_t index, io_context &io) :
+Motor::Motor(uint8_t index, shared_ptr<io_context> io) :
+    Component(io),
     m_index(index),
     m_pid(PID_P, PID_I, PID_D, bind(&Motor::getRPM, this), bind(&Motor::setDuty, this, _1)), 
-    m_timer(io)
+    m_timer(*io.get())
 {
-    cout << "Init motor (" << (int)(m_index) << ")" << endl;
+    std::cout << "Init motor (" << (int)(m_index) << ")" << std::endl;
     //m_pid.registerTimeFunction([]() { high_resolution_clock::now().count(); });
     m_pid.setOutputBounds(-1024.0, 1024.0);
 
@@ -78,7 +78,7 @@ double Motor::getRPM() {
 }
 
 void Motor::setRPM(double rpm) {
-    cout << m_index << " setRPM(" << rpm << ")" << endl;
+    std::cout << m_index << " setRPM(" << rpm << ")" << std::endl;
 }
 
 
@@ -94,11 +94,11 @@ void Motor::update() {
         m_rpm = (double)(diff*MINUTE)/((double)ENCODER_CPR*GEARING*dur);
         m_pid.tick();
 
-        cout << format("%.3f") % m_duty 
+        std::cout << format("%.3f") % m_duty 
             << "  Diff: " << format("%.1f") % diff 
             << "  " << "dur " << dur << " ns    " 
             << format("%.3f") % m_rpm << " rpm   " 
-            << endl;
+            << std::endl;
     }
 
     m_last_enc_value = value;

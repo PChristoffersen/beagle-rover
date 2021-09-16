@@ -18,9 +18,10 @@ using namespace boost;
 using namespace boost::asio;
 
 
-Battery::Battery(io_context &io, shared_ptr<Telemetry> telemetry):
+Battery::Battery(shared_ptr<io_context> io, shared_ptr<Telemetry> telemetry):
+    Component(io),
     m_telemetry(telemetry),
-    m_timer(io)
+    m_timer(*io.get())
 {
 
 }

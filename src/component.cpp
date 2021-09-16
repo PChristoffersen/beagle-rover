@@ -1,7 +1,11 @@
 #include "component.h"
 
-Component::Component() : 
-    m_initialized(false)
+using namespace boost;
+using namespace boost::asio;
+
+Component::Component(shared_ptr<io_context> io) : 
+    m_initialized(false), 
+    m_io(io)
 {
 }
 

@@ -7,7 +7,6 @@
 
 #include "fbus.h"
 
-using namespace std;
 using namespace std::chrono;
 using namespace boost;
 using namespace boost::asio;
@@ -17,8 +16,9 @@ using namespace boost::signals2;
 #define TIMER_INTERVAL milliseconds(200)
 
 
-FBus::FBus(io_context &io) :
-    m_timer(io),
+FBus::FBus(shared_ptr<io_context> io) :
+    Component(io),
+    m_timer(*io.get()),
     m_connected(false),
     m_rssi(0)
 {

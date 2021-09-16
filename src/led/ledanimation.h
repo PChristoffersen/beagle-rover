@@ -5,8 +5,10 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
-class LEDAnimation {
+
+class LEDAnimation : public boost::enable_shared_from_this<LEDAnimation> {
     public:
         LEDAnimation(boost::asio::io_context &io, boost::shared_ptr<class LEDControl> control);
 

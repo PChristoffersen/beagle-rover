@@ -6,16 +6,16 @@
 
 #include "prudebug.h"
 
-using namespace std;
 using namespace std::chrono;
 using namespace boost;
-
+using namespace boost::asio;
 
 #define TIMER_INTERVAL milliseconds(100)
 
 
-PRUDebug::PRUDebug(boost::asio::io_context &io) :
-    m_timer(io)
+PRUDebug::PRUDebug(shared_ptr<io_context> io) :
+    Component(io),
+    m_timer(*io.get())
 {
 }
 
@@ -37,7 +37,7 @@ void PRUDebug::cleanup() {
 void PRUDebug::timer() {
     const char *msg = NULL;
     while (msg=rc_ext_debug_next()) {
-        cout << msg << endl;
+        std::cout << msg << std::endl;
     }
 
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);

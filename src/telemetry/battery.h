@@ -9,11 +9,12 @@
 
 class Battery : public Component {
     public:
-        Battery(boost::asio::io_context &io, boost::shared_ptr<class Telemetry> telemetry);
+        Battery(boost::shared_ptr<boost::asio::io_context> io, boost::shared_ptr<class Telemetry> telemetry);
         ~Battery();
 
         void init() override;
         void cleanup() override;
+
     private:
         boost::weak_ptr<class Telemetry> m_telemetry;
         boost::asio::steady_timer m_timer;

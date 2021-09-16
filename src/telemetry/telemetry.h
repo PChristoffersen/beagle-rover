@@ -14,7 +14,7 @@ class Telemetry : public Component, public boost::enable_shared_from_this<Teleme
     public:
         typedef boost::signals2::signal<void(uint16_t,uint32_t)> data_signal_t;
 
-        Telemetry(boost::asio::io_context &io);
+        Telemetry(boost::shared_ptr<boost::asio::io_context> io);
 
         void init() override;
         void cleanup() override;

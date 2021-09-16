@@ -2,17 +2,18 @@
 #include "telemetry.h"
 #include "battery.h"
 
+using namespace boost;
 using namespace boost::asio;
 
 
-Telemetry::Telemetry(io_context &io) :
-    m_battery(new Battery(io, this->shared_from_this()))
+Telemetry::Telemetry(shared_ptr<io_context> io) :
+    Component(io)
 {
-
 }
 
 
 void Telemetry::init() {
+    m_battery.reset(new Battery(m_io, this->shared_from_this()));
     m_battery->init();
     Component::init();
 }

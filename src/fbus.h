@@ -4,6 +4,7 @@
 #include "component.h"
 
 #include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/signals2.hpp>
 #include <robotcontrol-ext.h>
@@ -14,7 +15,7 @@ class FBus : public Component, public boost::enable_shared_from_this<FBus> {
         typedef boost::signals2::signal<void(bool)> sig_connection_t;
         typedef boost::signals2::signal<void(uint8_t)> sig_rssi_t;
 
-        FBus(boost::asio::io_context &io);
+        FBus(boost::shared_ptr<boost::asio::io_context> io);
 
         void init() override;
         void cleanup() override;
