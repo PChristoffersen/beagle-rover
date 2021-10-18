@@ -8,12 +8,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 project(beagle-rover-1 VERSION 1.0)
 
-set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+set(Boost_ ON)
 find_package(PythonLibs 3.7 REQUIRED)
-find_package(Boost 1.67.0 REQUIRED COMPONENTS system thread python REQUIRED)
+find_package(Boost 1.67.0 REQUIRED COMPONENTS system thread log python REQUIRED)
 find_library(ROBOTCONTROL robotcontrol)
+add_definitions(-DBOOST_LOG_DYN_LINK)
 
 # -----------------------------------------------
 # Helper libraries
@@ -26,13 +28,14 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrol-ext")
 # Main src
 # -----------------------------------------------
 set(SRC 
-    src/component.cpp
     src/robot.cpp
+    src/robotcontext.cpp
     src/prudebug.cpp
-    src/fbus.cpp
+    src/rcreceiver.cpp
     src/motor/motor.cpp
     src/motor/motorcontrol.cpp
     src/led/ledcontrol.cpp
+    src/led/ledcolor.cpp
     src/led/ledanimation.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/battery.cpp
@@ -47,7 +50,13 @@ set(SRC
 set(CMAKE_SHARED_MODULE_PREFIX "")
 add_library(beaglerover MODULE 
     ${SRC}
-    src/python.cpp
+    src/python/module.cpp
+    src/python/util.cpp
+    src/python/export_std.cpp
+    src/python/export_motor.cpp
+    src/python/export_telemetry.cpp
+    src/python/export_rcreceiver.cpp
+    src/python/export_led.cpp
 )
 target_include_directories(beaglerover PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(beaglerover PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
@@ -62,6 +71,6 @@ add_executable(test_robot
     main.cpp
 )
 target_include_directories(test_robot PRIVATE src)
-target_link_libraries(test_robot PRIVATE pid)
-target_link_libraries(test_robot PRIVATE robotcontrol-ext)
-target_link_libraries(test_robot PRIVATE "${Boost_LIBRARIES}")
+target_link_libraries(test_robot "${Boost_LIBRARIES}")
+target_link_libraries(test_robot pid)
+target_link_libraries(test_robot robotcontrol-ext)

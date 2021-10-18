@@ -6,25 +6,32 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/signals2.hpp>
 #include <robotcontrol-ext.h>
-
-#include "../component.h"
 
 #define MOTOR_COUNT 1
 
-class MotorControl : public Component, public boost::enable_shared_from_this<MotorControl> {
+class MotorControl : public boost::enable_shared_from_this<MotorControl> {
     public:
-        MotorControl(boost::shared_ptr<boost::asio::io_context> io);
+        typedef std::vector< boost::shared_ptr<class Motor> > MotorList;
 
-        void init() override;
-        void cleanup() override;
+        MotorControl(boost::shared_ptr<class RobotContext> context);
+
+        void init();
+        void cleanup();
 
         void start();
         void stop();
 
+        const MotorList getMotors() const { return m_motors; }
+
+        void connect(boost::shared_ptr<class RCReceiver> receiver);
+
+        void onRCFlags(uint8_t flags);
+
     private:
         bool m_started;
-        std::vector< boost::shared_ptr<class Motor> > m_motors;
+        MotorList m_motors;
 
         boost::asio::steady_timer m_timer;
         uint16_t m_last_counter;

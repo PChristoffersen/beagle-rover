@@ -5,30 +5,38 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 
-#include "component.h"
-
 class Robot {
     public:
         Robot();
-        virtual ~Robot();
+        ~Robot();
 
         void init();
         void cleanup();
 
-        boost::shared_ptr<class MotorControl> motorControl() { return m_motor_control; }
-        boost::shared_ptr<class LEDControl> ledControl() { return m_led_control; }
-        boost::shared_ptr<class Telemetry> telemetry() { return m_telemetry; }
+        void setArmed(bool enable);
+        bool getArmed() const { return m_armed; }
+
+        boost::shared_ptr<class RobotContext> context() const { return m_context; }
+        boost::shared_ptr<class RCReceiver> rcReceiver() const { return m_rc_receiver; }
+        boost::shared_ptr<class MotorControl> motorControl() const { return m_motor_control; }
+        boost::shared_ptr<class LEDControl> ledControl() const { return m_led_control; }
+        boost::shared_ptr<class Telemetry> telemetry() const { return m_telemetry; }
 
     private:
         bool m_initialized;
-        boost::shared_ptr<boost::asio::io_context> m_io;
-        boost::shared_ptr<boost::thread> m_thread;
+        bool m_armed;
+        boost::shared_ptr<class RobotContext> m_context;
 
-        boost::shared_ptr<class FBus> m_fbus;
+        boost::shared_ptr<class RCReceiver> m_rc_receiver;
         boost::shared_ptr<class MotorControl> m_motor_control;
         boost::shared_ptr<class LEDControl> m_led_control;
         boost::shared_ptr<class Telemetry> m_telemetry;
         boost::shared_ptr<class PRUDebug> m_pru_debug;
+
+        void initBeagleBone();
+        void cleanupBeagleBone();
+        void initPC();
+        void cleanupPC();
 };
 
 #endif

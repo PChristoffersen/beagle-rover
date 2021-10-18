@@ -32,18 +32,14 @@ using namespace boost::asio;
 
 
 
-Motor::Motor(uint8_t index, shared_ptr<io_context> io) :
-    Component(io),
+Motor::Motor(uint8_t index) :
     m_index(index),
-    m_pid(PID_P, PID_I, PID_D, bind(&Motor::getRPM, this), bind(&Motor::setDuty, this, _1)), 
-    m_timer(*io.get())
+    m_pid(PID_P, PID_I, PID_D, bind(&Motor::getRPM, this), bind(&Motor::setDuty, this, _1))
 {
     std::cout << "Init motor (" << (int)(m_index) << ")" << std::endl;
     //m_pid.registerTimeFunction([]() { high_resolution_clock::now().count(); });
     m_pid.setOutputBounds(-1024.0, 1024.0);
 
-    //m_timer.expires_after(milliseconds(10));
-    //m_timer.async_wait(boost::bind(&Motor::ticker, this));
 }
 
 
@@ -56,6 +52,7 @@ Motor::~Motor() {
 
 
 void Motor::init() {
+    m_fbus = rc_ext_fbus_get_shm();
     m_last_enc_value = 0;//rc_ext_encoder_read(m_index+1);
     m_last_enc_time = high_resolution_clock::now();
     m_rpm = 0;
@@ -82,6 +79,14 @@ void Motor::setRPM(double rpm) {
 }
 
 
+double Motor::getPosition() const {
+    if (m_fbus) {
+        return m_fbus->channels[m_index];
+    }
+    return 0.0;
+}
+
+
 void Motor::update() {
     static const auto MINUTE = duration_cast<nanoseconds>(minutes(1)).count();
     //auto value = m_last_enc_value+10*m_duty; //0;//rc_ext_encoder_read(m_index+1);
@@ -105,11 +110,3 @@ void Motor::update() {
     m_last_enc_time = time;
 }
 
-
-void Motor::ticker() {
-    value+= 2.0*m_duty;
-    //cout << "Tick " << value << endl;
-
-    m_timer.expires_at(m_timer.expiry() + milliseconds(10));
-    m_timer.async_wait(boost::bind(&Motor::ticker, this));
-}

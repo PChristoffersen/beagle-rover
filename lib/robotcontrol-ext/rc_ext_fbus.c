@@ -93,7 +93,7 @@ void rc_ext_fbus_cleanup(void) {
 	init_flag=0;
 }
 
-volatile shm_fbus_t *rc_ext_fbus_get_channels(void) {
+volatile shm_fbus_t *rc_ext_fbus_get_shm(void) {
     return shm_ptr;
 }
 

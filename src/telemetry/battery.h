@@ -5,21 +5,26 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-#include "../component.h"
+#include "telemetrytypes.h"
 
-class Battery : public Component {
+class Battery {
     public:
-        Battery(boost::shared_ptr<boost::asio::io_context> io, boost::shared_ptr<class Telemetry> telemetry);
+        Battery(boost::shared_ptr<class RobotContext> context);
         ~Battery();
 
-        void init() override;
-        void cleanup() override;
+        void init();
+        void cleanup();
+
+    protected:
+        friend class Telemetry;
+
+        TelemetrySignal_t sig_event;
 
     private:
-        boost::weak_ptr<class Telemetry> m_telemetry;
         boost::asio::steady_timer m_timer;
 
         void timer();
+        void timerFake();
 };
 
 #endif

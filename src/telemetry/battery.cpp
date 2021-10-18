@@ -7,42 +7,42 @@
 #include "battery.h"
 #include "telemetry.h"
 #include "telemetrytypes.h"
+#include "../robotcontext.h"
 
 
+using namespace std::chrono;
 using namespace boost;
 using namespace boost::asio;
 
-#define TIMER_INTERVAL 1000
-
-using namespace boost;
-using namespace boost::asio;
+#define TIMER_INTERVAL milliseconds(1000)
 
 
-Battery::Battery(shared_ptr<io_context> io, shared_ptr<Telemetry> telemetry):
-    Component(io),
-    m_telemetry(telemetry),
-    m_timer(*io.get())
+Battery::Battery(shared_ptr<RobotContext> context):
+    m_timer(*(context->io()))
 {
 
 }
 
 Battery::~Battery() {
-    if (m_initialized) {
-        cleanup();
-    }
+    cleanup();
 }
 
 
 void Battery::init() {
-    m_timer.expires_after(chrono::milliseconds(TIMER_INTERVAL));
-    m_timer.async_wait(bind(&Battery::timer, this));
-    Component::init();
+    m_timer.expires_after(TIMER_INTERVAL);
+    switch (rc_model_category()) {
+	case CATEGORY_BEAGLEBONE:
+        m_timer.async_wait(bind(&Battery::timer, this));
+        break;
+    default:
+        m_timer.async_wait(bind(&Battery::timerFake, this));
+        break;
+    }
 }
 
 
 void Battery::cleanup() {
     m_timer.cancel();
-    Component::cleanup();
 }
 
 void Battery::timer() {
@@ -51,25 +51,25 @@ void Battery::timer() {
         return;
     }
     
-    uint8_t battery_id = 0x00;
-    int n_cells = 2;
-    float cells[n_cells] = { pack_voltage/2.0f, pack_voltage/2.0f };
+    TelemetryEventBattery event;
+    event.battery_id = 0x00;
+    event.cell_voltage.push_back(pack_voltage/2.0f);
+    event.cell_voltage.push_back(pack_voltage/2.0f);
 
-    for (int i=0; i<n_cells; i+=2) {
-        uint32_t cv1 = cells[i]*500;
-        uint32_t cv2 = 0;
-        
-        if (i+1<n_cells) {
-            cv2 = cells[i]*500;
-        }
-        
-        uint32_t data = ((uint32_t) cv1 & 0x0fff) << 20 | ((uint32_t) cv2 & 0x0fff) << 8 | n_cells << 4 | battery_id;
+    sig_event(event);
 
-        if (auto tel = m_telemetry.lock()) {
-            tel->send(TELEMETRY_BATTERY + i/2, data);
-        }
-    }
-
-    m_timer.expires_at(m_timer.expiry() + chrono::milliseconds(TIMER_INTERVAL));
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(bind(&Battery::timer, this));
+}
+
+void Battery::timerFake() {
+    TelemetryEventBattery event;
+    event.battery_id = 0x00;
+    event.cell_voltage.push_back(4.2f);
+    event.cell_voltage.push_back(4.1f);
+
+    sig_event(event);
+
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait(bind(&Battery::timerFake, this));
 }

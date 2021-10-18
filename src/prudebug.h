@@ -4,14 +4,12 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "component.h"
-
-class PRUDebug : public Component {
+class PRUDebug {
     public:
-        PRUDebug(boost::shared_ptr<boost::asio::io_context> io);
+        PRUDebug(boost::shared_ptr<class RobotContext> context);
 
-        void init() override;
-        void cleanup() override;
+        void init();
+        void cleanup();
 
     private:
         boost::asio::steady_timer m_timer;

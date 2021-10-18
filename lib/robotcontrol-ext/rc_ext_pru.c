@@ -119,11 +119,13 @@ void rc_ext_pru_cleanup(void) {
 
 int rc_ext_pru_send_message(void *data, size_t size) {
     pthread_mutex_lock( &pru_mutex );
-    int ret = write(pru_fd, data, size);
-    if (ret<0) {
-   		perror("ERROR in rc_ext_pru, failed to write to PRU device");
-        pthread_mutex_unlock( &pru_mutex );
-        return -1;
+    if (initialized) {
+        int ret = write(pru_fd, data, size);
+        if (ret<0) {
+            perror("ERROR in rc_ext_pru, failed to write to PRU device");
+            pthread_mutex_unlock( &pru_mutex );
+            return -1;
+        }
     }
     pthread_mutex_unlock( &pru_mutex );
     return 0;

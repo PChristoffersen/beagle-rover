@@ -1,10 +1,12 @@
 #include <iostream>
+#include <boost/log/trivial.hpp>
 #include <robotcontrol.h>
 #include <robotcontrol-ext.h>
 
 #include "robot.h"
+#include "robotcontext.h"
 #include "prudebug.h"
-#include "fbus.h"
+#include "rcreceiver.h"
 #include "motor/motorcontrol.h"
 #include "led/ledcontrol.h"
 #include "telemetry/telemetry.h"
@@ -14,30 +16,82 @@ using namespace boost;
 using namespace boost::asio;
 
 
-#define FAKE_ROBOT
-
 
 Robot::Robot() : 
-    m_io(new io_context()),
-    m_fbus(new FBus(m_io)),
-    m_motor_control(new MotorControl(m_io)),
-    m_led_control(new LEDControl(m_io)),
-    m_telemetry(new Telemetry(m_io)),
-    m_pru_debug(new PRUDebug(m_io))
+    m_initialized(false),
+    m_armed(false),
+    m_context(new RobotContext()),
+    m_rc_receiver(new RCReceiver(m_context)),
+    m_motor_control(new MotorControl(m_context)),
+    m_led_control(new LEDControl(m_context)),
+    m_telemetry(new Telemetry(m_context)),
+    m_pru_debug(new PRUDebug(m_context))
 {
-    std::cout << __FUNCTION__ << std::endl;
 }
 
 Robot::~Robot() {
-    if (m_initialized) {
-        cleanup();
-    }
-    std::cout << __FUNCTION__ << std::endl;
+    cleanup();
 }
 
 
 void Robot::init() {
-    #ifndef FAKE_ROBOT
+    BOOST_LOG_TRIVIAL(trace) << "Initializing robot";
+
+    switch (rc_model_category()) {
+	case CATEGORY_BEAGLEBONE:
+        initBeagleBone();
+        break;
+	case CATEGORY_PC:
+        initPC();
+        break;
+    default:
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
+    }
+
+    m_rc_receiver->init();
+    m_telemetry->init();
+    m_motor_control->init();
+    m_led_control->init();
+
+    //m_motor_control->connect(m_rc_receiver);
+    m_motor_control->start();
+
+    m_context->start();
+
+    m_initialized = true;
+}
+
+
+void Robot::cleanup() {
+    if (!m_initialized) 
+        return;
+    m_context->stop();
+
+    setArmed(false);
+
+    m_led_control->cleanup();
+    m_motor_control->cleanup();
+    m_telemetry->cleanup();
+    m_rc_receiver->cleanup();
+
+    switch (rc_model_category()) {
+	case CATEGORY_BEAGLEBONE:
+        cleanupBeagleBone();
+        break;
+	case CATEGORY_PC:
+        cleanupPC();
+        break;
+    default:
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
+
+    }
+
+    BOOST_LOG_TRIVIAL(trace) << "Robot stopped";
+    m_initialized = false;
+}
+
+
+void Robot::initBeagleBone() {
     if (rc_adc_init()<0) {
         BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing ADC"));
     }
@@ -61,25 +115,12 @@ void Robot::init() {
     }
 
     //rc_motor_standby(1);
-
     m_pru_debug->init();
-    m_telemetry->init();
-
-    #endif
-    m_motor_control->init();
-    //m_led_control->init();
-
-    m_motor_control->start();
-    m_thread.reset(new thread(bind(&io_context::run, m_io.get())));
-
-    m_initialized = true;
 }
 
-void Robot::cleanup() {
-//    m_led_control->cleanup();
-    m_motor_control->cleanup();
-#ifndef FAKE_ROBOT
-    m_telemetry->cleanup();
+
+
+void Robot::cleanupBeagleBone() {
     m_pru_debug->cleanup();
 
     rc_ext_fbus_cleanup();
@@ -89,15 +130,21 @@ void Robot::cleanup() {
     rc_motor_cleanup();
     rc_servo_cleanup();
     rc_adc_cleanup();
-#endif
-
-    std::cout << "Stopping thread" << std::endl;
-    m_io->stop();
-    m_thread->join();
-    m_thread.reset();
-    m_motor_control->stop();
-    std::cout << "Thread stopped" << std::endl;
-
-    m_initialized = false;
 }
 
+
+void Robot::initPC() {
+    
+}
+
+void Robot::cleanupPC() {
+
+}
+
+
+
+
+void Robot::setArmed(bool enable) {
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    m_armed = enable;
+}

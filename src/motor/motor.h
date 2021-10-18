@@ -6,21 +6,25 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 #include <boost/shared_ptr.hpp>
+#include <robotcontrol-ext.h>
 #include <PID.h>
 
-#include "../component.h"
 
-class Motor : public Component {
+class Motor {
     public:
-        Motor(uint8_t index, boost::shared_ptr<boost::asio::io_context> io);
+        Motor(uint8_t index);
         ~Motor();
 
-        void init() override;
-        void cleanup() override;
+        void init();
+        void cleanup();
+
+        uint8_t getIndex() const { return m_index; }
 
         void setDuty(double duty);
         double getRPM();
         void setRPM(double rpm);
+
+        double getPosition() const;
 
     protected:
         void update();
@@ -28,6 +32,8 @@ class Motor : public Component {
         friend class MotorControl;
     private:
         uint8_t m_index;
+        volatile shm_fbus_t *m_fbus;
+
         int32_t m_last_enc_value;
         std::chrono::high_resolution_clock::time_point m_last_enc_time;
 
@@ -36,11 +42,7 @@ class Motor : public Component {
         double m_rpm;
         PIDController<double> m_pid;
 
-        boost::asio::steady_timer m_timer;
-
         int32_t value;
-
-        void ticker();
 };
 
 
