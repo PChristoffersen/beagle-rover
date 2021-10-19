@@ -13,6 +13,17 @@ using namespace boost::python;
 class TelemetryListener {
     public:
         virtual ~TelemetryListener() {
+            disconnect();
+        }
+
+        void connect(boost::shared_ptr<Telemetry> telemetry) {
+            BOOST_LOG_TRIVIAL(trace) << "Connect";
+            m_connection.disconnect();
+            m_connection = telemetry->sig_event.connect(boost::bind(&TelemetryListener::event, this, _1));
+        }
+
+        void disconnect() {
+            BOOST_LOG_TRIVIAL(trace) << "Disconnect";
             m_connection.disconnect();
         }
 
@@ -36,10 +47,6 @@ class TelemetryListener {
 
 class TelemetryListenerWrap : public TelemetryListener, public boost::python::wrapper<TelemetryListener> {
     public:
-        TelemetryListenerWrap(boost::shared_ptr<Telemetry> telemetry) { 
-            m_connection = telemetry->sig_event.connect(boost::bind(&TelemetryListener::event, this, _1));
-        }
-
         virtual void on_event(const TelemetryEvent &event) override {
             if (auto f = this->get_override("on_event")) {
                 if (typeid(event)==typeid(TelemetryEventBattery)) {
@@ -58,7 +65,9 @@ void python_export_telemetry() {
 
     class_<Telemetry, noncopyable>("Telemetry", no_init)
         ;
-    class_<TelemetryListenerWrap, noncopyable>("TelemetryListener", init<shared_ptr<Telemetry> >())
+    class_<TelemetryListenerWrap, noncopyable>("TelemetryListener")
+        .def("connect", &TelemetryListenerWrap::connect)
+        .def("disconnect", &TelemetryListenerWrap::disconnect)
         .def("on_event", pure_virtual(&TelemetryListenerWrap::on_event))
         ;
     class_<TelemetryEvent>("TelemetryEvent", no_init)

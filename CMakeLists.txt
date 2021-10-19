@@ -31,8 +31,9 @@ set(SRC
     src/robot.cpp
     src/robotcontext.cpp
     src/prudebug.cpp
-    src/rcreceiver.cpp
+    src/rcreceiver/rcreceiver.cpp
     src/motor/motor.cpp
+    src/motor/motorgimbal.cpp
     src/motor/motorcontrol.cpp
     src/led/ledcontrol.cpp
     src/led/ledcolor.cpp
@@ -57,6 +58,7 @@ add_library(beaglerover MODULE
     src/python/export_telemetry.cpp
     src/python/export_rcreceiver.cpp
     src/python/export_led.cpp
+    src/python/export_robot.cpp
 )
 target_include_directories(beaglerover PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(beaglerover PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})

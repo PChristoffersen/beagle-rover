@@ -3,6 +3,9 @@
 import sys
 sys.path.append('build')
 
+import cProfile
+import pstats
+
 from time import sleep
 from build.beaglerover import Robot, LEDColor, TelemetryListener
 #from beaglerover import Robot
@@ -58,18 +61,34 @@ def main():
             print(event)
 
     #listener = TelemetryListener(robot, fusk)
-    listener = Listener(robot.telemetry)
+    #listener = Listener()
+    #listener.connect(robot.telemetry)
 
     robot.init()
     #for motor in robot.motor_control.motors:
     #    print(""+str(motor) + "  "+ str(motor.index))
 
-    sleep(2)
-    robot.cleanup()
+    #robot.motor_control.motors[0].gimbal.enabled = True
+    #robot.motor_control.motors[0].gimbal.pulse_us = 1500
+
+    #try:
+    #    while True:
+    #        sleep(1)
+    #except KeyboardInterrupt:
+    #    print("Shutdown")
+
+    #robot.cleanup()
 
     return
 
 
+def profile(func):
+    with cProfile.Profile() as pr:
+        func()
+    
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.print_stats()
 
 if __name__ == '__main__':
     main()

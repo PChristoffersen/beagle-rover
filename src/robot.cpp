@@ -6,7 +6,7 @@
 #include "robot.h"
 #include "robotcontext.h"
 #include "prudebug.h"
-#include "rcreceiver.h"
+#include "rcreceiver/rcreceiver.h"
 #include "motor/motorcontrol.h"
 #include "led/ledcontrol.h"
 #include "telemetry/telemetry.h"
@@ -145,6 +145,6 @@ void Robot::cleanupPC() {
 
 
 void Robot::setArmed(bool enable) {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     m_armed = enable;
 }

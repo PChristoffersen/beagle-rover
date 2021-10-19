@@ -7,7 +7,7 @@
 #include <robotcontrol-ext.h>
 
 #include "rcreceiver.h"
-#include "robotcontext.h"
+#include "../robotcontext.h"
 
 using namespace std::chrono;
 using namespace boost;

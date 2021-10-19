@@ -9,14 +9,14 @@
 #include "motor.h"
 #include "motorcontrol.h"
 #include "../robotcontext.h"
-#include "../rcreceiver.h"
+#include "../rcreceiver/rcreceiver.h"
 
 using namespace std::chrono;
 using namespace boost;
 using namespace boost::asio;
 
 
-#define TIMER_INTERVAL milliseconds(200)
+#define TIMER_INTERVAL milliseconds(10)
 //#define TIMER_INTERVAL seconds(1)
 
 MotorControl::MotorControl(shared_ptr<RobotContext> context) : 
@@ -28,6 +28,9 @@ MotorControl::MotorControl(shared_ptr<RobotContext> context) :
         for (int i=0; i<MOTOR_COUNT; i++) {
             m_motors.push_back(shared_ptr<Motor>(new Motor(i)));
         }
+        break;
+    case CATEGORY_PC:
+        m_motors.push_back(shared_ptr<Motor>(new Motor(0)));
         break;
     }
 }
@@ -54,7 +57,7 @@ void MotorControl::cleanup() {
     if (m_started) {
         stop();
     }
-    for (shared_ptr<Motor> motor : m_motors) {
+    for (auto motor : m_motors) {
        motor->cleanup();
     }
 
@@ -94,6 +97,19 @@ void MotorControl::stop() {
 
 
 
+void MotorControl::brake() {
+    for (auto motor : m_motors) {
+       motor->brake();
+    }
+}
+
+void MotorControl::freeSpin() {
+    for (auto motor : m_motors) {
+       motor->freeSpin();
+    }
+}
+
+
 void MotorControl::connect(shared_ptr<RCReceiver> receiver) {
     receiver->sigFlags.connect(RCReceiver::sig_flags_t::slot_type(&MotorControl::onRCFlags, this, _1).track(shared_from_this()));
 }
@@ -110,23 +126,9 @@ void MotorControl::onRCFlags(uint8_t flags) {
 
 
 void MotorControl::timer() {
-    #if 0
-    for (shared_ptr<Motor> motor : m_motors) {
+    for (auto motor : m_motors) {
        motor->update();
     }
-
-    /*
-    for (int i=0; i<MOTOR_COUNT; i++) {
-        m_motor[i].update();
-    }
-    */
-    //m_motor1.update();
-
-
-
-    //rc_motor_set(0, (m_fbus->channels[0]-500)/2000.0);
-    #endif
-    //BOOST_LOG_TRIVIAL(info) << "MotorControl::timer()";
 
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(boost::bind(&MotorControl::timer, this));

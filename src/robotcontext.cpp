@@ -27,7 +27,6 @@ void RobotContext::start() {
 }
 
 void RobotContext::stop() {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     if (!m_started)
         return;
     

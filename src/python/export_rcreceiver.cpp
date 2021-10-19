@@ -3,7 +3,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "util.h"
-#include "../rcreceiver.h"
+#include "../rcreceiver/rcreceiver.h"
 
 using namespace boost;
 using namespace boost::python;

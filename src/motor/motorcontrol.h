@@ -23,6 +23,9 @@ class MotorControl : public boost::enable_shared_from_this<MotorControl> {
         void start();
         void stop();
 
+        void brake();
+        void freeSpin();
+
         const MotorList getMotors() const { return m_motors; }
 
         void connect(boost::shared_ptr<class RCReceiver> receiver);
