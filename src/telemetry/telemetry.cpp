@@ -13,6 +13,10 @@ using namespace boost::asio;
 #define TELEMETRY_BATTERY 0x0300
 
 
+shared_ptr<Telemetry> Telemetry::create(shared_ptr<RobotContext> context) {
+    return shared_ptr<Telemetry>(new Telemetry(context));
+}
+
 
 Telemetry::Telemetry(shared_ptr<RobotContext> context) :
     m_context(context),

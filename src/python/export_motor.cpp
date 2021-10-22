@@ -21,17 +21,19 @@ void python_export_motor() {
 
     class_<Motor, noncopyable>("Motor", no_init)
         .add_property("index", &Motor::getIndex)
-        .add_property("gimbal", &Motor::gimbal)
+        .add_property("gimbal", &Motor::getGimbal)
         .add_property("duty", &Motor::getDuty, &Motor::setDuty)
         .add_property("target_rpm", &Motor::getTargetRPM, &Motor::setTargetRPM)
         .add_property("rpm", &Motor::getRPM)
         .add_property("state", &Motor::getState)
         .def("brake", &Motor::brake)
         .def("free_spin", &Motor::freeSpin)
+        .def("resetOdometer", &Motor::resetOdometer)
         ;
     class_<MotorGimbal, noncopyable>("MotorGimbal", no_init)
         .add_property("enabled", &MotorGimbal::getEnabled, &MotorGimbal::setEnabled)
         .add_property("pulse_us", &MotorGimbal::getPulseUS, &MotorGimbal::setPulseUS)
+        .add_property("angle", &MotorGimbal::getAngle, &MotorGimbal::setAngle)
         ;
     class_<MotorControl::MotorList>("MotorList")
         .def(vector_indexing_suite<MotorControl::MotorList, true>() )
@@ -40,6 +42,7 @@ void python_export_motor() {
         .add_property("motors", &MotorControl::getMotors)
         .def("brake", &MotorControl::brake)
         .def("free_spin", &MotorControl::freeSpin)
+        .def("resetOdometer", &MotorControl::resetOdometer)
         ;
 
 

@@ -15,6 +15,11 @@ using namespace boost::asio;
 
 #define RGB_PIXEL(r,g,b) ((uint32_t)(r<<16|g<<8|b))
 
+shared_ptr<LEDControl> LEDControl::create(shared_ptr<RobotContext> context) {
+    return shared_ptr<LEDControl>(new LEDControl(context));
+}
+
+
 LEDControl::LEDControl(shared_ptr<RobotContext> context) 
 {
 

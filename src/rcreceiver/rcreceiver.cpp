@@ -15,7 +15,26 @@ using namespace boost::asio;
 using namespace boost::signals2;
 
 
-#define TIMER_INTERVAL milliseconds(20)
+#define TIMER_INTERVAL milliseconds(100)
+
+/*
+flags = bit7 = ch17 = digital channel (0x80)
+bit6 = ch18 = digital channel (0x40)
+bit5 = Frame lost, equivalent red LED on receiver (0x20)
+bit4 = failsafe activated (0x10)
+bit3 = n/a
+bit2 = n/a
+bit1 = n/a
+bit0 = n/a
+
+*/
+#define FBUS_FLAG_SIGNAL_LOSS       (1 << 2)
+#define FBUS_FLAG_FAILSAFE_ACTIVE   (1 << 3)
+
+
+shared_ptr<RCReceiver> RCReceiver::create(shared_ptr<RobotContext> context) {
+    return shared_ptr<RCReceiver>(new RCReceiver(context));
+}
 
 
 RCReceiver::RCReceiver(shared_ptr<RobotContext> context) :

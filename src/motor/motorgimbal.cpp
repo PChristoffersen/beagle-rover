@@ -1,3 +1,4 @@
+#include <math.h>
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
@@ -16,12 +17,20 @@ using namespace boost;
 
 #define PULSE_MIN  500
 #define PULSE_MAX 2500
+#define PULSE_CENTER ((PULSE_MAX+PULSE_MIN)/2)
+#define PULSE_RANGE (PULSE_MAX-PULSE_MIN)
 
 
-MotorGimbal::MotorGimbal(uint8_t index) :
+shared_ptr<MotorGimbal> MotorGimbal::create(uint8_t index, shared_ptr<std::recursive_mutex> mutex) {
+    return shared_ptr<MotorGimbal>(new MotorGimbal(index, mutex));
+}
+
+
+MotorGimbal::MotorGimbal(uint8_t index, shared_ptr<std::recursive_mutex> mutex) :
     m_index(index),
+    m_mutex(mutex),
     m_enabled(false),
-    m_pulse_us(0)
+    m_pulse_us(PULSE_CENTER)
 {
 
 }
@@ -34,7 +43,7 @@ MotorGimbal::~MotorGimbal() {
 
 void MotorGimbal::init() {
     m_last_pulse = high_resolution_clock::now();
-    m_pulse_us = 0;
+    m_pulse_us = PULSE_CENTER;
 }
 
 
@@ -48,8 +57,24 @@ void MotorGimbal::setEnabled(bool enable) {
 }
 
 void MotorGimbal::setPulseUS(uint32_t us) {
+    const std::lock_guard<std::recursive_mutex> lock(*m_mutex);
     //BOOST_LOG_TRIVIAL(info) << "Pulse " << us;
     m_pulse_us = us;
+}
+
+
+void MotorGimbal::setAngle(double angle) {
+    const std::lock_guard<std::recursive_mutex> lock(*m_mutex);
+    //m_pulse_us;
+    
+}
+
+
+double MotorGimbal::getAngle() const {
+    if (m_enabled) {
+        return M_PI * 2.0 * (double)(m_pulse_us - PULSE_CENTER) / PULSE_RANGE;
+    }
+    return 0.0;
 }
 
 

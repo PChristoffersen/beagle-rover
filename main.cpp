@@ -8,6 +8,7 @@
 
 #include "robot.h"
 #include "robotcontext.h"
+#include "kinematic/kinematic.h"
 
 using namespace std;
 using namespace boost;
@@ -27,6 +28,8 @@ int main() {
 
     try {
         robot->init();
+
+        robot->kinematic()->setDriveMode(Kinematic::DRIVE_BALANCING);
 
         io.run();
 

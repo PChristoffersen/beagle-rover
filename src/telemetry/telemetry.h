@@ -11,7 +11,7 @@
 
 class Telemetry : public boost::enable_shared_from_this<Telemetry> {
     public:
-        Telemetry(boost::shared_ptr<class RobotContext> context);
+        [[nodiscard]] static boost::shared_ptr<Telemetry> create(boost::shared_ptr<class RobotContext> context);
 
         void init();
         void cleanup();
@@ -31,6 +31,7 @@ class Telemetry : public boost::enable_shared_from_this<Telemetry> {
         boost::shared_ptr<class Battery> m_battery;
         boost::signals2::connection m_battery_connection;
 
+        Telemetry(boost::shared_ptr<class RobotContext> context);
 };
 
 #endif

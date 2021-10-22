@@ -40,6 +40,11 @@ set(SRC
     src/led/ledanimation.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/battery.cpp
+    src/kinematic/kinematic.cpp
+    src/kinematic/abstractcontrolscheme.cpp
+    src/kinematic/controlnormal.cpp
+    src/kinematic/controlspinning.cpp
+    src/kinematic/controlbalancing.cpp
 )
 #target_link_directories(robot PRIVATE robotcontrol-ext)
 
@@ -58,6 +63,7 @@ add_library(beaglerover MODULE
     src/python/export_telemetry.cpp
     src/python/export_rcreceiver.cpp
     src/python/export_led.cpp
+    src/python/export_kinematic.cpp
     src/python/export_robot.cpp
 )
 target_include_directories(beaglerover PRIVATE ${PYTHON_INCLUDE_DIRS})

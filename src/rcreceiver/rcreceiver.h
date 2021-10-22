@@ -13,7 +13,7 @@ class RCReceiver : public boost::enable_shared_from_this<RCReceiver> {
         typedef boost::signals2::signal<void(uint8_t)> sig_flags_t;
         typedef boost::signals2::signal<void(uint8_t)> sig_rssi_t;
 
-        RCReceiver(boost::shared_ptr<class RobotContext> context);
+        [[nodiscard]] static boost::shared_ptr<RCReceiver> create(boost::shared_ptr<class RobotContext> context);
 
         void init();
         void cleanup();
@@ -32,6 +32,8 @@ class RCReceiver : public boost::enable_shared_from_this<RCReceiver> {
         uint8_t m_rssi;
         uint8_t m_flags;
         bool m_connected;
+
+        RCReceiver(boost::shared_ptr<class RobotContext> context);
 
         void timer();
 };

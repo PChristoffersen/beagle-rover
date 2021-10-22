@@ -7,7 +7,7 @@ import cProfile
 import pstats
 
 from time import sleep
-from build.beaglerover import Robot, LEDColor, TelemetryListener
+from build.beaglerover import Robot, LEDColor, TelemetryListener, DriveMode
 #from beaglerover import Robot
 
 col = LEDColor(0xFF, 0x00, 0x00)
@@ -64,20 +64,28 @@ def main():
     #listener = Listener()
     #listener.connect(robot.telemetry)
 
-    robot.init()
+    #robot.init()
     #for motor in robot.motor_control.motors:
     #    print(""+str(motor) + "  "+ str(motor.index))
 
     #robot.motor_control.motors[0].gimbal.enabled = True
     #robot.motor_control.motors[0].gimbal.pulse_us = 1500
 
-    #try:
-    #    while True:
-    #        sleep(1)
-    #except KeyboardInterrupt:
-    #    print("Shutdown")
+    #robot.kinematic.drive_mode = DriveMode.NORMAL
+    #robot.kinematic.drive_mode = DriveMode.SPINNING
+    robot.kinematic.drive_mode = DriveMode.BALANCING
+    robot.kinematic.drive_mode = DriveMode.NONE
 
-    #robot.cleanup()
+    return
+
+    try:
+        while True:
+            sleep(1)
+    except KeyboardInterrupt:
+        print("Shutdown")
+
+    robot.cleanup()
+    print("Done")
 
     return
 

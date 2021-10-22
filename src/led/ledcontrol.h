@@ -12,8 +12,7 @@
 
 class LEDControl : public boost::enable_shared_from_this<LEDControl> {
     public:
-
-        LEDControl(boost::shared_ptr<class RobotContext> context);
+        [[nodiscard]] static boost::shared_ptr<LEDControl> create(boost::shared_ptr<class RobotContext> context);
 
         void init();
         void cleanup();
@@ -25,6 +24,8 @@ class LEDControl : public boost::enable_shared_from_this<LEDControl> {
 
     protected:
         friend class LEDAnimation;
+
+        LEDControl(boost::shared_ptr<class RobotContext> context);
 
         void _updatePixels(uint32_t pixels[LED_PIXEL_COUNT]);
 
