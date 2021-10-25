@@ -2,17 +2,14 @@
 #define _LED_CONTROL_H_
 
 #include <stdint.h>
+#include <memory>
 #include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <robotcontrol-ext.h>
 #include "ledcolor.h"
 
-#define LED_PIXEL_COUNT RC_EXT_NEOPIXEL_COUNT
-
-class LEDControl : public boost::enable_shared_from_this<LEDControl> {
+class LEDControl : public std::enable_shared_from_this<LEDControl> {
     public:
-        [[nodiscard]] static boost::shared_ptr<LEDControl> create(boost::shared_ptr<class RobotContext> context);
+        LEDControl(std::shared_ptr<class RobotContext> context);
+        virtual ~LEDControl();
 
         void init();
         void cleanup();
@@ -25,12 +22,11 @@ class LEDControl : public boost::enable_shared_from_this<LEDControl> {
     protected:
         friend class LEDAnimation;
 
-        LEDControl(boost::shared_ptr<class RobotContext> context);
-
-        void _updatePixels(uint32_t pixels[LED_PIXEL_COUNT]);
+        void _updatePixels(uint32_t pixels[]);
 
     private:
-
+        static const int LED_PIXEL_COUNT;
+        bool m_initialized;
 };
 
 #endif

@@ -1,29 +1,23 @@
 #include <iostream>
+#include <functional>
+#include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
 #include <robotcontrol.h>
-#include <robotcontrol-ext.h>
+#include <robotcontrolext.h>
 
 #include "robotcontext.h"
-
-using namespace boost;
-using namespace boost::asio;
-
-
-shared_ptr<RobotContext> RobotContext::create() {
-    return shared_ptr<RobotContext>(new RobotContext());
-}
 
 
 RobotContext::RobotContext() : 
     m_initialized(false),
     m_started(false),
-    m_io(new io_context()),
     m_power_enabled(false)
 {
     rc_model();
 }
 
 RobotContext::~RobotContext() {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     stop();
     cleanup();
 }
@@ -40,11 +34,13 @@ void RobotContext::init() {
     default:
         BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
     }
+    m_initialized = true;
 }
 
 void RobotContext::cleanup() {
     if (!m_initialized)
         return;
+    m_initialized = false;
 
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
@@ -57,6 +53,11 @@ void RobotContext::cleanup() {
         BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
 
     }
+
+    // Drain the io_context and execute any remaining tasks
+    m_io.restart();
+    m_io.run_for(std::chrono::seconds(10));
+    m_io.stop();
 }
 
 
@@ -102,13 +103,12 @@ void RobotContext::initPC() {
 }
 
 void RobotContext::cleanupPC() {
-
 }
 
 
 void RobotContext::start() {
     BOOST_LOG_TRIVIAL(trace) << "Starting thread";
-    m_thread.reset(new thread(bind(&io_context::run, m_io.get())));
+    m_thread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_context::run, &m_io));
     m_started = true;
 }
 
@@ -117,7 +117,7 @@ void RobotContext::stop() {
         return;
     
     BOOST_LOG_TRIVIAL(trace) << "Stopping thread";
-    m_io->stop();
+    m_io.stop();
     m_thread->join();
     m_thread.reset();
     BOOST_LOG_TRIVIAL(trace) << "Thread stopped";

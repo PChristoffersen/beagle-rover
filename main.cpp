@@ -1,3 +1,4 @@
+#include <memory>
 #include <iostream>
 #include <exception>
 #include <boost/asio.hpp>
@@ -10,34 +11,30 @@
 #include "robotcontext.h"
 #include "kinematic/kinematic.h"
 
-using namespace std;
-using namespace boost;
-using namespace boost::asio;
-using namespace boost::chrono;
 
 
 
 int main() {
+    using namespace boost::asio;
+
     io_context io;
 
 
     signal_set signals(io, SIGINT, SIGTERM);
-    signals.async_wait(bind(&io_context::stop, &io));
+    signals.async_wait(boost::bind(&io_context::stop, &io));
 
-    boost::shared_ptr<Robot> robot(new Robot);
+    auto robot{ std::make_unique<Robot>() };
 
     try {
         robot->init();
 
-        robot->kinematic()->setDriveMode(Kinematic::DRIVE_BALANCING);
-
-        io.run();
+        io.run_one();
 
         std::cout << "Stopping..." << std::endl;
 
     }
     catch (std::exception const &e) {
-        cerr << diagnostic_information(e) << endl;
+        std::cerr << boost::diagnostic_information(e) << std::endl;
     }
 
     std::cout << "Cleanup..." << std::endl;

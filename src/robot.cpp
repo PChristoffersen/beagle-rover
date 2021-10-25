@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/log/trivial.hpp>
 #include <robotcontrol.h>
-#include <robotcontrol-ext.h>
+#include <robotcontrolext.h>
 
 #include "robot.h"
 #include "robotcontext.h"
@@ -13,25 +13,23 @@
 #include "kinematic/kinematic.h"
 
 
-using namespace boost;
-using namespace boost::asio;
-
 
 
 Robot::Robot() : 
     m_initialized(false),
     m_armed(false),
-    m_context(RobotContext::create()),
-    m_rc_receiver(RCReceiver::create(m_context)),
-    m_motor_control(MotorControl::create(m_context)),
-    m_led_control(LEDControl::create(m_context)),
-    m_telemetry(Telemetry::create(m_context)),
-    m_kinematic(Kinematic::create(m_context, m_motor_control, m_telemetry)),
+    m_context(std::make_shared<RobotContext>()),
+    m_rc_receiver(std::make_shared<RCReceiver>(m_context)),
+    m_motor_control(std::make_shared<MotorControl>(m_context)),
+    m_led_control(std::make_shared<LEDControl>(m_context)),
+    m_telemetry(std::make_shared<Telemetry>(m_context)),
+    m_kinematic(std::make_shared<Kinematic>(m_context, m_motor_control, m_telemetry)),
     m_pru_debug(new PRUDebug(m_context))
 {
 }
 
 Robot::~Robot() {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     cleanup();
 }
 
@@ -44,9 +42,8 @@ void Robot::init() {
     m_telemetry->init();
     m_motor_control->init();
     m_led_control->init();
-    //m_pru_debug->init();
-
     m_kinematic->init();
+    //m_pru_debug->init();
 
     m_context->start();
 
@@ -66,6 +63,7 @@ void Robot::cleanup() {
     m_motor_control->cleanup();
     m_telemetry->cleanup();
     m_rc_receiver->cleanup();
+    m_kinematic->cleanup();
     //m_pru_debug->cleanup();
 
     m_context->cleanup();

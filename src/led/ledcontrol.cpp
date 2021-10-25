@@ -4,33 +4,37 @@
 #include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
 
-#include <robotcontrol-ext.h>
+#include <robotcontrolext.h>
 
 #include "ledcontrol.h"
 #include "../robotcontext.h"
 
-using namespace boost;
-using namespace boost::asio;
 
+const int LEDControl::LED_PIXEL_COUNT = RC_EXT_NEOPIXEL_COUNT;
 
-#define RGB_PIXEL(r,g,b) ((uint32_t)(r<<16|g<<8|b))
-
-shared_ptr<LEDControl> LEDControl::create(shared_ptr<RobotContext> context) {
-    return shared_ptr<LEDControl>(new LEDControl(context));
-}
-
-
-LEDControl::LEDControl(shared_ptr<RobotContext> context) 
+LEDControl::LEDControl(std::shared_ptr<RobotContext> context) :
+    m_initialized(false)
 {
 
 }
 
+
+LEDControl::~LEDControl() {
+    cleanup();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+}
+
+
 void LEDControl::init() {
     setAll(LED_BLACK);
+    m_initialized = true;
 }
 
 
 void LEDControl::cleanup() {
+    if (!m_initialized) 
+        return;
+    m_initialized = false;
     #if 0
     while (!m_animation.empty()) {
         LEDAnimation *animation = m_animation.top();
@@ -46,16 +50,15 @@ void LEDControl::cleanup() {
 void LEDControl::updatePixels(LEDColorList const &pixels) {
     uint32_t pix[LED_PIXEL_COUNT];
     int i=0;
-    for (auto iter = pixels.begin(); iter != pixels.end(); ++iter) {
-        pix[i] = pixels[i];
-        BOOST_LOG_TRIVIAL(info) << i << "  " << format("%+08x") % pix[i];
+    for (auto &p : pixels) {
+        pix[i] = p;
+        BOOST_LOG_TRIVIAL(info) << i << "  " << boost::format("%+08x") % pix[i];
         i++;
         if (i>=LED_PIXEL_COUNT) 
             break;
     }
     while (i<LED_PIXEL_COUNT) {
         pix[i] = LED_BLACK;
-        BOOST_LOG_TRIVIAL(info) << i << "  BLACK";
         i++;
     }
     _updatePixels(pix);

@@ -1,7 +1,5 @@
 #include "ledcolor.h"
 
-#define RGB_PIXEL(r,g,b) ((uint32_t)(r<<16|g<<8|b))
-
 
 LEDColor::LEDColor(uint8_t r, uint8_t g, uint8_t b) :
     m_red(r),
@@ -27,7 +25,7 @@ LEDColor &LEDColor::operator=(const LEDColor &other) {
 
 
 LEDColor::operator uint32_t() const {
-    return RGB_PIXEL(m_red, m_green, m_blue);
+    return (uint32_t)m_red<<16|(uint32_t)m_green<<8|(uint32_t)m_blue;
 }
 
 

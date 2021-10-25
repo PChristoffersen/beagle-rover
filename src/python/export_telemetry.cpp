@@ -16,7 +16,7 @@ class TelemetryListener {
             disconnect();
         }
 
-        void connect(boost::shared_ptr<Telemetry> telemetry) {
+        void connect(std::shared_ptr<Telemetry> telemetry) {
             BOOST_LOG_TRIVIAL(trace) << "Connect";
             m_connection.disconnect();
             m_connection = telemetry->sig_event.connect(boost::bind(&TelemetryListener::event, this, _1));
@@ -61,7 +61,7 @@ class TelemetryListenerWrap : public TelemetryListener, public boost::python::wr
 
 
 void python_export_telemetry() {
-    register_ptr_to_python<shared_ptr<Telemetry> >();
+    register_ptr_to_python<std::shared_ptr<Telemetry> >();
 
     class_<Telemetry, noncopyable>("Telemetry", no_init)
         ;

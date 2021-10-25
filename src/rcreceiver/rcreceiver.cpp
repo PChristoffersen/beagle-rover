@@ -4,18 +4,14 @@
 #include <boost/log/trivial.hpp>
 
 #include <robotcontrol.h>
-#include <robotcontrol-ext.h>
+#include <robotcontrolext.h>
 
 #include "rcreceiver.h"
 #include "../robotcontext.h"
 
-using namespace std::chrono;
-using namespace boost;
-using namespace boost::asio;
-using namespace boost::signals2;
 
 
-#define TIMER_INTERVAL milliseconds(100)
+static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(100);
 
 /*
 flags = bit7 = ch17 = digital channel (0x80)
@@ -32,17 +28,19 @@ bit0 = n/a
 #define FBUS_FLAG_FAILSAFE_ACTIVE   (1 << 3)
 
 
-shared_ptr<RCReceiver> RCReceiver::create(shared_ptr<RobotContext> context) {
-    return shared_ptr<RCReceiver>(new RCReceiver(context));
-}
-
-
-RCReceiver::RCReceiver(shared_ptr<RobotContext> context) :
-    m_timer(*(context->io())),
+RCReceiver::RCReceiver(std::shared_ptr<RobotContext> context) :
+    m_initialized(true),
+    m_timer(context->io()),
     m_connected(false),
     m_rssi(0)
 {
 
+}
+
+
+RCReceiver::~RCReceiver() {
+    cleanup();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
@@ -51,18 +49,27 @@ void RCReceiver::init() {
     rc_servo_power_rail_en(1);
 
     m_timer.expires_after(TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&RCReceiver::timer, this));
+    m_timer.async_wait(boost::bind(&RCReceiver::timer, this, _1));
+
+    m_initialized = true;
 }
 
 
 void RCReceiver::cleanup() {
+    if (!m_initialized) 
+        return;
+    m_initialized = false;
     m_timer.cancel();
     m_fbus = NULL;
 }
 
 
 
-void RCReceiver::timer() {
+void RCReceiver::timer(boost::system::error_code error) {
+    if (error!=boost::system::errc::success || !m_initialized) {
+        return;
+    }
+
     if (!m_fbus) 
         return;
         
@@ -114,5 +121,5 @@ void RCReceiver::timer() {
     }
 
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&RCReceiver::timer, this));
+    m_timer.async_wait(boost::bind(&RCReceiver::timer, this, _1));
 }

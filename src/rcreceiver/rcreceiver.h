@@ -1,19 +1,19 @@
 #ifndef _RCRECEIVER_H_
 #define _RCRECEIVER_H_
 
+#include <memory>
 #include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/signals2.hpp>
-#include <robotcontrol-ext.h>
+#include <robotcontrolext.h>
 
 
-class RCReceiver : public boost::enable_shared_from_this<RCReceiver> {
+class RCReceiver : public std::enable_shared_from_this<RCReceiver> {
     public:
         typedef boost::signals2::signal<void(uint8_t)> sig_flags_t;
         typedef boost::signals2::signal<void(uint8_t)> sig_rssi_t;
 
-        [[nodiscard]] static boost::shared_ptr<RCReceiver> create(boost::shared_ptr<class RobotContext> context);
+        RCReceiver(std::shared_ptr<class RobotContext> context);
+        virtual ~RCReceiver();
 
         void init();
         void cleanup();
@@ -25,6 +25,7 @@ class RCReceiver : public boost::enable_shared_from_this<RCReceiver> {
         sig_flags_t sigFlags;
         sig_rssi_t sigRSSI;
     private:
+        bool m_initialized;
         boost::asio::steady_timer m_timer;
         uint32_t m_last_counter;
         volatile shm_fbus_t *m_fbus;
@@ -33,9 +34,7 @@ class RCReceiver : public boost::enable_shared_from_this<RCReceiver> {
         uint8_t m_flags;
         bool m_connected;
 
-        RCReceiver(boost::shared_ptr<class RobotContext> context);
-
-        void timer();
+        void timer(boost::system::error_code error);
 };
 
 #endif 

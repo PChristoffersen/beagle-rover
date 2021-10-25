@@ -4,7 +4,7 @@
 #include <boost/log/trivial.hpp>
 
 #include <robotcontrol.h>
-#include <robotcontrol-ext.h>
+#include <robotcontrolext.h>
 
 #include "motor.h"
 #include "motorgimbal.h"
@@ -12,41 +12,31 @@
 #include "../robotcontext.h"
 #include "../rcreceiver/rcreceiver.h"
 
-using namespace std::chrono;
-using namespace boost;
-using namespace boost::asio;
+
+static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(20);
+static constexpr auto MOTOR_COUNT = 4;
 
 
-#define TIMER_INTERVAL milliseconds(20)
-//#define TIMER_INTERVAL seconds(1)
-
-
-shared_ptr<MotorControl> MotorControl::create(shared_ptr<RobotContext> context) {
-    return shared_ptr<MotorControl>(new MotorControl(context));
-}
-
-
-MotorControl::MotorControl(shared_ptr<RobotContext> context) : 
+MotorControl::MotorControl(std::shared_ptr<RobotContext> context) : 
     m_initialized(false),
     m_enabled(false),
-    m_mutex(new std::recursive_mutex()),
-    m_timer(*(context->io()))
+    m_timer(context->io())
 {
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
     case CATEGORY_PC:
         for (int i=0; i<MOTOR_COUNT; i++) {
-            m_motors.push_back(Motor::create(i, m_mutex));
+            m_motors.push_back(std::make_unique<Motor>(i, m_mutex));
         }
         break;
     }
-
 }
 
 
 MotorControl::~MotorControl() {
     cleanup();
     m_motors.clear();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
@@ -62,7 +52,7 @@ void MotorControl::init() {
     }
     */
 
-    for (shared_ptr<Motor> motor : m_motors) {
+    for (auto &motor : m_motors) {
        motor->init();
     }
 
@@ -82,7 +72,7 @@ void MotorControl::init() {
     */
 
     m_timer.expires_after(TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&MotorControl::timer, this));
+    m_timer.async_wait(boost::bind(&MotorControl::timer, this, _1));
 
     m_initialized = true;
 }
@@ -91,18 +81,18 @@ void MotorControl::init() {
 void MotorControl::cleanup() {
     if (!m_initialized) 
         return;
+    m_initialized = false;
     
     m_timer.cancel();
 
     setEnabled(false);
 
-    for (auto motor : m_motors) {
+    for (auto &motor : m_motors) {
        motor->cleanup();
     }
 
     //m_fbus = NULL;
 
-    m_initialized = false;
 }
 
 
@@ -110,15 +100,15 @@ void MotorControl::cleanup() {
 
 
 void MotorControl::brake() {
-    const std::lock_guard<std::recursive_mutex> lock(*m_mutex);
-    for (auto motor : m_motors) {
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    for (auto &motor : m_motors) {
        motor->brake();
     }
 }
 
 void MotorControl::freeSpin() {
-    const std::lock_guard<std::recursive_mutex> lock(*m_mutex);
-    for (auto motor : m_motors) {
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    for (auto &motor : m_motors) {
        motor->freeSpin();
     }
 }
@@ -126,11 +116,11 @@ void MotorControl::freeSpin() {
 
 
 void MotorControl::setEnabled(bool enabled) {
-    const std::lock_guard<std::recursive_mutex> lock(*m_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     m_enabled = enabled;
 
-    for (auto motor : m_motors) {
+    for (auto &motor : m_motors) {
         motor->setEnabled(m_enabled);
     }
 
@@ -146,9 +136,9 @@ void MotorControl::setEnabled(bool enabled) {
 
 
 void MotorControl::resetOdometer() {
-    const std::lock_guard<std::recursive_mutex> lock(*m_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    for (auto motor : m_motors) {
+    for (auto &motor : m_motors) {
         motor->resetOdometer();
     }
 }
@@ -158,19 +148,25 @@ void MotorControl::resetOdometer() {
 
 
 
-void MotorControl::timer() {
-    const std::lock_guard<std::recursive_mutex> lock(*m_mutex);
+void MotorControl::timer(boost::system::error_code error) {
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (error!=boost::system::errc::success || !m_initialized) {
+        return;
+    }
+
+
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
     // Update control scheme
 
     // Set motor gimbal angle if fbus passthrough is enabled
 
     // Update motors
-    for (auto motor : m_motors) {
+    for (auto &motor : m_motors) {
         motor->update();
     }
 
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&MotorControl::timer, this));
+    m_timer.async_wait(boost::bind(&MotorControl::timer, this, _1));
 }
 

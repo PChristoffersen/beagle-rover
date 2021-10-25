@@ -1,4 +1,4 @@
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/python.hpp>
 
 #include "../robot.h"
@@ -15,14 +15,14 @@ using namespace boost;
 using namespace boost::python;
 
 void python_export_robot() {
-    register_ptr_to_python<shared_ptr<Robot> >();
+    register_ptr_to_python<std::shared_ptr<Robot> >();
 
     class_<Robot, noncopyable>("Robot")
-        .add_property("rc_receiver", &Robot::rcReceiver)
-        .add_property("motor_control", &Robot::motorControl)
-        .add_property("led_control", &Robot::ledControl)
-        .add_property("telemetry", &Robot::telemetry)
-        .add_property("kinematic", &Robot::kinematic)
+        .add_property("rc_receiver", make_function(+[](const Robot &r){ return r.rcReceiver().get(); }, return_internal_reference<>()))
+        .add_property("motor_control", make_function(+[](const Robot &r){ return r.motorControl().get(); }, return_internal_reference<>()))
+        .add_property("led_control", make_function(+[](const Robot &r){ return r.ledControl().get(); }, return_internal_reference<>()))
+        .add_property("telemetry", make_function(+[](const Robot &r){ return r.telemetry().get(); }, return_internal_reference<>()))
+        .add_property("kinematic", make_function(+[](const Robot &r){ return r.kinematic().get(); }, return_internal_reference<>()))
         .add_property("armed", &Robot::getArmed, &Robot::setArmed)
         .def("init", &Robot::init)
         .def("cleanup", &Robot::cleanup)

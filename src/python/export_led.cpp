@@ -11,7 +11,7 @@ using namespace boost::python;
 
 
 void python_export_led() {
-    register_ptr_to_python<shared_ptr<LEDControl> >();
+    register_ptr_to_python<std::shared_ptr<LEDControl> >();
 
     iterable_converter()
         .from_python<LEDColorList>()

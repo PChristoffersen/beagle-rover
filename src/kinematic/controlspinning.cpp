@@ -5,15 +5,9 @@
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
 
-using namespace boost;
 
 
-shared_ptr<ControlSpinning> ControlSpinning::create(shared_ptr<class Kinematic> kinematic) {
-    return shared_ptr<ControlSpinning>(new ControlSpinning(kinematic));
-}
-
-
-ControlSpinning::ControlSpinning(boost::shared_ptr<class Kinematic> kinematic) :
+ControlSpinning::ControlSpinning(std::shared_ptr<class Kinematic> kinematic) :
     AbstractControlScheme(kinematic)
 {
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
@@ -27,16 +21,15 @@ ControlSpinning::~ControlSpinning() {
 void ControlSpinning::init() {
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 
-    BOOST_LOG_TRIVIAL(trace) << m_motor_control;
+    #if 0
     // Set all motor angles to 0 degrees and throttle to 0
-    for (auto motor : m_motor_control->getMotors()) {
-        auto gimbal = motor->getGimbal();
-        
+    for (auto &motor : m_motor_control->getMotors()) {
         motor->setDuty(0.0);
         motor->freeSpin();
-        gimbal->setAngle(0.0);
-        gimbal->setEnabled(true);
+        motor->gimbal().setAngle(0.0);
+        motor->gimbal().setEnabled(true);
     }
+    #endif
 }
 
 

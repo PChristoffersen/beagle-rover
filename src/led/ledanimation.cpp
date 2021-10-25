@@ -4,10 +4,7 @@
 #include "ledanimation.h"
 
 
-using namespace boost;
-using namespace boost::asio;
-
-LEDAnimation::LEDAnimation(io_context &io, shared_ptr<LEDControl> control) :
+LEDAnimation::LEDAnimation(boost::asio::io_context &io, std::shared_ptr<LEDControl> control) :
     m_control(control),
     m_timer(io)
 {

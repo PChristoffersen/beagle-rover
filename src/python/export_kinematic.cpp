@@ -10,22 +10,27 @@ using namespace boost::python;
 
 
 void python_export_kinematic() {
-    register_ptr_to_python<shared_ptr<Kinematic> >();
+    //register_ptr_to_python<std::shared_ptr<Kinematic> >();
 
     enum_<Kinematic::SteeringMode>("SteeringMode")
-        .export_values()
+        .value("NONE", Kinematic::SteeringMode::NONE)
+        .value("FRONT", Kinematic::SteeringMode::FRONT)
+        .value("REAR", Kinematic::SteeringMode::REAR)
+        .value("ALL", Kinematic::SteeringMode::ALL)
+        .value("SKID", Kinematic::SteeringMode::SKID)
+        .value("BYPASS", Kinematic::SteeringMode::BYPASS)
         ;
     enum_<Kinematic::DriveMode>("DriveMode")
-        .value("NONE", Kinematic::DRIVE_NONE)
-        .value("NORMAL", Kinematic::DRIVE_NORMAL)
-        .value("SPINNING", Kinematic::DRIVE_SPINNING)
-        .value("BALANCING", Kinematic::DRIVE_BALANCING)
+        .value("NONE", Kinematic::DriveMode::NONE)
+        .value("NORMAL", Kinematic::DriveMode::NORMAL)
+        .value("SPINNING", Kinematic::DriveMode::SPINNING)
+        .value("BALANCING", Kinematic::DriveMode::BALANCING)
         ;
     enum_<Kinematic::Orientation>("Orientation")
-        .value("NORTH", Kinematic::ORIENTATION_NORTH)
-        .value("SOUTH", Kinematic::ORIENTATION_SOUTH)
-        .value("EAST", Kinematic::ORIENTATION_EAST)
-        .value("WEST", Kinematic::ORIENTATION_WEST)
+        .value("NORTH", Kinematic::Orientation::NORTH)
+        .value("SOUTH", Kinematic::Orientation::SOUTH)
+        .value("EAST", Kinematic::Orientation::EAST)
+        .value("WEST", Kinematic::Orientation::WEST)
         ;
 
     class_<Kinematic, noncopyable>("Kinematic", no_init)

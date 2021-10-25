@@ -2,16 +2,14 @@
 #define _MOTORGIMBAL_H_
 
 #include <stdint.h>
+#include <memory>
 #include <chrono>
 #include <mutex>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 
-class MotorGimbal : public boost::enable_shared_from_this<MotorGimbal> {
+class MotorGimbal {
     public:
-        [[nodiscard]] static boost::shared_ptr<MotorGimbal> create(uint8_t index, boost::shared_ptr<std::recursive_mutex> mutex);
-
+        MotorGimbal(uint8_t index, std::recursive_mutex &mutex);
         virtual ~MotorGimbal();
 
         void setEnabled(bool enable);
@@ -25,6 +23,16 @@ class MotorGimbal : public boost::enable_shared_from_this<MotorGimbal> {
         void setAngle(double angle);
         double getAngle() const;
 
+        void setTrimUS(int32_t trim);
+        int32_t getTrimUS() const { return m_trim_us; }
+
+        void setLimits(uint32_t lmin, uint32_t lmax);
+        void setLimitMin(uint32_t limit);
+        uint32_t getLimitMin() const { return m_limit_min; };
+        void setLimitMax(uint32_t limit);
+        uint32_t getLimitMax() const { return m_limit_max; }
+
+
     protected:
         void init();
         void cleanup();
@@ -34,13 +42,16 @@ class MotorGimbal : public boost::enable_shared_from_this<MotorGimbal> {
         friend class Motor;
         friend class MotorControl;
     private:
+        bool m_initialized;
         uint8_t m_index;
-        boost::shared_ptr<std::recursive_mutex> m_mutex;
+        std::recursive_mutex &m_mutex;
         bool m_enabled;
         uint32_t m_pulse_us;
         std::chrono::high_resolution_clock::time_point m_last_pulse;
 
-        MotorGimbal(uint8_t index, boost::shared_ptr<std::recursive_mutex> mutex);
+        int32_t m_trim_us;
+        uint32_t m_limit_min;
+        uint32_t m_limit_max;
 };
 
 #endif

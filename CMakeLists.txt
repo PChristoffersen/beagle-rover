@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
@@ -21,7 +21,7 @@ add_definitions(-DBOOST_LOG_DYN_LINK)
 # Helper libraries
 # -----------------------------------------------
 add_subdirectory("${CMAKE_SOURCE_DIR}/lib/pid")
-add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrol-ext")
+add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
 
 
 # -----------------------------------------------
@@ -39,9 +39,10 @@ set(SRC
     src/led/ledcolor.cpp
     src/led/ledanimation.cpp
     src/telemetry/telemetry.cpp
-    src/telemetry/battery.cpp
+    src/telemetry/adcbattery.cpp
     src/kinematic/kinematic.cpp
     src/kinematic/abstractcontrolscheme.cpp
+    src/kinematic/controlidle.cpp
     src/kinematic/controlnormal.cpp
     src/kinematic/controlspinning.cpp
     src/kinematic/controlbalancing.cpp
@@ -69,7 +70,7 @@ add_library(beaglerover MODULE
 target_include_directories(beaglerover PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(beaglerover PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 target_link_libraries(beaglerover PRIVATE pid)
-target_link_libraries(beaglerover PRIVATE robotcontrol-ext)
+target_link_libraries(beaglerover PRIVATE robotcontrolext)
 
 # -----------------------------------------------
 # Standalone executable
@@ -81,4 +82,4 @@ add_executable(test_robot
 target_include_directories(test_robot PRIVATE src)
 target_link_libraries(test_robot "${Boost_LIBRARIES}")
 target_link_libraries(test_robot pid)
-target_link_libraries(test_robot robotcontrol-ext)
+target_link_libraries(test_robot robotcontrolext)

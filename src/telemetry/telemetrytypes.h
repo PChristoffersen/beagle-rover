@@ -4,7 +4,7 @@
 #include <vector>
 #include <boost/signals2.hpp>
 
-typedef boost::signals2::signal<void(const class TelemetryEvent &)> TelemetrySignal_t;
+typedef boost::signals2::signal<void(const class TelemetryEvent &)> TelemetrySignal;
 
 
 class TelemetryEvent {

@@ -2,14 +2,13 @@
 #define _ROBOTCONTEXT_H_
 
 #include <mutex>
+#include <memory>
+#include <thread>
 #include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/thread.hpp>
 
-class RobotContext : public boost::enable_shared_from_this<RobotContext> {
+class RobotContext : public std::enable_shared_from_this<RobotContext> {
     public:
-        [[nodiscard]] static boost::shared_ptr<RobotContext> create();
-
+        RobotContext();
         virtual ~RobotContext();
 
         void init();
@@ -18,20 +17,18 @@ class RobotContext : public boost::enable_shared_from_this<RobotContext> {
         void start();
         void stop();
 
-        boost::shared_ptr<boost::asio::io_context> io() const {
-            return m_io;
-        }
+
+
+        boost::asio::io_context &io() { return m_io; }
 
     private:
         bool m_initialized;
         bool m_started;
         std::mutex m_mutex;
-        boost::shared_ptr<boost::asio::io_context> m_io;
-        boost::shared_ptr<boost::thread> m_thread;
+        boost::asio::io_context m_io;
+        std::shared_ptr<std::thread> m_thread;
         
         bool m_power_enabled;
-
-        RobotContext();
 
         void initBeagleBone();
         void cleanupBeagleBone();

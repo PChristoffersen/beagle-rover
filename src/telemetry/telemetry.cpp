@@ -1,39 +1,56 @@
 #include <typeinfo>
 #include <boost/log/trivial.hpp>
-#include <robotcontrol-ext.h>
+
+#include <robotcontrol.h>
+#include <robotcontrolext.h>
 
 #include "telemetry.h"
 #include "telemetrytypes.h"
-#include "battery.h"
+#include "adcbattery.h"
 #include "../robotcontext.h"
 
-using namespace boost;
-using namespace boost::asio;
+
 
 #define TELEMETRY_BATTERY 0x0300
 
 
-shared_ptr<Telemetry> Telemetry::create(shared_ptr<RobotContext> context) {
-    return shared_ptr<Telemetry>(new Telemetry(context));
+Telemetry::Telemetry(std::shared_ptr<RobotContext> context) :
+    m_initialized(false)
+{
+    switch (rc_model()) {
+    case MODEL_BB_BLUE:
+        //m_battery = ADCBattery::create(context);
+        break;
+    default:
+        break;
+    }
 }
 
 
-Telemetry::Telemetry(shared_ptr<RobotContext> context) :
-    m_context(context),
-    m_battery(new Battery(context))
-{
+Telemetry::~Telemetry() {
+    cleanup();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
 void Telemetry::init() {
-    m_battery->init();
-    m_battery_connection = m_battery->sig_event.connect(boost::bind(&Telemetry::process, this, _1));
+    if (m_battery) {
+        m_battery->init();
+        m_battery_connection = m_battery->sig_event.connect(TelemetrySignal::slot_type(&Telemetry::process, this, _1));
+    }
+    m_initialized = true;
 }
 
 
 void Telemetry::cleanup() {
-    m_battery_connection.disconnect();
-    m_battery->cleanup();
+    if (!m_initialized)
+        return;
+    m_initialized = false;
+    
+    if (m_battery) {
+        m_battery_connection.disconnect();
+        m_battery->cleanup();
+    }
 }
 
 

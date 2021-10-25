@@ -2,18 +2,16 @@
 #define _MOTOR_H_
 
 #include <stdint.h>
+#include <memory>
 #include <chrono>
 #include <mutex>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <robotcontrol-ext.h>
 #include <PID.h>
 
+#include "motorgimbal.h"
 
-
-class Motor : public boost::enable_shared_from_this<Motor> {
+class Motor {
     public:
         enum State {
             RUNNING,
@@ -21,14 +19,13 @@ class Motor : public boost::enable_shared_from_this<Motor> {
             BRAKE
         };
 
-        [[nodiscard]] static boost::shared_ptr<Motor> create(uint8_t index, boost::shared_ptr<std::recursive_mutex> mutex);
-
+        Motor(uint8_t index, std::recursive_mutex &mutex);
         virtual ~Motor();
 
         void brake();
         void freeSpin();
 
-        uint8_t getIndex() const { return m_index; }
+        uint8_t getIndex() const;// { return m_index; }
 
         void setDuty(double duty);
         double getDuty() const { return m_duty; }
@@ -44,7 +41,7 @@ class Motor : public boost::enable_shared_from_this<Motor> {
         void setEnabled(bool enabled);
         bool getEnabled() const { return m_enabled; }
 
-        const boost::shared_ptr<class MotorGimbal> getGimbal() const { return m_gimbal; }
+        MotorGimbal &gimbal() { return m_gimbal; }
 
     protected:
         void init();
@@ -54,12 +51,14 @@ class Motor : public boost::enable_shared_from_this<Motor> {
 
         friend class MotorControl;
     private:
+        bool m_initialized;
         uint8_t m_index;
-        boost::shared_ptr<std::recursive_mutex> m_mutex;
-        boost::shared_ptr<class MotorGimbal> m_gimbal;
+        std::recursive_mutex &m_mutex;
+        MotorGimbal m_gimbal;
 
         bool m_enabled;
         State m_state;
+
 
         int32_t m_last_enc_value;
         std::chrono::high_resolution_clock::time_point m_last_update;
@@ -71,7 +70,6 @@ class Motor : public boost::enable_shared_from_this<Motor> {
         double m_rpm;
         PIDController<double> m_pid;
 
-        Motor(uint8_t index, boost::shared_ptr<std::recursive_mutex> mutex);
 };
 
 
