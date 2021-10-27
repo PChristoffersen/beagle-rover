@@ -5,30 +5,7 @@ from math import pi as PI
 sys.path.append('build')
 
 from time import sleep
-from build.beaglerover import Robot, LEDColor, TelemetryListener, DriveMode
-#from beaglerover import Robot
-
-col = LEDColor(0xFF, 0x00, 0x00)
-
-colors = [
-    LEDColor(0xFF, 0x00, 0xFF),
-    LEDColor(0xFF, 0x01, 0xFF),
-    LEDColor(0xFF, 0x02, 0xFF),
-    LEDColor(0xFF, 0x03, 0xFF),
-    LEDColor(0xFF, 0x04, 0xFF),
-    LEDColor(0xFF, 0x05, 0xFF),
-    LEDColor(0xFF, 0x06, 0xFF),
-    LEDColor(0xFF, 0x07, 0xFF),
-    LEDColor(0xFF, 0x08, 0xFF),
-    LEDColor(0xFF, 0x09, 0xFF),
-    LEDColor(0xFF, 0x0A, 0xFF),
-    LEDColor(0xFF, 0x0B, 0xFF),
-    LEDColor(0xFF, 0x0C, 0xFF),
-    LEDColor(0xFF, 0x0D, 0xFF),
-    LEDColor(0xFF, 0x0E, 0xFF),
-    LEDColor(0xFF, 0x0F, 0xFF),
-]
-
+from build.beaglerover import Robot, TelemetryListener, DriveMode
 
 
 def print_battery(event): 
@@ -50,7 +27,7 @@ def set_motors(robot: Robot, pos):
 
 def main():
     robot = Robot()
-
+    robot = Robot()
     #class Listener(TelemetryListener):
     #    def on_event(self, event):
     #        print(event)
@@ -59,7 +36,7 @@ def main():
     #listener = Listener()
     #listener.connect(robot.telemetry)
 
-    #robot.init()
+    robot.init()
 
 
 

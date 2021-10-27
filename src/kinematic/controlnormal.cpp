@@ -6,19 +6,23 @@
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
 
+using namespace std;
 
-ControlNormal::ControlNormal(std::shared_ptr<class Kinematic> kinematic) :
-    AbstractControlScheme(kinematic)
+
+ControlNormal::ControlNormal(shared_ptr<class Kinematic> kinematic) :
+    AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << "Normal()";
 }
 
-ControlNormal::~ControlNormal() {
+ControlNormal::~ControlNormal() 
+{
     BOOST_LOG_TRIVIAL(trace) << "~Normal()";
 }
 
 
-void ControlNormal::init() {
+void ControlNormal::init() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     
     #if 0
@@ -31,6 +35,7 @@ void ControlNormal::init() {
 }
 
 
-void ControlNormal::cleanup() {
+void ControlNormal::cleanup() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }

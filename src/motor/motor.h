@@ -25,7 +25,12 @@ class Motor {
         void brake();
         void freeSpin();
 
-        uint8_t getIndex() const;// { return m_index; }
+        uint8_t getIndex() const { return m_index; }
+
+        void setEnabled(bool enabled);
+        bool getEnabled() const { return m_enabled; }
+
+        bool getPassthrough() const { return m_passthrough; }
 
         void setDuty(double duty);
         double getDuty() const { return m_duty; }
@@ -38,8 +43,6 @@ class Motor {
         void resetOdometer();
         double getOdometer() const;
 
-        void setEnabled(bool enabled);
-        bool getEnabled() const { return m_enabled; }
 
         MotorGimbal &gimbal() { return m_gimbal; }
 
@@ -47,6 +50,7 @@ class Motor {
         void init();
         void cleanup();
 
+        void setPassthrough(bool passthrough);
         void update();
 
         friend class MotorControl;
@@ -57,6 +61,7 @@ class Motor {
         MotorGimbal m_gimbal;
 
         bool m_enabled;
+        bool m_passthrough;
         State m_state;
 
 

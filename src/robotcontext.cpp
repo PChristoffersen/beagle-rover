@@ -7,23 +7,28 @@
 
 #include "robotcontext.h"
 
+using namespace std;
+
 
 RobotContext::RobotContext() : 
-    m_initialized(false),
-    m_started(false),
-    m_power_enabled(false)
+    m_initialized { false },
+    m_started { false },
+    m_power_enabled { false }
 {
     rc_model();
 }
 
-RobotContext::~RobotContext() {
+
+RobotContext::~RobotContext() 
+{
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     stop();
     cleanup();
 }
 
 
-void RobotContext::init() {
+void RobotContext::init() 
+{
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
         initBeagleBone();
@@ -32,12 +37,14 @@ void RobotContext::init() {
         initPC();
         break;
     default:
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing Unsupported model"));
     }
     m_initialized = true;
 }
 
-void RobotContext::cleanup() {
+
+void RobotContext::cleanup() 
+{
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -50,45 +57,48 @@ void RobotContext::cleanup() {
         cleanupPC();
         break;
     default:
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing Unsupported model"));
 
     }
 
     // Drain the io_context and execute any remaining tasks
     m_io.restart();
-    m_io.run_for(std::chrono::seconds(10));
+    m_io.run_for(chrono::seconds(10));
     m_io.stop();
 }
 
 
 
-void RobotContext::initBeagleBone() {
+void RobotContext::initBeagleBone() 
+{
     if (rc_adc_init()<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing ADC"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing ADC"));
     }
     if (rc_servo_init()<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing SERVO"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing SERVO"));
     }
     if (rc_motor_init()<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing MOTOR"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing MOTOR"));
     }
     if (rc_ext_pru_init()<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing EXT-PRU"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing EXT-PRU"));
     }
     if (rc_ext_neopixel_init()<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing NEOPIXEL"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing NEOPIXEL"));
     }
     if (rc_ext_encoder_init()<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing EXT-ENCODER"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing EXT-ENCODER"));
     }
     if (rc_ext_fbus_init()<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing FBUS"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error initializing FBUS"));
     }
 
     rc_servo_power_rail_en(1);
 }
 
-void RobotContext::cleanupBeagleBone() {
+
+void RobotContext::cleanupBeagleBone() 
+{
     rc_ext_fbus_cleanup();
     rc_ext_pru_cleanup();
     rc_ext_encoder_cleanup();
@@ -99,20 +109,25 @@ void RobotContext::cleanupBeagleBone() {
 }
 
 
-void RobotContext::initPC() {
+void RobotContext::initPC() 
+{
 }
 
-void RobotContext::cleanupPC() {
+void RobotContext::cleanupPC() 
+{
 }
 
 
-void RobotContext::start() {
+void RobotContext::start() 
+{
     BOOST_LOG_TRIVIAL(trace) << "Starting thread";
-    m_thread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_context::run, &m_io));
+    m_thread = make_shared<thread>(boost::bind(&boost::asio::io_context::run, &m_io));
     m_started = true;
 }
 
-void RobotContext::stop() {
+
+void RobotContext::stop() 
+{
     if (!m_started)
         return;
     

@@ -13,7 +13,8 @@ using namespace boost;
 using namespace boost::python;
 
 
-void python_export_motor() {
+void python_export_motor() 
+{
     //register_ptr_to_python<std::shared_ptr<MotorControl>>();
 
     enum_<Motor::State>("MotorState");

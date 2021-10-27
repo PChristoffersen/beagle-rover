@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 
-
 project(beagle-rover-1 VERSION 1.0)
 
 set(Boost_USE_STATIC_LIBS       OFF)

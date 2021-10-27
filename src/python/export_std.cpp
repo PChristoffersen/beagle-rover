@@ -13,7 +13,8 @@ typedef std::vector<float> FloatVector;
 typedef std::vector<int> IntVector;
 typedef std::vector<std::string> StringVector;
 
-void python_export_std() {
+void python_export_std() 
+{
     iterable_converter()
         .from_python<FloatVector>();
     class_<FloatVector>("FloatVector")

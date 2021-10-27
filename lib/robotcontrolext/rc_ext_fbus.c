@@ -98,7 +98,7 @@ volatile shm_fbus_t *rc_ext_fbus_get_shm(void) {
 }
 
 
-void rc_ext_fbus_set_servo_map(uint8_t map[FBUS_CHANNELS]) {
+void rc_ext_fbus_set_servo_map(const uint8_t map[FBUS_CHANNELS]) {
     servo_msg_t msg;
     msg.msg.type = MSG_TYPE_FBUS_SERVO;
     memcpy(msg.map, map, sizeof(msg.map));

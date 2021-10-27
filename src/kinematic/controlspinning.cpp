@@ -5,20 +5,23 @@
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
 
+using namespace std;
 
 
-ControlSpinning::ControlSpinning(std::shared_ptr<class Kinematic> kinematic) :
-    AbstractControlScheme(kinematic)
+ControlSpinning::ControlSpinning(shared_ptr<class Kinematic> kinematic) :
+    AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
-ControlSpinning::~ControlSpinning() {
+ControlSpinning::~ControlSpinning() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 
-void ControlSpinning::init() {
+void ControlSpinning::init() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 
     #if 0
@@ -33,7 +36,8 @@ void ControlSpinning::init() {
 }
 
 
-void ControlSpinning::cleanup() {
+void ControlSpinning::cleanup() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 

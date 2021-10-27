@@ -25,6 +25,7 @@ class Robot {
         const std::shared_ptr<class Kinematic> &kinematic() const { return m_kinematic; }
 
     private:
+        static class Robot *m_instance;
         bool m_initialized;
         bool m_armed;
         std::shared_ptr<class RobotContext> m_context;

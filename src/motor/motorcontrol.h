@@ -35,14 +35,17 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
         void setEnabled(bool enabled);
         bool getEnabled() const { return m_enabled; }
 
+        void setPassthrough(bool passthrough);
+        bool getPassthrough() const { return m_passthrough; }
+
         void resetOdometer();
 
         const MotorList &getMotors() const { return m_motors; }
-        
 
     private:
         bool m_initialized;
         bool m_enabled;
+        bool m_passthrough;
         std::recursive_mutex m_mutex;
         
         std::vector<std::unique_ptr<class Motor>> m_motor_holder;

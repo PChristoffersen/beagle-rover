@@ -1,6 +1,5 @@
 #include <boost/log/trivial.hpp>
 
-
 #include "kinematic.h"
 #include "../robotcontext.h"
 #include "../motor/motorcontrol.h"
@@ -13,31 +12,36 @@
 #include "controlbalancing.h"
 
 
+using namespace std;
 
-Kinematic::Kinematic(std::shared_ptr<RobotContext> context, std::shared_ptr<class MotorControl> motor_control, std::shared_ptr<class Telemetry> telemetry) :
-    m_initialized(false),
-    m_context(context),
-    m_motor_control(motor_control),
-    m_telemetry(telemetry),
-    m_steering_mode(SteeringMode::NONE),
-    m_drive_mode(DriveMode::NONE)
+
+Kinematic::Kinematic(shared_ptr<RobotContext> context, shared_ptr<class MotorControl> motor_control, shared_ptr<class Telemetry> telemetry) :
+    m_initialized { false },
+    m_context { context },
+    m_motor_control { motor_control },
+    m_telemetry { telemetry },
+    m_steering_mode { SteeringMode::NONE },
+    m_drive_mode { DriveMode::NONE }
 {
 
 }
 
-Kinematic::~Kinematic() {
+Kinematic::~Kinematic() 
+{
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
 
-void Kinematic::init() {
+void Kinematic::init() 
+{
     m_initialized = true;
 }
 
 
-void Kinematic::cleanup() {
+void Kinematic::cleanup() 
+{
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -52,8 +56,9 @@ void Kinematic::cleanup() {
 
 
 
-void Kinematic::setSteeringMode(SteeringMode mode) {
-    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+void Kinematic::setSteeringMode(SteeringMode mode) 
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
     switch (mode) {
     case SteeringMode::NONE:
         break;
@@ -65,15 +70,16 @@ void Kinematic::setSteeringMode(SteeringMode mode) {
         break;
     case SteeringMode::SKID:
         break;
-    case SteeringMode::BYPASS:
+    case SteeringMode::PASSTHROUGH:
         break;
     }
     m_steering_mode = mode;
 }
 
 
-void Kinematic::setDriveMode(DriveMode mode) {
-    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+void Kinematic::setDriveMode(DriveMode mode) 
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
     if (mode!=m_drive_mode || !m_control_scheme) {
         BOOST_LOG_TRIVIAL(info) << "Control scheme: " << (int)m_drive_mode;
         if (m_control_scheme) {
@@ -84,16 +90,16 @@ void Kinematic::setDriveMode(DriveMode mode) {
         }
         switch (mode) {
         case DriveMode::NORMAL:
-            m_control_scheme = std::make_shared<ControlNormal>(shared_from_this());
+            m_control_scheme = make_shared<ControlNormal>(shared_from_this());
             break;
         case DriveMode::SPINNING:
-            m_control_scheme = std::make_shared<ControlSpinning>(shared_from_this());
+            m_control_scheme = make_shared<ControlSpinning>(shared_from_this());
             break;
         case DriveMode::BALANCING:
-            m_control_scheme = std::make_shared<ControlBalancing>(shared_from_this());
+            m_control_scheme = make_shared<ControlBalancing>(shared_from_this());
             break;
         default:
-            m_control_scheme = std::make_shared<ControlIdle>(shared_from_this());
+            m_control_scheme = make_shared<ControlIdle>(shared_from_this());
             break;
         }
         if (m_control_scheme) {

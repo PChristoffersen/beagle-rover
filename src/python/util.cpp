@@ -4,11 +4,12 @@
 
 namespace py = boost::python;
 
-std::string parse_python_exception() {
-    PyObject *type_ptr = NULL, *value_ptr = NULL, *traceback_ptr = NULL;
+std::string parse_python_exception() 
+{
+    PyObject *type_ptr = nullptr, *value_ptr = nullptr, *traceback_ptr = nullptr;
     PyErr_Fetch(&type_ptr, &value_ptr, &traceback_ptr);
     std::string ret("Unfetchable Python error");
-    if(type_ptr != NULL){
+    if(type_ptr != nullptr){
         py::handle<> h_type(type_ptr);
         py::str type_pstr(h_type);
         py::extract<std::string> e_type_pstr(type_pstr);
@@ -17,7 +18,7 @@ std::string parse_python_exception() {
         else
             ret = "Unknown exception type";
     }
-    if(value_ptr != NULL){
+    if(value_ptr != nullptr){
         py::handle<> h_val(value_ptr);
         py::str a(h_val);
         py::extract<std::string> returned(a);
@@ -26,7 +27,7 @@ std::string parse_python_exception() {
         else
             ret += std::string(": Unparseable Python error: ");
     }
-    if(traceback_ptr != NULL){
+    if(traceback_ptr != nullptr){
         py::handle<> h_tb(traceback_ptr);
         py::object tb(py::import("traceback"));
         py::object fmt_tb(tb.attr("format_tb"));

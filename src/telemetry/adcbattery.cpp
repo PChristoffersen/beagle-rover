@@ -9,23 +9,27 @@
 #include "telemetrytypes.h"
 #include "../robotcontext.h"
 
+using namespace std;
 
-static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(1000);
+
+static constexpr auto TIMER_INTERVAL = chrono::milliseconds(1000);
 
 
-ADCBattery::ADCBattery(std::shared_ptr<RobotContext> context):
-    m_initialized(false),
-    m_timer(context->io())
+ADCBattery::ADCBattery(shared_ptr<RobotContext> context):
+    m_initialized { false },
+    m_timer { context->io() }
 {
 
 }
 
-ADCBattery::~ADCBattery() {
+ADCBattery::~ADCBattery() 
+{
     cleanup();
 }
 
 
-void ADCBattery::init() {
+void ADCBattery::init() 
+{
     m_timer.expires_after(TIMER_INTERVAL);
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
@@ -38,7 +42,8 @@ void ADCBattery::init() {
 }
 
 
-void ADCBattery::cleanup() {
+void ADCBattery::cleanup() 
+{
     if (!m_initialized)
         return;
     m_initialized = true;
@@ -46,7 +51,9 @@ void ADCBattery::cleanup() {
     m_timer.cancel();
 }
 
-void ADCBattery::timer(boost::system::error_code error) {
+
+void ADCBattery::timer(boost::system::error_code error) 
+{
     if (error!=boost::system::errc::success || !m_initialized) {
         return;
     }

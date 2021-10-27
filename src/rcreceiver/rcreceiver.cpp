@@ -9,9 +9,10 @@
 #include "rcreceiver.h"
 #include "../robotcontext.h"
 
+using namespace std;
 
 
-static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(100);
+static constexpr auto TIMER_INTERVAL = chrono::milliseconds(100);
 
 /*
 flags = bit7 = ch17 = digital channel (0x80)
@@ -24,29 +25,36 @@ bit1 = n/a
 bit0 = n/a
 
 */
-#define FBUS_FLAG_SIGNAL_LOSS       (1 << 2)
-#define FBUS_FLAG_FAILSAFE_ACTIVE   (1 << 3)
+static constexpr uint8_t FBUS_FLAG_SIGNAL_LOSS { 1 << 2 };
+static constexpr uint8_t FBUS_FLAG_FAILSAFE_ACTIVE { 1 << 3 };
 
 
-RCReceiver::RCReceiver(std::shared_ptr<RobotContext> context) :
-    m_initialized(true),
-    m_timer(context->io()),
-    m_connected(false),
-    m_rssi(0)
+RCReceiver::RCReceiver(shared_ptr<RobotContext> context) :
+    m_initialized { true },
+    m_timer { context->io() },
+    m_connected { false },
+    m_rssi { 0 }
 {
 
 }
 
 
-RCReceiver::~RCReceiver() {
+RCReceiver::~RCReceiver() 
+{
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
-void RCReceiver::init() {
-    m_fbus = rc_ext_fbus_get_shm();
-    rc_servo_power_rail_en(1);
+void RCReceiver::init() 
+{    
+    switch (rc_model_category()) {
+	case CATEGORY_BEAGLEBONE:
+        m_fbus = rc_ext_fbus_get_shm();
+        break;
+    default:
+        break;
+    }
 
     m_timer.expires_after(TIMER_INTERVAL);
     m_timer.async_wait(boost::bind(&RCReceiver::timer, this, _1));
@@ -55,17 +63,19 @@ void RCReceiver::init() {
 }
 
 
-void RCReceiver::cleanup() {
+void RCReceiver::cleanup() 
+{
     if (!m_initialized) 
         return;
     m_initialized = false;
     m_timer.cancel();
-    m_fbus = NULL;
+    m_fbus = nullptr;
 }
 
 
 
-void RCReceiver::timer(boost::system::error_code error) {
+void RCReceiver::timer(boost::system::error_code error) 
+{
     if (error!=boost::system::errc::success || !m_initialized) {
         return;
     }
@@ -103,10 +113,10 @@ void RCReceiver::timer(boost::system::error_code error) {
             #if 0
             for (int i=0; i<8; i++) {
                 uint32_t ch = m_fbus->channels[i];
-                std::cout << format("%+4d |") % ch;
+                cout << format("%+4d |") % ch;
             }
-            std::cout << "  " << (m_fbus->channels[0]-500) << "   "  << ((m_fbus->channels[0]-500)/2000.0) << "          ";
-            std::cout << "\r" << std::flush;
+            cout << "  " << (m_fbus->channels[0]-500) << "   "  << ((m_fbus->channels[0]-500)/2000.0) << "          ";
+            cout << "\r" << flush;
             #endif
         }
 #endif

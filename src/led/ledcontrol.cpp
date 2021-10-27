@@ -10,28 +10,35 @@
 #include "../robotcontext.h"
 
 
+using namespace std;
+
+
 const int LEDControl::LED_PIXEL_COUNT = RC_EXT_NEOPIXEL_COUNT;
 
-LEDControl::LEDControl(std::shared_ptr<RobotContext> context) :
-    m_initialized(false)
+
+LEDControl::LEDControl(shared_ptr<RobotContext> context) :
+    m_initialized { false }
 {
 
 }
 
 
-LEDControl::~LEDControl() {
+LEDControl::~LEDControl() 
+{
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
-void LEDControl::init() {
+void LEDControl::init() 
+{
     setAll(LED_BLACK);
     m_initialized = true;
 }
 
 
-void LEDControl::cleanup() {
+void LEDControl::cleanup() 
+{
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -47,7 +54,8 @@ void LEDControl::cleanup() {
 }
 
 
-void LEDControl::updatePixels(LEDColorList const &pixels) {
+void LEDControl::updatePixels(LEDColorList const &pixels) 
+{
     uint32_t pix[LED_PIXEL_COUNT];
     int i=0;
     for (auto &p : pixels) {
@@ -65,7 +73,8 @@ void LEDControl::updatePixels(LEDColorList const &pixels) {
 }
 
 
-void LEDControl::setAll(const LEDColor &color) {
+void LEDControl::setAll(const LEDColor &color) 
+{
     uint32_t pixels[LED_PIXEL_COUNT];
     for (int i=0; i<LED_PIXEL_COUNT; i++) {
         pixels[i] = color;
@@ -74,8 +83,9 @@ void LEDControl::setAll(const LEDColor &color) {
 }
 
 
-void LEDControl::_updatePixels(uint32_t pixels[LED_PIXEL_COUNT]) {
+void LEDControl::_updatePixels(uint32_t pixels[LED_PIXEL_COUNT]) 
+{
     if (rc_ext_neopixel_set(pixels, LED_PIXEL_COUNT)!=0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error updating pixels"));
+        BOOST_THROW_EXCEPTION(runtime_error("Error updating pixels"));
     }
 }

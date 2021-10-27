@@ -6,19 +6,24 @@
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
 
+using namespace std;
 
-ControlBalancing::ControlBalancing(std::shared_ptr<class Kinematic> kinematic) :
-    AbstractControlScheme(kinematic)
+
+ControlBalancing::ControlBalancing(shared_ptr<class Kinematic> kinematic) :
+    AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
-ControlBalancing::~ControlBalancing() {
+
+ControlBalancing::~ControlBalancing() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 
-void ControlBalancing::init() {
+void ControlBalancing::init() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 
 #if 0
@@ -50,7 +55,8 @@ void ControlBalancing::init() {
 }
 
 
-void ControlBalancing::cleanup() {
+void ControlBalancing::cleanup() 
+{
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 

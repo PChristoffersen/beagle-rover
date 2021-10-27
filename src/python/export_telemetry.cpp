@@ -60,7 +60,8 @@ class TelemetryListenerWrap : public TelemetryListener, public boost::python::wr
 };
 
 
-void python_export_telemetry() {
+void python_export_telemetry() 
+{
     register_ptr_to_python<std::shared_ptr<Telemetry> >();
 
     class_<Telemetry, noncopyable>("Telemetry", no_init)

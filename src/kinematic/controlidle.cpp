@@ -7,25 +7,31 @@
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
 
+using namespace std;
 
-static constexpr auto IDLE_DELAY = std::chrono::seconds(2);
 
-ControlIdle::ControlIdle(std::shared_ptr<class Kinematic> kinematic) :
-    AbstractControlScheme(kinematic), 
-    m_initialized(false),
-    m_timer(m_context->io())
+static constexpr auto IDLE_DELAY { chrono::seconds(2) };
+
+
+ControlIdle::ControlIdle(shared_ptr<class Kinematic> kinematic) :
+    AbstractControlScheme { kinematic }, 
+    m_initialized { false },
+    m_timer { m_context->io() }
 {
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 }
 
-ControlIdle::~ControlIdle() {
+
+ControlIdle::~ControlIdle() 
+{
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
     cleanup();
 }
 
 
-void ControlIdle::init() {
-    const std::lock_guard<std::mutex> lock(m_mutex);
+void ControlIdle::init() 
+{
+    const lock_guard<mutex> lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 
 #if 0
@@ -45,8 +51,9 @@ void ControlIdle::init() {
 }
 
 
-void ControlIdle::cleanup() {
-    const std::lock_guard<std::mutex> lock(m_mutex);
+void ControlIdle::cleanup() 
+{
+    const lock_guard<mutex> lock(m_mutex);
 
     if (!m_initialized)
         return;
@@ -64,10 +71,11 @@ void ControlIdle::cleanup() {
 
 
 
-void ControlIdle::timer(boost::system::error_code error) {
+void ControlIdle::timer(boost::system::error_code error) 
+{
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__ << "  err="  << error;
 
-    const std::lock_guard<std::mutex> lock(m_mutex);
+    const lock_guard<mutex> lock(m_mutex);
     m_timer_pending = false;
     if (error!=boost::system::errc::success || !m_initialized)
         return;

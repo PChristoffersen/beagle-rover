@@ -14,7 +14,8 @@
 using namespace boost;
 using namespace boost::python;
 
-void python_export_robot() {
+void python_export_robot() 
+{
     register_ptr_to_python<std::shared_ptr<Robot> >();
 
     class_<Robot, noncopyable>("Robot")

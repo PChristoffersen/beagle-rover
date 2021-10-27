@@ -9,7 +9,8 @@ using namespace boost;
 using namespace boost::python;
 
 
-void python_export_rcreceiver() {
+void python_export_rcreceiver() 
+{
 
     register_ptr_to_python<std::shared_ptr<RCReceiver> >();
 

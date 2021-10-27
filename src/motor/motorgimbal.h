@@ -15,6 +15,8 @@ class MotorGimbal {
         void setEnabled(bool enable);
         bool getEnabled() const { return m_enabled; }
 
+        bool getPassthrough() const { return m_passthrough; }
+
         void setPulseUS(uint32_t us);
         uint32_t getPulseUS() const { return m_pulse_us; }
 
@@ -37,6 +39,8 @@ class MotorGimbal {
         void init();
         void cleanup();
 
+        void setPassthrough(bool passthrough);
+
         void update();
 
         friend class Motor;
@@ -46,6 +50,7 @@ class MotorGimbal {
         uint8_t m_index;
         std::recursive_mutex &m_mutex;
         bool m_enabled;
+        bool m_passthrough;
         uint32_t m_pulse_us;
         std::chrono::high_resolution_clock::time_point m_last_pulse;
 

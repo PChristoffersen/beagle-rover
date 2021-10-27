@@ -8,22 +8,28 @@
 #include "prudebug.h"
 #include "robotcontext.h"
 
-static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(100);
+using namespace std;
 
 
-PRUDebug::PRUDebug(std::shared_ptr<RobotContext> context) :
-    m_initialized(false),
-    m_timer(context->io())
+static constexpr auto TIMER_INTERVAL = chrono::milliseconds(100);
+
+
+PRUDebug::PRUDebug(shared_ptr<RobotContext> context) :
+    m_initialized { false },
+    m_timer { context->io() }
 {
 }
 
 
-PRUDebug::~PRUDebug() {
+PRUDebug::~PRUDebug() 
+{
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
-void PRUDebug::init() {
+
+void PRUDebug::init() 
+{
     rc_ext_debug_init();
 
     m_timer.expires_after(TIMER_INTERVAL);
@@ -33,7 +39,8 @@ void PRUDebug::init() {
 }
 
 
-void PRUDebug::cleanup() {
+void PRUDebug::cleanup() 
+{
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -42,12 +49,13 @@ void PRUDebug::cleanup() {
 }
 
 
-void PRUDebug::timer(boost::system::error_code error) {
+void PRUDebug::timer(boost::system::error_code error) 
+{
     if (error!=boost::system::errc::success || !m_initialized) {
         return;
     }
 
-    volatile const char *msg = NULL;
+    volatile const char *msg = nullptr;
     while (msg=rc_ext_debug_next()) {
         BOOST_LOG_TRIVIAL(debug) << msg;
     }

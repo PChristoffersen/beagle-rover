@@ -1,4 +1,5 @@
 #include <iostream>
+#include <exception>
 #include <boost/log/trivial.hpp>
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
@@ -12,30 +13,39 @@
 #include "telemetry/telemetry.h"
 #include "kinematic/kinematic.h"
 
+using namespace std;
 
+
+Robot *Robot::m_instance { nullptr };
 
 
 Robot::Robot() : 
-    m_initialized(false),
-    m_armed(false),
-    m_context(std::make_shared<RobotContext>()),
-    m_rc_receiver(std::make_shared<RCReceiver>(m_context)),
-    m_motor_control(std::make_shared<MotorControl>(m_context)),
-    m_led_control(std::make_shared<LEDControl>(m_context)),
-    m_telemetry(std::make_shared<Telemetry>(m_context)),
-    m_kinematic(std::make_shared<Kinematic>(m_context, m_motor_control, m_telemetry)),
-    m_pru_debug(new PRUDebug(m_context))
+    m_initialized { false },
+    m_armed { false },
+    m_context { make_shared<RobotContext>() },
+    m_rc_receiver { make_shared<RCReceiver>(m_context) },
+    m_motor_control { make_shared<MotorControl>(m_context) },
+    m_led_control { make_shared<LEDControl>(m_context) },
+    m_telemetry { make_shared<Telemetry>(m_context) },
+    m_kinematic { make_shared<Kinematic>(m_context, m_motor_control, m_telemetry) },
+    m_pru_debug { make_shared<PRUDebug>(m_context) }
 {
 }
 
-Robot::~Robot() {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+Robot::~Robot() 
+{
     cleanup();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
-void Robot::init() {
+void Robot::init() 
+{
     BOOST_LOG_TRIVIAL(trace) << "Initializing robot";
+    if (m_instance) {
+        throw domain_error("Another instance of robot have already been initialized");
+    }
+    m_instance = this;
 
     m_context->init();
     m_rc_receiver->init();
@@ -51,10 +61,11 @@ void Robot::init() {
 }
 
 
-void Robot::cleanup() {
+void Robot::cleanup() 
+{
     if (!m_initialized) 
         return;
-    
+
     m_context->stop();
 
     setArmed(false);
@@ -70,10 +81,15 @@ void Robot::cleanup() {
 
     BOOST_LOG_TRIVIAL(trace) << "Robot stopped";
     m_initialized = false;
+
+    if (m_instance==this) {
+        m_instance = nullptr;
+    }
 }
 
 
-void Robot::setArmed(bool enable) {
+void Robot::setArmed(bool enable) 
+{
     //BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     m_armed = enable;
 }

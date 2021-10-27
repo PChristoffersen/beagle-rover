@@ -12,7 +12,7 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
             REAR,  // Rear wheel steering
             ALL,   // 4 wheel steering
             SKID,  // Skid steering
-            BYPASS // Direct input from remote
+            PASSTHROUGH // Direct input from remote
         };
 
         enum class DriveMode {
