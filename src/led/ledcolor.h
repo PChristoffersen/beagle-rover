@@ -1,7 +1,7 @@
 #ifndef _LED_COLOR_H_
 #define _LED_COLOR_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 

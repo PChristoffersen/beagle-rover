@@ -11,8 +11,7 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
             FRONT, // Front wheel steering
             REAR,  // Rear wheel steering
             ALL,   // 4 wheel steering
-            SKID,  // Skid steering
-            PASSTHROUGH // Direct input from remote
+            SKID   // Skid steering
         };
 
         enum class DriveMode {
@@ -20,6 +19,7 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
             NORMAL,
             SPINNING,
             BALANCING,
+            PASSTHROUGH // Direct input from remote
         };
 
         enum class Orientation {
@@ -32,7 +32,7 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
         void init();
         void cleanup();
 
-        Kinematic(std::shared_ptr<class RobotContext> context, std::shared_ptr<class MotorControl> motor_control, std::shared_ptr<class Telemetry> telemetry);
+        Kinematic(std::shared_ptr<class RobotContext> context, std::shared_ptr<class MotorControl> motor_control, std::shared_ptr<class Telemetry> telemetry, std::shared_ptr<class RCReceiver> receiver);
         virtual ~Kinematic();
 
         void setSteeringMode(SteeringMode mode);
@@ -45,6 +45,7 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
         std::shared_ptr<class RobotContext> context() { return m_context; }
         std::shared_ptr<class MotorControl> motorControl() { return m_motor_control; }
         std::shared_ptr<class Telemetry> telemetry() { return m_telemetry; }
+        std::shared_ptr<class RCReceiver> rc_receiver() { return m_rc_receiver; }
 
     private:
         std::recursive_mutex m_mutex;
@@ -53,7 +54,8 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
         std::shared_ptr<class RobotContext> m_context;
         std::shared_ptr<class MotorControl> m_motor_control;
         std::shared_ptr<class Telemetry> m_telemetry;
-        std::shared_ptr<class AbstractControlScheme> m_control_scheme;
+        std::shared_ptr<class RCReceiver> m_rc_receiver;
+        std::shared_ptr<class ControlScheme> m_control_scheme;
 
         SteeringMode m_steering_mode;
         DriveMode    m_drive_mode;

@@ -121,7 +121,7 @@ void RobotContext::cleanupPC()
 void RobotContext::start() 
 {
     BOOST_LOG_TRIVIAL(trace) << "Starting thread";
-    m_thread = make_shared<thread>(boost::bind(&boost::asio::io_context::run, &m_io));
+    m_thread = make_shared<thread>( [&]{ m_io.run(); } );
     m_started = true;
 }
 

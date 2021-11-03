@@ -12,15 +12,6 @@
 using namespace std;
 
 
-static constexpr auto PID_P { 1.0 };
-static constexpr auto PID_I { 0.1 };
-static constexpr auto PID_D { 0.0 };
-
-static constexpr auto ENCODER_CPR { 20 };
-static constexpr auto GEARING { 100 };
-static constexpr auto WHEEL_CIRC_MM { 285.0 };
-
-static constexpr auto PID_UPDATE_INTERVAL { chrono::milliseconds(100) };
 
 
 static inline uint8_t encoder_channel(uint8_t index) {
@@ -101,10 +92,15 @@ void Motor::freeSpin()
 }
 
 
+void Motor::setDutyUS(uint32_t us) {
+    setDuty(MotorControl::pulseToPos(us));
+}
+
+
 void Motor::setDuty(double duty) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    //cout << m_index << " setDuty(" << duty << ")" << endl;
+    BOOST_LOG_TRIVIAL(info) << "Motor[" << m_index << "] setDuty(" << duty << ")";
     m_duty = duty;
     m_state = RUNNING;
     //rc_motor_set(MOTOR_CHANNEL(m_index), duty);
@@ -121,6 +117,13 @@ void Motor::setEnabled(bool enabled)
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     m_enabled = enabled;
+    // TODO Disable motor
+    if (m_enabled) {
+
+    }
+    else {
+
+    }
 }
 
 void Motor::setPassthrough(bool passthrough) 

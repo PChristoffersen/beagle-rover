@@ -7,6 +7,7 @@
 #include "telemetry.h"
 #include "telemetrytypes.h"
 #include "adcbattery.h"
+#include "rcmpu.h"
 #include "../robotcontext.h"
 
 
@@ -21,7 +22,7 @@ Telemetry::Telemetry(shared_ptr<RobotContext> context) :
 {
     switch (rc_model()) {
     case MODEL_BB_BLUE:
-        //m_battery = ADCBattery::create(context);
+        m_sources.push_back(make_unique<ADCBattery>(context));
         break;
     default:
         break;
@@ -38,9 +39,9 @@ Telemetry::~Telemetry()
 
 void Telemetry::init() 
 {
-    if (m_battery) {
-        m_battery->init();
-        m_battery_connection = m_battery->sig_event.connect(TelemetrySignal::slot_type(&Telemetry::process, this, _1));
+    for (auto &source : m_sources) {
+        source->init();
+        m_source_connections.push_back(source->sig_event.connect([&](const auto &e){ process(e); }));
     }
     m_initialized = true;
 }
@@ -52,9 +53,12 @@ void Telemetry::cleanup()
         return;
     m_initialized = false;
     
-    if (m_battery) {
-        m_battery_connection.disconnect();
-        m_battery->cleanup();
+    for (auto &connection : m_source_connections) {
+        connection.disconnect();
+    }
+    m_source_connections.clear();
+    for (auto &source : m_sources) {
+        source->cleanup();
     }
 }
 

@@ -2,9 +2,9 @@
 #define _TELEMETRY_H_
 
 #include <memory>
-#include <stdint.h>
 #include <boost/asio.hpp>
 
+#include "telemetrysource.h"
 #include "telemetrytypes.h"
 
 class Telemetry : public std::enable_shared_from_this<Telemetry> {
@@ -24,8 +24,8 @@ class Telemetry : public std::enable_shared_from_this<Telemetry> {
 
     private:
         bool m_initialized;
-        std::unique_ptr<class ADCBattery> m_battery;
-        boost::signals2::connection m_battery_connection;
+        std::vector<std::unique_ptr<class TelemetrySource>> m_sources;
+        std::vector<boost::signals2::connection> m_source_connections;
 
 };
 

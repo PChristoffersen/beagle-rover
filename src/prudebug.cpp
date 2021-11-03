@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
@@ -11,7 +10,8 @@
 using namespace std;
 
 
-static constexpr auto TIMER_INTERVAL = chrono::milliseconds(100);
+//#define DEBUG_ENABLED
+
 
 
 PRUDebug::PRUDebug(shared_ptr<RobotContext> context) :
@@ -30,17 +30,20 @@ PRUDebug::~PRUDebug()
 
 void PRUDebug::init() 
 {
+    #ifdef DEBUG_ENABLED
     rc_ext_debug_init();
 
     m_timer.expires_after(TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&PRUDebug::timer, this, _1));
+    timer_setup();
 
     m_initialized = true;
+    #endif
 }
 
 
 void PRUDebug::cleanup() 
 {
+    const lock_guard<mutex> lock(m_mutex);
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -49,8 +52,20 @@ void PRUDebug::cleanup()
 }
 
 
+void PRUDebug::timer_setup() {
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait(
+        [self_ptr=weak_from_this()] (auto &error) {
+            if (auto self = self_ptr.lock()) { 
+                self->timer(error); 
+            }
+        }
+    );
+}
+
 void PRUDebug::timer(boost::system::error_code error) 
 {
+    const lock_guard<mutex> lock(m_mutex);
     if (error!=boost::system::errc::success || !m_initialized) {
         return;
     }
@@ -60,6 +75,5 @@ void PRUDebug::timer(boost::system::error_code error)
         BOOST_LOG_TRIVIAL(debug) << msg;
     }
 
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&PRUDebug::timer, this, _1));
+    timer_setup();
 }

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <boost/exception/all.hpp>
-#include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
 

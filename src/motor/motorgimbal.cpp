@@ -7,16 +7,11 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
+#include "motorcontrol.h"
 #include "motorgimbal.h"
 
 using namespace std;
 
-static constexpr auto PULSE_INTERVAL { chrono::milliseconds(20) };
-
-static constexpr uint32_t PULSE_MIN { 500 };
-static constexpr uint32_t PULSE_MAX { 2500 };
-static constexpr uint32_t PULSE_CENTER { (PULSE_MAX+PULSE_MIN)/2 };
-static constexpr uint32_t PULSE_RANGE { (PULSE_MAX-PULSE_MIN) };
 
 static inline uint8_t servo_channel(uint8_t index) {
     return index+1;
@@ -29,10 +24,10 @@ MotorGimbal::MotorGimbal(uint8_t index, recursive_mutex &mutex) :
     m_mutex { mutex },
     m_enabled { false },
     m_passthrough { false },
-    m_pulse_us { PULSE_CENTER },
+    m_pulse_us { MotorControl::PULSE_CENTER },
     m_trim_us { 0 }, 
-    m_limit_min { PULSE_MIN },
-    m_limit_max { PULSE_MAX }
+    m_limit_min { MotorControl::PULSE_MIN },
+    m_limit_max { MotorControl::PULSE_MAX }
 {
 
 }
@@ -47,7 +42,7 @@ MotorGimbal::~MotorGimbal()
 void MotorGimbal::init() 
 {
     m_last_pulse = chrono::high_resolution_clock::now();
-    m_pulse_us = PULSE_CENTER;
+    m_pulse_us = MotorControl::PULSE_CENTER;
     m_initialized = true;
 }
 
@@ -80,7 +75,7 @@ void MotorGimbal::setPassthrough(bool passthrough)
 void MotorGimbal::setPulseUS(uint32_t us) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << "Pulse " << us;
+    BOOST_LOG_TRIVIAL(info) << "Gimbal[" << m_index << "] setPulseUS(" << us << ")";
     us = clamp(us, m_limit_min, m_limit_max);
     m_pulse_us = us;
 }
@@ -89,21 +84,21 @@ void MotorGimbal::setPulseUS(uint32_t us)
 void MotorGimbal::setAngle(double angle) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    uint32_t pulse = angle * PULSE_RANGE / (M_PI * 2.0) + PULSE_CENTER;
+    uint32_t pulse = angle * MotorControl::PULSE_RANGE / (M_PI * 2.0) + MotorControl::PULSE_CENTER;
     setPulseUS(pulse);
 }
 
 
 double MotorGimbal::getAngle() const 
 {
-    return M_PI * 2.0 * (double)((int32_t)m_pulse_us - PULSE_CENTER) / PULSE_RANGE;
+    return M_PI * 2.0 * (double)((int32_t)m_pulse_us - MotorControl::PULSE_CENTER) / MotorControl::PULSE_RANGE;
 }
 
 
 void MotorGimbal::setTrimUS(int32_t trim) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    m_trim_us = clamp(trim, -(int32_t)PULSE_RANGE, (int32_t)PULSE_RANGE);
+    m_trim_us = clamp(trim, -(int32_t)MotorControl::PULSE_RANGE, (int32_t)MotorControl::PULSE_RANGE);
 }
 
 void MotorGimbal::setLimits(uint32_t lmin, uint32_t lmax) 
@@ -116,13 +111,13 @@ void MotorGimbal::setLimits(uint32_t lmin, uint32_t lmax)
 void MotorGimbal::setLimitMin(uint32_t limit) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    m_limit_min = clamp(limit, PULSE_MIN, PULSE_MAX);
+    m_limit_min = clamp(limit, MotorControl::PULSE_MIN, MotorControl::PULSE_MAX);
 }
 
 void MotorGimbal::setLimitMax(uint32_t limit) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    m_limit_max = clamp(limit, PULSE_MIN, PULSE_MAX);
+    m_limit_max = clamp(limit, MotorControl::PULSE_MIN, MotorControl::PULSE_MAX);
 }
 
 
@@ -134,7 +129,7 @@ void MotorGimbal::update()
         auto gimbalDiff = (time-m_last_pulse);
         if (gimbalDiff > PULSE_INTERVAL) {
             //BOOST_LOG_TRIVIAL(info) << "Pulse";
-            rc_servo_send_pulse_us(servo_channel(m_index), m_pulse_us+m_trim_us);
+            //rc_servo_send_pulse_us(servo_channel(m_index), m_pulse_us+m_trim_us);
             m_last_pulse = time;
         }
     }

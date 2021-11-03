@@ -27,7 +27,7 @@ Robot::Robot() :
     m_motor_control { make_shared<MotorControl>(m_context) },
     m_led_control { make_shared<LEDControl>(m_context) },
     m_telemetry { make_shared<Telemetry>(m_context) },
-    m_kinematic { make_shared<Kinematic>(m_context, m_motor_control, m_telemetry) },
+    m_kinematic { make_shared<Kinematic>(m_context, m_motor_control, m_telemetry, m_rc_receiver) },
     m_pru_debug { make_shared<PRUDebug>(m_context) }
 {
 }
@@ -53,7 +53,7 @@ void Robot::init()
     m_motor_control->init();
     m_led_control->init();
     m_kinematic->init();
-    //m_pru_debug->init();
+    m_pru_debug->init();
 
     m_context->start();
 
@@ -70,12 +70,12 @@ void Robot::cleanup()
 
     setArmed(false);
 
-    m_led_control->cleanup();
-    m_motor_control->cleanup();
-    m_telemetry->cleanup();
+    m_pru_debug->cleanup();
     m_rc_receiver->cleanup();
+    m_telemetry->cleanup();
     m_kinematic->cleanup();
-    //m_pru_debug->cleanup();
+    m_motor_control->cleanup();
+    m_led_control->cleanup();
 
     m_context->cleanup();
 

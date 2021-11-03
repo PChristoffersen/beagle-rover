@@ -39,12 +39,13 @@ set(SRC
     src/led/ledanimation.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/adcbattery.cpp
+    src/telemetry/rcmpu.cpp
     src/kinematic/kinematic.cpp
-    src/kinematic/abstractcontrolscheme.cpp
-    src/kinematic/controlidle.cpp
-    src/kinematic/controlnormal.cpp
-    src/kinematic/controlspinning.cpp
-    src/kinematic/controlbalancing.cpp
+    src/kinematic/controlschemeidle.cpp
+    src/kinematic/controlschemenormal.cpp
+    src/kinematic/controlschemespinning.cpp
+    src/kinematic/controlschemebalancing.cpp
+    src/kinematic/controlschemepassthrough.cpp
 )
 #target_link_directories(robot PRIVATE robotcontrol-ext)
 

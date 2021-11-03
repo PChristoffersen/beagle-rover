@@ -1,7 +1,7 @@
 #ifndef _MOTORGIMBAL_H_
 #define _MOTORGIMBAL_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
 #include <chrono>
 #include <mutex>
@@ -46,6 +46,8 @@ class MotorGimbal {
         friend class Motor;
         friend class MotorControl;
     private:
+        static constexpr auto PULSE_INTERVAL { std::chrono::milliseconds(20) };
+
         bool m_initialized;
         uint8_t m_index;
         std::recursive_mutex &m_mutex;

@@ -13,6 +13,7 @@
 #define MSG_TYPE_FBUS_CONFIG    0x10
 #define MSG_TYPE_FBUS_SERVO     0x11
 #define MSG_TYPE_FBUS_TELEMERTY 0x12
+#define MSG_TYPE_SERVO_LIMIT    0x40
 
 #define FBUS_DEFAULT_DEVICE_ID 0x67
 #define FBUS_SERVO_UNMAPPED 0xFF
@@ -31,6 +32,10 @@ typedef struct {
     uint8_t map[FBUS_CHANNELS];
 } __attribute__((__packed__)) servo_msg_t;
 
+typedef struct {
+    message_t msg;
+    fbus_servo_limit_t limits[RC_SERVO_CH_MAX];
+} __attribute__((__packed__)) servo_limit_message_t;
 
 typedef struct {
     message_t msg;
@@ -102,6 +107,14 @@ void rc_ext_fbus_set_servo_map(const uint8_t map[FBUS_CHANNELS]) {
     servo_msg_t msg;
     msg.msg.type = MSG_TYPE_FBUS_SERVO;
     memcpy(msg.map, map, sizeof(msg.map));
+    rc_ext_pru_send_message(&msg, sizeof(msg));
+}
+
+
+void rc_ext_fbus_set_servo_limit(const fbus_servo_limit_t limits[RC_SERVO_CH_MAX]) {
+    servo_limit_message_t msg;
+    msg.msg.type = MSG_TYPE_SERVO_LIMIT;
+    memcpy(msg.limits, limits, sizeof(msg.limits));
     rc_ext_pru_send_message(&msg, sizeof(msg));
 }
 

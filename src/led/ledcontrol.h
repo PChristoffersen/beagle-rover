@@ -1,7 +1,6 @@
 #ifndef _LED_CONTROL_H_
 #define _LED_CONTROL_H_
 
-#include <stdint.h>
 #include <memory>
 #include <boost/asio.hpp>
 #include "ledcolor.h"

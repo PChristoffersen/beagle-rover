@@ -8,14 +8,11 @@ from time import sleep
 from build.beaglerover import Robot, TelemetryListener, DriveMode
 
 
+
 def print_battery(event): 
-    try:
-        print(event.battery_id)
-        print(len(event.cell_voltages))
-        for v in event.cell_voltages:
-            print(f"{v}")
-    except Exception as e:
-        print(f"Yikes {e}")
+    print(f"Battery {event.battery_id}:")
+    for v in event.cell_voltages:
+        print(f"  {v}v")
 
 
 def set_motors(robot: Robot, pos):
@@ -27,40 +24,24 @@ def set_motors(robot: Robot, pos):
 
 def main():
     robot = Robot()
-    robot = Robot()
+
     #class Listener(TelemetryListener):
     #    def on_event(self, event):
     #        print(event)
 
-    #listener = TelemetryListener(robot, fusk)
+    #listener = TelemetryListener(robot, print_battery)
     #listener = Listener()
     #listener.connect(robot.telemetry)
 
     robot.init()
 
-
-
-
-    #robot.motor_control.motors[0].gimbal.enabled = True
-    robot.motor_control.motors[0].gimbal.pulse_us = 1500
-    #robot.motor_control.motors[0].gimbal.pulse_us = 2500
-    print(f"Angle: {robot.motor_control.motors[0].gimbal.angle*180/PI}")
-    robot.motor_control.motors[0].gimbal.angle = -PI/2
-    print(f"Angle: {robot.motor_control.motors[0].gimbal.angle*180.0/PI}")
-    robot.motor_control.motors[0].gimbal.angle = 0.0
-    print(f"Angle: {robot.motor_control.motors[0].gimbal.angle*180/PI}")
-    robot.motor_control.motors[0].gimbal.angle = PI/2
-    print(f"Angle: {robot.motor_control.motors[0].gimbal.angle*180.0/PI}")
-    return
-
     #for motor in robot.motor_control.motors:
     #    print("Enabling motor "+str(motor.index))
     #    motor.gimbal.pulse_us = 1500
+    #    motor.gimbal.angle = PI/2
     #    motor.gimbal.enabled = True
-        #print(""+str(motor) + "  "+ str(motor.index) + "  gimbal "+str(motor.gimbal) + " " + str(motor.gimbal.index))
+    #    #print(""+str(motor) + "  "+ str(motor.index) + "  gimbal "+str(motor.gimbal) + " " + str(motor.gimbal.index))
     #print("")
-
-
 
     robot.kinematic.drive_mode = DriveMode.NORMAL
     robot.kinematic.drive_mode = DriveMode.NONE

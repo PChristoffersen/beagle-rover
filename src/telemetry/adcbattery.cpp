@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
 
 #include <robotcontrol.h>
@@ -12,7 +11,7 @@
 using namespace std;
 
 
-static constexpr auto TIMER_INTERVAL = chrono::milliseconds(1000);
+static constexpr auto TIMER_INTERVAL { chrono::milliseconds(1000) };
 
 
 ADCBattery::ADCBattery(shared_ptr<RobotContext> context):
@@ -31,13 +30,8 @@ ADCBattery::~ADCBattery()
 void ADCBattery::init() 
 {
     m_timer.expires_after(TIMER_INTERVAL);
-    switch (rc_model_category()) {
-	case CATEGORY_BEAGLEBONE:
-        m_timer.async_wait(bind(&ADCBattery::timer, this, _1));
-        break;
-    default:
-        break;
-    }
+    timer_setup();
+
     m_initialized = true;
 }
 
@@ -51,6 +45,17 @@ void ADCBattery::cleanup()
     m_timer.cancel();
 }
 
+
+void ADCBattery::timer_setup() {
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait(
+        [self_ptr=weak_from_this()] (auto &error) {
+            if (auto self = self_ptr.lock()) { 
+                self->timer(error); 
+            }
+        }
+    );
+}
 
 void ADCBattery::timer(boost::system::error_code error) 
 {
@@ -70,7 +75,6 @@ void ADCBattery::timer(boost::system::error_code error)
 
     sig_event(event);
 
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(bind(&ADCBattery::timer, this, _1));
+    timer_setup();
 }
 

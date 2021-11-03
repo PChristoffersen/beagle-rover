@@ -1,7 +1,7 @@
 #include <math.h>
 #include <boost/log/trivial.hpp>
 
-#include "controlnormal.h"
+#include "controlschemenormal.h"
 #include "../motor/motor.h"
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
@@ -9,33 +9,41 @@
 using namespace std;
 
 
-ControlNormal::ControlNormal(shared_ptr<class Kinematic> kinematic) :
+ControlSchemeNormal::ControlSchemeNormal(shared_ptr<class Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << "Normal()";
 }
 
-ControlNormal::~ControlNormal() 
+ControlSchemeNormal::~ControlSchemeNormal() 
 {
+    cleanup();
     BOOST_LOG_TRIVIAL(trace) << "~Normal()";
 }
 
 
-void ControlNormal::init() 
+void ControlSchemeNormal::init() 
 {
+    const lock_guard<mutex> lock(m_mutex);
+
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     
-    #if 0
     for (auto &motor : m_motor_control->getMotors()) {
         motor->setDuty(0.0);
+        motor->setEnabled(true);
         motor->gimbal().setAngle(M_PI_2);
         motor->gimbal().setEnabled(true);
     }
-    #endif
+
+    m_initialized = true;
 }
 
 
-void ControlNormal::cleanup() 
+void ControlSchemeNormal::cleanup() 
 {
+    const lock_guard<mutex> lock(m_mutex);
+    if (!m_initialized) 
+        return;
+    m_initialized = false;
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <algorithm>
-#include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
@@ -15,10 +14,6 @@
 
 using namespace std;
 
-static constexpr auto TIMER_INTERVAL { chrono::milliseconds(20) };
-static constexpr auto MOTOR_COUNT { 4 };
-static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0 };
-static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4 };
 
 
 MotorControl::MotorControl(shared_ptr<RobotContext> context) : 
@@ -48,16 +43,7 @@ MotorControl::~MotorControl()
 
 void MotorControl::init() 
 {
-    /*
-    switch (rc_model_category()) {
-	case CATEGORY_BEAGLEBONE:
-        m_fbus = rc_ext_fbus_get_shm();
-        break;
-    case CATEGORY_PC:
-        m_fbus = new shm_fbus_t;
-        break;
-    }
-    */
+    const lock_guard<recursive_mutex> lock(m_mutex);
 
     for (auto &motor : m_motors) {
        motor->init();
@@ -65,21 +51,8 @@ void MotorControl::init()
 
     rc_motor_standby(0);
 
-    /*
-    // Enable power to servo and motors
-    rc_servo_power_rail_en(1);
-    //rc_motor_standby(0);
-
-    uint8_t map[FBUS_CHANNELS];
-    memset(map, FBUS_SERVO_UNMAPPED, sizeof(map[0]));
-    map[1] = 0;
-    map[2] = 1;
-    map[3] = 2;
-    rc_ext_fbus_set_servo_map(map);
-    */
-
     m_timer.expires_after(TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&MotorControl::timer, this, _1));
+    timer_setup();
 
     m_initialized = true;
 }
@@ -87,6 +60,8 @@ void MotorControl::init()
 
 void MotorControl::cleanup() 
 {
+    const lock_guard<recursive_mutex> lock(m_mutex);
+
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -99,7 +74,6 @@ void MotorControl::cleanup()
        motor->cleanup();
     }
 
-    m_fbus = nullptr;
 }
 
 
@@ -132,6 +106,7 @@ void MotorControl::setEnabled(bool enabled)
 
     for (auto &motor : m_motors) {
         motor->setEnabled(m_enabled);
+        motor->gimbal().setEnabled(false);
     }
 
     switch (rc_model_category()) {
@@ -172,14 +147,27 @@ void MotorControl::setPassthrough(bool passthrough)
             motor->gimbal().setPassthrough(passthrough);
         }
 
-        // TODO Set limits
+        // Set limits
+        array<fbus_servo_limit_t, RC_SERVO_CH_MAX> limits;
+        for (auto &limit : limits) {
+            limit.low = PULSE_MIN;
+            limit.high = PULSE_MAX;
+        }
+        for (const auto &motor : m_motors) {
+            auto &limit = limits[motor->gimbal().getIndex()];
+            limit.low = motor->gimbal().getLimitMin();
+            limit.high = motor->gimbal().getLimitMax();
+
+        }
+        rc_ext_fbus_set_servo_limit(limits.data());
 
         // Set servo map
         array<uint8_t, FBUS_CHANNELS> map;
         map.fill(FBUS_SERVO_UNMAPPED);
         if (passthrough) {
-            for (int i=0; i<m_motors.size(); i++) {
-                map[SERVO_PASSTHROUGH_OFFSET+i] = i;
+            for (const auto &motor : m_motors) {
+                auto index = motor->gimbal().getIndex();
+                map[SERVO_PASSTHROUGH_OFFSET+index] = index;
             }
         }
         rc_ext_fbus_set_servo_map(map.data());
@@ -187,6 +175,16 @@ void MotorControl::setPassthrough(bool passthrough)
 }
 
 
+void MotorControl::timer_setup() {
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait(
+        [self_ptr=weak_from_this()] (auto &error) {
+            if (auto self = self_ptr.lock()) { 
+                self->timer(error); 
+            }
+        }
+    );
+}
 
 
 void MotorControl::timer(boost::system::error_code error) 
@@ -208,7 +206,6 @@ void MotorControl::timer(boost::system::error_code error)
         motor->update();
     }
 
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&MotorControl::timer, this, _1));
+    timer_setup();
 }
 

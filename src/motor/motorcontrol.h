@@ -13,6 +13,14 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
     public:
         typedef std::vector<std::unique_ptr<class Motor>> MotorList;
 
+        static constexpr uint32_t PULSE_MIN { 500 };
+        static constexpr uint32_t PULSE_MAX { 2500 };
+        static constexpr int32_t PULSE_CENTER { (PULSE_MAX+PULSE_MIN)/2 };
+        static constexpr int32_t PULSE_RANGE { (PULSE_MAX-PULSE_MIN) };
+
+        static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0 };
+        static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4 };
+
         enum MotorPosition {
             FRONT_LEFT = 0,
             FRONT_RIGHT = 1,
@@ -42,20 +50,25 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
 
         const MotorList &getMotors() const { return m_motors; }
 
+        static double pulseToPos(uint32_t us) {
+            return (double)((int32_t)us-PULSE_CENTER)*2.0/PULSE_RANGE;
+        }
+
     private:
+        static constexpr auto TIMER_INTERVAL { std::chrono::milliseconds(20) };
+        static constexpr auto MOTOR_COUNT { 4 };
+
         bool m_initialized;
         bool m_enabled;
         bool m_passthrough;
         std::recursive_mutex m_mutex;
+        boost::asio::high_resolution_timer m_timer;
         
         std::vector<std::unique_ptr<class Motor>> m_motor_holder;
         MotorList m_motors;
 
-        boost::asio::high_resolution_timer m_timer;
-        uint16_t m_last_counter;
-        volatile shm_fbus_t *m_fbus;
-
         void timer(boost::system::error_code error);
+        inline void timer_setup();
 };
 
 #endif

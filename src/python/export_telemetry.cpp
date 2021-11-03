@@ -19,7 +19,7 @@ class TelemetryListener {
         void connect(std::shared_ptr<Telemetry> telemetry) {
             BOOST_LOG_TRIVIAL(trace) << "Connect";
             m_connection.disconnect();
-            m_connection = telemetry->sig_event.connect(boost::bind(&TelemetryListener::event, this, _1));
+            m_connection = telemetry->sig_event.connect([&](const auto &e){ event(e); });
         }
 
         void disconnect() {

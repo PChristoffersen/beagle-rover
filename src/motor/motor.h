@@ -1,7 +1,6 @@
 #ifndef _MOTOR_H_
 #define _MOTOR_H_
 
-#include <stdint.h>
 #include <memory>
 #include <chrono>
 #include <mutex>
@@ -9,6 +8,7 @@
 #include <boost/signals2.hpp>
 #include <PID.h>
 
+#include "motorcontrol.h"
 #include "motorgimbal.h"
 
 class Motor {
@@ -32,6 +32,7 @@ class Motor {
 
         bool getPassthrough() const { return m_passthrough; }
 
+        void setDutyUS(uint32_t us);
         void setDuty(double duty);
         double getDuty() const { return m_duty; }
         void setTargetRPM(double rpm);
@@ -55,6 +56,16 @@ class Motor {
 
         friend class MotorControl;
     private:
+        static constexpr auto PID_P { 1.0 };
+        static constexpr auto PID_I { 0.1 };
+        static constexpr auto PID_D { 0.0 };
+
+        static constexpr auto ENCODER_CPR { 20 };
+        static constexpr auto GEARING { 100 };
+        static constexpr auto WHEEL_CIRC_MM { 300.0 };
+
+        static constexpr auto PID_UPDATE_INTERVAL { std::chrono::milliseconds(100) };
+
         bool m_initialized;
         uint8_t m_index;
         std::recursive_mutex &m_mutex;

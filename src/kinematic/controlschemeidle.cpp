@@ -1,7 +1,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/system/error_code.hpp>
 
-#include "controlidle.h"
+#include "controlschemeidle.h"
 #include "../robotcontext.h"
 #include "../motor/motor.h"
 #include "../motor/motorgimbal.h"
@@ -13,78 +13,82 @@ using namespace std;
 static constexpr auto IDLE_DELAY { chrono::seconds(2) };
 
 
-ControlIdle::ControlIdle(shared_ptr<class Kinematic> kinematic) :
+ControlSchemeIdle::ControlSchemeIdle(shared_ptr<class Kinematic> kinematic) :
     AbstractControlScheme { kinematic }, 
-    m_initialized { false },
     m_timer { m_context->io() }
 {
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 }
 
 
-ControlIdle::~ControlIdle() 
+ControlSchemeIdle::~ControlSchemeIdle() 
 {
-    BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
     cleanup();
+    BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 }
 
 
-void ControlIdle::init() 
+void ControlSchemeIdle::init() 
 {
     const lock_guard<mutex> lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 
-#if 0
     // Set all motor angles to 0 degrees and throttle to 0
     for (auto &motor : m_motor_control->getMotors()) {
+        motor->setDuty(0.0);
         motor->freeSpin();
+        motor->setEnabled(true);
         motor->gimbal().setAngle(0.0);
         motor->gimbal().setEnabled(true);
     }
-#endif
 
+    // Start timer to turn off power to the motors
     m_timer.expires_after(IDLE_DELAY);
-    m_timer.async_wait(boost::bind(&ControlIdle::timer, shared_from_this(), _1));
-    m_timer_pending = true;
+    m_timer.async_wait(
+        [self_ptr=weak_from_this()] (auto &error) {
+            if (auto self = self_ptr.lock()) { 
+                self->timer(error); 
+            }
+        }
+    );
+
 
     m_initialized = true;
 }
 
 
-void ControlIdle::cleanup() 
+void ControlSchemeIdle::cleanup() 
 {
     const lock_guard<mutex> lock(m_mutex);
 
-    if (!m_initialized)
+    if (!m_initialized) 
         return;
     m_initialized = false;
 
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 
-    if (m_timer_pending)
-        m_timer.cancel();
-
-    // Wait for cancel to take effect
+    m_timer.cancel();
 
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__ << "  <<<<";
 }
 
 
 
-void ControlIdle::timer(boost::system::error_code error) 
+void ControlSchemeIdle::timer(boost::system::error_code error) 
 {
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__ << "  err="  << error;
 
     const lock_guard<mutex> lock(m_mutex);
-    m_timer_pending = false;
     if (error!=boost::system::errc::success || !m_initialized)
         return;
 
-
-
-    // Disable gimbals
+    // Disable motor and gimbals
+    m_motor_control->setEnabled(false);
     for (auto &motor : m_motor_control->getMotors()) {
+        motor->setDuty(0.0);
         motor->freeSpin();
+        motor->setEnabled(false);
+        motor->gimbal().setAngle(0.0);
         motor->gimbal().setEnabled(false);
     }
 }

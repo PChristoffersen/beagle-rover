@@ -6,20 +6,22 @@
 #include "../motor/motor.h"
 #include "../motor/motorgimbal.h"
 
-#include "controlidle.h"
-#include "controlnormal.h"
-#include "controlspinning.h"
-#include "controlbalancing.h"
+#include "controlschemeidle.h"
+#include "controlschemenormal.h"
+#include "controlschemespinning.h"
+#include "controlschemebalancing.h"
+#include "controlschemepassthrough.h"
 
 
 using namespace std;
 
 
-Kinematic::Kinematic(shared_ptr<RobotContext> context, shared_ptr<class MotorControl> motor_control, shared_ptr<class Telemetry> telemetry) :
+Kinematic::Kinematic(shared_ptr<RobotContext> context, shared_ptr<class MotorControl> motor_control, shared_ptr<class Telemetry> telemetry, std::shared_ptr<class RCReceiver> receiver) :
     m_initialized { false },
     m_context { context },
     m_motor_control { motor_control },
     m_telemetry { telemetry },
+    m_rc_receiver { receiver },
     m_steering_mode { SteeringMode::NONE },
     m_drive_mode { DriveMode::NONE }
 {
@@ -70,8 +72,6 @@ void Kinematic::setSteeringMode(SteeringMode mode)
         break;
     case SteeringMode::SKID:
         break;
-    case SteeringMode::PASSTHROUGH:
-        break;
     }
     m_steering_mode = mode;
 }
@@ -90,16 +90,19 @@ void Kinematic::setDriveMode(DriveMode mode)
         }
         switch (mode) {
         case DriveMode::NORMAL:
-            m_control_scheme = make_shared<ControlNormal>(shared_from_this());
+            m_control_scheme = make_shared<ControlSchemeNormal>(shared_from_this());
             break;
         case DriveMode::SPINNING:
-            m_control_scheme = make_shared<ControlSpinning>(shared_from_this());
+            m_control_scheme = make_shared<ControlSchemeSpinning>(shared_from_this());
             break;
         case DriveMode::BALANCING:
-            m_control_scheme = make_shared<ControlBalancing>(shared_from_this());
+            m_control_scheme = make_shared<ControlSchemeBalancing>(shared_from_this());
+            break;
+        case DriveMode::PASSTHROUGH:
+            m_control_scheme = make_shared<ControlSchemePassthrough>(shared_from_this());
             break;
         default:
-            m_control_scheme = make_shared<ControlIdle>(shared_from_this());
+            m_control_scheme = make_shared<ControlSchemeIdle>(shared_from_this());
             break;
         }
         if (m_control_scheme) {

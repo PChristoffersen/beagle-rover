@@ -1,7 +1,7 @@
 #ifndef _LED_ANIMATION_H_
 #define _LED_ANIMATION_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
 #include <boost/asio.hpp>
 

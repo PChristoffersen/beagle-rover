@@ -11,7 +11,7 @@ using namespace boost::python;
 
 void python_export_kinematic() 
 {
-    //register_ptr_to_python<std::shared_ptr<Kinematic> >();
+    register_ptr_to_python<std::shared_ptr<Kinematic> >();
 
     enum_<Kinematic::SteeringMode>("SteeringMode")
         .value("NONE", Kinematic::SteeringMode::NONE)
@@ -19,13 +19,13 @@ void python_export_kinematic()
         .value("REAR", Kinematic::SteeringMode::REAR)
         .value("ALL", Kinematic::SteeringMode::ALL)
         .value("SKID", Kinematic::SteeringMode::SKID)
-        .value("PASSTHROUGH", Kinematic::SteeringMode::PASSTHROUGH)
         ;
     enum_<Kinematic::DriveMode>("DriveMode")
         .value("NONE", Kinematic::DriveMode::NONE)
         .value("NORMAL", Kinematic::DriveMode::NORMAL)
         .value("SPINNING", Kinematic::DriveMode::SPINNING)
         .value("BALANCING", Kinematic::DriveMode::BALANCING)
+        .value("PASSTHROUGH", Kinematic::DriveMode::PASSTHROUGH)
         ;
     enum_<Kinematic::Orientation>("Orientation")
         .value("NORTH", Kinematic::Orientation::NORTH)

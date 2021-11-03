@@ -1,6 +1,8 @@
 #ifndef _RC_EXT_FBUS_H_
 #define _RC_EXT_FBUS_H_
 
+#include <rc/servo.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,12 +22,17 @@ typedef struct {
     volatile uint32_t channels[FBUS_CHANNELS];
 } __attribute__((__packed__)) shm_fbus_t;
 
+typedef struct {
+    uint32_t low;
+    uint32_t high;
+} __attribute__((__packed__)) fbus_servo_limit_t;
 
 int rc_ext_fbus_init(void);
 void rc_ext_fbus_cleanup(void);
 volatile shm_fbus_t *rc_ext_fbus_get_shm(void);
 
 void rc_ext_fbus_set_servo_map(const uint8_t map[FBUS_CHANNELS]);
+void rc_ext_fbus_set_servo_limit(const fbus_servo_limit_t limits[RC_SERVO_CH_MAX]);
 void rc_ext_fbus_send_telemetry(uint16_t app_id, uint32_t data);
 
 #ifdef __cplusplus

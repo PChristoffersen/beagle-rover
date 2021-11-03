@@ -1,5 +1,4 @@
-#include <iostream>
-#include <boost/bind.hpp>
+#include <algorithm>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
@@ -12,7 +11,6 @@
 using namespace std;
 
 
-static constexpr auto TIMER_INTERVAL = chrono::milliseconds(100);
 
 /*
 flags = bit7 = ch17 = digital channel (0x80)
@@ -48,6 +46,8 @@ RCReceiver::~RCReceiver()
 
 void RCReceiver::init() 
 {    
+    const lock_guard<mutex> lock(m_mutex);
+
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
         m_fbus = rc_ext_fbus_get_shm();
@@ -57,7 +57,7 @@ void RCReceiver::init()
     }
 
     m_timer.expires_after(TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&RCReceiver::timer, this, _1));
+    timer_setup();
 
     m_initialized = true;
 }
@@ -65,6 +65,8 @@ void RCReceiver::init()
 
 void RCReceiver::cleanup() 
 {
+    const lock_guard<mutex> lock(m_mutex);
+
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -73,9 +75,22 @@ void RCReceiver::cleanup()
 }
 
 
+void RCReceiver::timer_setup() {
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait(
+        [self_ptr=weak_from_this()] (auto &error) {
+            if (auto self = self_ptr.lock()) { 
+                self->timer(error); 
+            }
+        }
+    );
+}
+
 
 void RCReceiver::timer(boost::system::error_code error) 
 {
+    const lock_guard<mutex> lock(m_mutex);
+
     if (error!=boost::system::errc::success || !m_initialized) {
         return;
     }
@@ -83,7 +98,7 @@ void RCReceiver::timer(boost::system::error_code error)
     if (!m_fbus) 
         return;
         
-    uint16_t counter = m_fbus->counter;
+    uint32_t counter = m_fbus->counter;
 
     if (counter != m_last_counter) {
         bool sig_flags = false;
@@ -100,7 +115,15 @@ void RCReceiver::timer(boost::system::error_code error)
             sig_rssi = true;
         }
 
-
+        auto chsize = m_channels.size();
+        if (chsize!=m_fbus->n_channels) {
+            chsize = m_fbus->n_channels;
+            m_channels.resize(chsize);
+        }
+        for (int i=0; i<chsize; i++) {
+            m_channels[i] = m_fbus->channels[i];
+        }
+        sigData(m_flags, m_rssi, m_channels);
 #if 0
         if ((counter%20)==0) {
             BOOST_LOG_TRIVIAL(info) << format("%+04x f=%+02x  r=%+02x  ch=%d   ") % (uint32_t)m_fbus->counter % (uint32_t)m_fbus->flags % (uint32_t)m_fbus->rssi % m_fbus->n_channels
@@ -120,8 +143,6 @@ void RCReceiver::timer(boost::system::error_code error)
             #endif
         }
 #endif
-
-
         m_last_counter = counter;
 
         //if (sig_flags)
@@ -130,6 +151,5 @@ void RCReceiver::timer(boost::system::error_code error)
         //    sigRSSI(m_rssi);
     }
 
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(boost::bind(&RCReceiver::timer, this, _1));
+    timer_setup();
 }
