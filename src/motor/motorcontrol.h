@@ -5,18 +5,19 @@
 #include <memory>
 #include <vector>
 #include <mutex>
+#include <chrono>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
 class MotorControl : public std::enable_shared_from_this<MotorControl> {
     public:
-        typedef std::vector<std::unique_ptr<class Motor>> MotorList;
+        using MotorList = std::vector<std::unique_ptr<class Motor>>;
 
-        static constexpr uint32_t PULSE_MIN { 500 };
-        static constexpr uint32_t PULSE_MAX { 2500 };
-        static constexpr int32_t PULSE_CENTER { (PULSE_MAX+PULSE_MIN)/2 };
-        static constexpr int32_t PULSE_RANGE { (PULSE_MAX-PULSE_MIN) };
+        static constexpr std::uint32_t PULSE_MIN { 500 };
+        static constexpr std::uint32_t PULSE_MAX { 2500 };
+        static constexpr std::int32_t PULSE_CENTER { (PULSE_MAX+PULSE_MIN)/2 };
+        static constexpr std::int32_t PULSE_RANGE { (PULSE_MAX-PULSE_MIN) };
 
         static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0 };
         static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4 };
@@ -28,7 +29,9 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
             REAR_RIGHT = 3,
         };
 
-        MotorControl(std::shared_ptr<class RobotContext> context);
+        explicit MotorControl(std::shared_ptr<class RobotContext> context);
+        MotorControl(const MotorControl&) = delete; // No copy constructor
+        MotorControl(MotorControl&&) = delete; // No move constructor
         virtual ~MotorControl();
 
         void init();
@@ -50,8 +53,8 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
 
         const MotorList &getMotors() const { return m_motors; }
 
-        static double pulseToPos(uint32_t us) {
-            return (double)((int32_t)us-PULSE_CENTER)*2.0/PULSE_RANGE;
+        static double pulseToPos(std::uint32_t us) {
+            return (double)((std::int32_t)us-PULSE_CENTER)*2.0/PULSE_RANGE;
         }
 
     private:
@@ -69,6 +72,7 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
 
         void timer(boost::system::error_code error);
         inline void timer_setup();
+
 };
 
 #endif

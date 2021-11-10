@@ -1,3 +1,5 @@
+#include "motorcontrol.h"
+
 #include <iostream>
 #include <algorithm>
 #include <boost/format.hpp>
@@ -8,7 +10,6 @@
 
 #include "motor.h"
 #include "motorgimbal.h"
-#include "motorcontrol.h"
 #include "../robotcontext.h"
 #include "../rcreceiver/rcreceiver.h"
 
@@ -106,7 +107,7 @@ void MotorControl::setEnabled(bool enabled)
 
     for (auto &motor : m_motors) {
         motor->setEnabled(m_enabled);
-        motor->gimbal().setEnabled(false);
+        motor->gimbal()->setEnabled(false);
     }
 
     switch (rc_model_category()) {
@@ -144,7 +145,7 @@ void MotorControl::setPassthrough(bool passthrough)
         m_passthrough = passthrough;
         for (auto &motor : m_motors) {
             motor->setPassthrough(passthrough);
-            motor->gimbal().setPassthrough(passthrough);
+            motor->gimbal()->setPassthrough(passthrough);
         }
 
         // Set limits
@@ -154,9 +155,9 @@ void MotorControl::setPassthrough(bool passthrough)
             limit.high = PULSE_MAX;
         }
         for (const auto &motor : m_motors) {
-            auto &limit = limits[motor->gimbal().getIndex()];
-            limit.low = motor->gimbal().getLimitMin();
-            limit.high = motor->gimbal().getLimitMax();
+            auto &limit = limits[motor->gimbal()->getIndex()];
+            limit.low = motor->gimbal()->getLimitMin();
+            limit.high = motor->gimbal()->getLimitMax();
 
         }
         rc_ext_fbus_set_servo_limit(limits.data());
@@ -166,7 +167,7 @@ void MotorControl::setPassthrough(bool passthrough)
         map.fill(FBUS_SERVO_UNMAPPED);
         if (passthrough) {
             for (const auto &motor : m_motors) {
-                auto index = motor->gimbal().getIndex();
+                auto index = motor->gimbal()->getIndex();
                 map[SERVO_PASSTHROUGH_OFFSET+index] = index;
             }
         }

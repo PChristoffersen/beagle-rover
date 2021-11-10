@@ -5,11 +5,22 @@
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 
+#include "robotcontext.h"
+#include "rcreceiver/rcreceiver.h"
+#include "motor/motorcontrol.h"
+#include "led/ledcontrol.h"
+#include "telemetry/telemetry.h"
+#include "kinematic/kinematic.h"
+#include "debug/prudebug.h"
 
 class Robot {
     public:
         Robot();
-        ~Robot();
+        Robot(const Robot&) = delete; // No copy constructor
+        Robot(Robot&&) = delete; // No move constructor
+
+        virtual ~Robot();
+
 
         void init();
         void cleanup();

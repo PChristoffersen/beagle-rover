@@ -9,7 +9,9 @@
 
 class ADCBattery : public AbstractTelemetrySource<ADCBattery> {
     public:
-        ADCBattery(std::shared_ptr<class RobotContext> context);
+        explicit ADCBattery(std::shared_ptr<class RobotContext> context);
+        ADCBattery(const ADCBattery&) = delete; // No copy constructor
+        ADCBattery(ADCBattery&&) = delete; // No move constructor
         virtual ~ADCBattery();
 
         void init();

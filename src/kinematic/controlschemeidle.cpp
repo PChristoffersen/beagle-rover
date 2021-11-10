@@ -1,7 +1,8 @@
+#include "controlschemeidle.h"
+
 #include <boost/log/trivial.hpp>
 #include <boost/system/error_code.hpp>
 
-#include "controlschemeidle.h"
 #include "../robotcontext.h"
 #include "../motor/motor.h"
 #include "../motor/motorgimbal.h"
@@ -38,8 +39,8 @@ void ControlSchemeIdle::init()
         motor->setDuty(0.0);
         motor->freeSpin();
         motor->setEnabled(true);
-        motor->gimbal().setAngle(0.0);
-        motor->gimbal().setEnabled(true);
+        motor->gimbal()->setAngle(0.0);
+        motor->gimbal()->setEnabled(true);
     }
 
     // Start timer to turn off power to the motors
@@ -88,7 +89,7 @@ void ControlSchemeIdle::timer(boost::system::error_code error)
         motor->setDuty(0.0);
         motor->freeSpin();
         motor->setEnabled(false);
-        motor->gimbal().setAngle(0.0);
-        motor->gimbal().setEnabled(false);
+        motor->gimbal()->setAngle(0.0);
+        motor->gimbal()->setEnabled(false);
     }
 }

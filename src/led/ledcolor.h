@@ -7,25 +7,25 @@
 
 class LEDColor {
     public:
-        LEDColor(uint8_t r, uint8_t g, uint8_t b);
+        LEDColor(std::uint8_t r, std::uint8_t g, std::uint8_t b);
         LEDColor(const LEDColor &color);
 
-        uint8_t getRed() const { return m_red; }
-        uint8_t getGreen() const { return m_green; }
-        uint8_t getBlue() const { return m_blue; }
+        std::uint8_t getRed() const { return m_red; }
+        std::uint8_t getGreen() const { return m_green; }
+        std::uint8_t getBlue() const { return m_blue; }
 
         LEDColor &operator=(const LEDColor &other);
-        operator uint32_t() const;
+        operator std::uint32_t() const;
     private:
-        uint8_t m_red;
-        uint8_t m_green;
-        uint8_t m_blue;
+        std::uint8_t m_red;
+        std::uint8_t m_green;
+        std::uint8_t m_blue;
 };
 
 extern LEDColor LED_BLACK;
 
 
-typedef std::vector<LEDColor> LEDColorList;
+using LEDColorList = std::vector<LEDColor>;
 
 
 #endif

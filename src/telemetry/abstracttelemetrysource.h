@@ -6,7 +6,7 @@
 #include "telemetrytypes.h"
 
 
-template<class T>
+template<typename T>
 class AbstractTelemetrySource : public TelemetrySource, public std::enable_shared_from_this<T> {
     public:
         virtual ~AbstractTelemetrySource() { }

@@ -1,3 +1,5 @@
+#include "rcreceiver.h"
+
 #include <algorithm>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
@@ -5,7 +7,6 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "rcreceiver.h"
 #include "../robotcontext.h"
 
 using namespace std;
@@ -104,8 +105,8 @@ void RCReceiver::timer(boost::system::error_code error)
         bool sig_flags = false;
         bool sig_rssi = false;
 
-        // TODO check connected
-        if (m_fbus->flags != m_flags) {
+        // Collect data
+        if (m_flags != m_fbus->flags) {
             m_flags = m_fbus->flags;
             sig_flags = true;
         }
@@ -120,9 +121,11 @@ void RCReceiver::timer(boost::system::error_code error)
             chsize = m_fbus->n_channels;
             m_channels.resize(chsize);
         }
-        for (int i=0; i<chsize; i++) {
+        for (auto i=0; i<chsize; i++) {
             m_channels[i] = m_fbus->channels[i];
         }
+
+        // SIgnal data
         sigData(m_flags, m_rssi, m_channels);
 #if 0
         if ((counter%20)==0) {

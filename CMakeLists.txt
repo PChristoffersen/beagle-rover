@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 
@@ -29,7 +30,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
 set(SRC 
     src/robot.cpp
     src/robotcontext.cpp
-    src/prudebug.cpp
+    src/debug/prudebug.cpp
     src/rcreceiver/rcreceiver.cpp
     src/motor/motor.cpp
     src/motor/motorgimbal.cpp

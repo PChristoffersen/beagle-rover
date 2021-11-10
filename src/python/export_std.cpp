@@ -9,9 +9,10 @@
 using namespace boost;
 using namespace boost::python;
 
-typedef std::vector<float> FloatVector;
-typedef std::vector<int> IntVector;
-typedef std::vector<std::string> StringVector;
+using FloatVector = std::vector<float>;
+using IntVector = std::vector<int>;
+using StringVector = std::vector<std::string>;
+
 
 void python_export_std() 
 {

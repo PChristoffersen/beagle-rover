@@ -1,11 +1,12 @@
+#include "prudebug.h"
+
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
 #include <robotcontrolext.h>
 
-#include "prudebug.h"
-#include "robotcontext.h"
+#include "../robotcontext.h"
 
 using namespace std;
 

@@ -1,7 +1,8 @@
+#include "controlschemenormal.h"
+
 #include <math.h>
 #include <boost/log/trivial.hpp>
 
-#include "controlschemenormal.h"
 #include "../motor/motor.h"
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
@@ -31,8 +32,8 @@ void ControlSchemeNormal::init()
     for (auto &motor : m_motor_control->getMotors()) {
         motor->setDuty(0.0);
         motor->setEnabled(true);
-        motor->gimbal().setAngle(M_PI_2);
-        motor->gimbal().setEnabled(true);
+        motor->gimbal()->setAngle(M_PI_2);
+        motor->gimbal()->setEnabled(true);
     }
 
     m_initialized = true;

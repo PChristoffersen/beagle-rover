@@ -1,9 +1,8 @@
+#include "rcmpu.h"
+
 #include <iostream>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrol.h>
-
-#include "rcmpu.h"
 #include "telemetry.h"
 #include "telemetrytypes.h"
 #include "../robotcontext.h"

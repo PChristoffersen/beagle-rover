@@ -1,9 +1,10 @@
+#include "adcbattery.h"
+
 #include <iostream>
 #include <boost/log/trivial.hpp>
 
 #include <robotcontrol.h>
 
-#include "adcbattery.h"
 #include "telemetry.h"
 #include "telemetrytypes.h"
 #include "../robotcontext.h"

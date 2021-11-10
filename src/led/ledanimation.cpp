@@ -1,5 +1,6 @@
-#include "ledcontrol.h"
 #include "ledanimation.h"
+
+#include "ledcontrol.h"
 
 using namespace std;
 

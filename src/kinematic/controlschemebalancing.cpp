@@ -1,7 +1,8 @@
-#include <math.h>
+#include "controlschemebalancing.h"
+
+#include <cmath>
 #include <boost/log/trivial.hpp>
 
-#include "controlschemebalancing.h"
 #include "../motor/motor.h"
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
@@ -37,30 +38,30 @@ void ControlSchemeBalancing::init()
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
-        motor->gimbal().setAngle(-M_PI_2);
-        motor->gimbal().setEnabled(true);
+        motor->gimbal()->setAngle(-M_PI_2);
+        motor->gimbal()->setEnabled(true);
     }
     {
         auto &motor = motors[MotorControl::FRONT_RIGHT];
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
-        motor->gimbal().setAngle(-M_PI_2);
-        motor->gimbal().setEnabled(true);
+        motor->gimbal()->setAngle(-M_PI_2);
+        motor->gimbal()->setEnabled(true);
     }
     {
         auto &motor = motors[MotorControl::REAR_LEFT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
-        motor->gimbal().setAngle(M_PI_2);
-        motor->gimbal().setEnabled(true);
+        motor->gimbal()->setAngle(M_PI_2);
+        motor->gimbal()->setEnabled(true);
     }
     {
         auto &motor = motors[MotorControl::REAR_RIGHT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
-        motor->gimbal().setAngle(M_PI_2);
-        motor->gimbal().setEnabled(true);
+        motor->gimbal()->setAngle(M_PI_2);
+        motor->gimbal()->setEnabled(true);
     }
 
     m_initialized = true;

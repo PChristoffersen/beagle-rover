@@ -1,6 +1,7 @@
 #ifndef _RCRECEIVER_H_
 #define _RCRECEIVER_H_
 
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <chrono>
@@ -11,20 +12,43 @@
 
 class RCReceiver : public std::enable_shared_from_this<RCReceiver> {
     public:
-        typedef std::vector<uint32_t> ChannelList;
-        typedef boost::signals2::signal<void(uint8_t)> SignalFlags;
-        typedef boost::signals2::signal<void(uint8_t)> SignalRSSI;
-        typedef boost::signals2::signal<void(uint8_t flags, uint8_t rssi, const ChannelList &channels)> SignalData;
+        union Flags {
+            std::byte value;
+            struct {
+                bool ch17:1;
+                bool ch18:1;
+                bool frame_lost:1;
+                bool failsafe:1;
+                bool _reserved3:1;
+                bool _reserved2:1;
+                bool _reserved1:1;
+                bool _reserved0:1;
+            } bits;
+            Flags() : value{ 0x00 } {}
+            Flags(const std::uint8_t v) : value{v} {}
+            Flags(const std::byte v) : value{v} {}
+            bool operator!=(const Flags &other) { return value!=other.value; }
+            bool operator!=(const std::uint8_t other) { return value!=(std::byte)other; }
+        };
 
-        RCReceiver(std::shared_ptr<class RobotContext> context);
+        using ChannelList = std::vector<std::uint32_t> ;
+        //using Flags = std::byte;
+        using SignalFlags = boost::signals2::signal<void(Flags)>;
+        using SignalRSSI = boost::signals2::signal<void(std::uint8_t)>;
+        using SignalData = boost::signals2::signal<void(Flags flags, std::uint8_t rssi, const ChannelList &channels)>;
+
+
+        explicit RCReceiver(std::shared_ptr<class RobotContext> context);
+        RCReceiver(const RCReceiver&) = delete; // No copy constructor
+        RCReceiver(RCReceiver&&) = delete; // No move constructor
         virtual ~RCReceiver();
 
         void init();
         void cleanup();
 
         bool isConnected() const { return m_connected; }
-        uint8_t getRSSI() const { return m_rssi; }
-        uint8_t getFlags() const { return m_flags; }
+        std::uint8_t getRSSI() const { return m_rssi; }
+        Flags getFlags() const { return m_flags; }
 
         const ChannelList &getChannels() const { return m_channels; }
 
@@ -37,12 +61,12 @@ class RCReceiver : public std::enable_shared_from_this<RCReceiver> {
         bool m_initialized;
         std::mutex m_mutex;
         boost::asio::steady_timer m_timer;
-        uint32_t m_last_counter;
+        std::uint32_t m_last_counter;
         volatile shm_fbus_t *m_fbus;
 
         ChannelList m_channels;
-        uint8_t m_rssi;
-        uint8_t m_flags;
+        std::uint8_t m_rssi;
+        Flags m_flags;
         bool m_connected;
 
         void timer_setup();

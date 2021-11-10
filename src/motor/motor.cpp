@@ -1,3 +1,5 @@
+#include "motor.h"
+
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
@@ -6,7 +8,6 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "motor.h"
 #include "motorgimbal.h"
 
 using namespace std;
@@ -14,19 +15,11 @@ using namespace std;
 
 
 
-static inline uint8_t encoder_channel(uint8_t index) {
-    return index+1;
-}
-static inline uint8_t motor_channel(uint8_t index) {
-    return index+1;
-}
-
-
-Motor::Motor(uint8_t index, recursive_mutex &mutex) :
+Motor::Motor(int index, recursive_mutex &mutex) :
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
-    m_gimbal { index, mutex },
+    m_gimbal { make_unique<MotorGimbal>(index, mutex) },
     m_enabled { false },
     m_passthrough { false },
     m_state { FREE_SPIN },
@@ -55,10 +48,10 @@ void Motor::init()
     m_duty = 0.0;
     m_target_rpm = 0.0;
 
-    rc_motor_free_spin(motor_channel(m_index));
+    rc_motor_free_spin(motorChannel());
     m_state = FREE_SPIN;
 
-    m_gimbal.init();
+    m_gimbal->init();
     m_initialized = true;
 }
 
@@ -68,10 +61,10 @@ void Motor::cleanup()
         return;
     m_initialized = false;
 
-    m_gimbal.cleanup();
+    m_gimbal->cleanup();
 
     if (m_state!=FREE_SPIN) {
-        rc_motor_free_spin(motor_channel(m_index));
+        rc_motor_free_spin(motorChannel());
         m_state = FREE_SPIN;
     }
 }
@@ -156,7 +149,7 @@ void Motor::update()
     if (diff > PID_UPDATE_INTERVAL) {
         //BOOST_LOG_TRIVIAL(info) << "RPM Update";
         int32_t value = 0;
-        //int32_t value = rc_ext_encoder_read(ENCODER_CHANNEL(m_index));
+        //int32_t value = rc_ext_encoder_read(encoderChannel());
 
         auto dur = chrono::duration_cast<chrono::nanoseconds>(diff).count();
 
@@ -170,7 +163,7 @@ void Motor::update()
         m_last_update = time;
     }
 
-    m_gimbal.update();
+    m_gimbal->update();
 
 }
 

@@ -8,8 +8,10 @@
 
 class ControlSchemeIdle : public AbstractControlScheme<ControlSchemeIdle> {
     public: 
-        ControlSchemeIdle(std::shared_ptr<class Kinematic> kinematic);
-        ~ControlSchemeIdle();
+        explicit ControlSchemeIdle(std::shared_ptr<class Kinematic> kinematic);
+        ControlSchemeIdle(const ControlSchemeIdle&) = delete; // No copy constructor
+        ControlSchemeIdle(ControlSchemeIdle&&) = delete; // No move constructor
+        virtual ~ControlSchemeIdle();
 
         virtual void init() override;
         virtual void cleanup() override;

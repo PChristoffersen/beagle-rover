@@ -33,6 +33,8 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
         void cleanup();
 
         Kinematic(std::shared_ptr<class RobotContext> context, std::shared_ptr<class MotorControl> motor_control, std::shared_ptr<class Telemetry> telemetry, std::shared_ptr<class RCReceiver> receiver);
+        Kinematic(const Kinematic&) = delete; // No copy constructor
+        Kinematic(Kinematic&&) = delete; // No move constructor
         virtual ~Kinematic();
 
         void setSteeringMode(SteeringMode mode);

@@ -1,17 +1,18 @@
+#include "robot.h"
+
 #include <iostream>
 #include <exception>
 #include <boost/log/trivial.hpp>
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "robot.h"
 #include "robotcontext.h"
-#include "prudebug.h"
 #include "rcreceiver/rcreceiver.h"
 #include "motor/motorcontrol.h"
 #include "led/ledcontrol.h"
 #include "telemetry/telemetry.h"
 #include "kinematic/kinematic.h"
+#include "debug/prudebug.h"
 
 using namespace std;
 

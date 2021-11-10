@@ -1,3 +1,5 @@
+#include "motorgimbal.h"
+
 #include <cmath>
 #include <algorithm>
 #include <boost/bind.hpp>
@@ -8,17 +10,12 @@
 #include <robotcontrolext.h>
 
 #include "motorcontrol.h"
-#include "motorgimbal.h"
 
 using namespace std;
 
 
-static inline uint8_t servo_channel(uint8_t index) {
-    return index+1;
-}
 
-
-MotorGimbal::MotorGimbal(uint8_t index, recursive_mutex &mutex) :
+MotorGimbal::MotorGimbal(int index, recursive_mutex &mutex) :
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
@@ -129,7 +126,7 @@ void MotorGimbal::update()
         auto gimbalDiff = (time-m_last_pulse);
         if (gimbalDiff > PULSE_INTERVAL) {
             //BOOST_LOG_TRIVIAL(info) << "Pulse";
-            //rc_servo_send_pulse_us(servo_channel(m_index), m_pulse_us+m_trim_us);
+            //rc_servo_send_pulse_us(servoChannel(m_index), m_pulse_us+m_trim_us);
             m_last_pulse = time;
         }
     }

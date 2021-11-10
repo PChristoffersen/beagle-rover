@@ -1,10 +1,11 @@
+#include "telemetry.h"
+
 #include <typeinfo>
 #include <boost/log/trivial.hpp>
 
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "telemetry.h"
 #include "telemetrytypes.h"
 #include "adcbattery.h"
 #include "rcmpu.h"
@@ -71,8 +72,8 @@ void Telemetry::send(uint16_t appId, uint32_t data)
 
 void Telemetry::process(const TelemetryEvent &event) 
 {
-    if (typeid(event)==typeid(TelemetryEventBattery)) {
-        processBattery((const TelemetryEventBattery&)event);
+    if (const auto ev = dynamic_cast<const TelemetryEventBattery*>(&event)) {
+        processBattery(*ev);
     }
 }
 

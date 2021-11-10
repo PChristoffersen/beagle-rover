@@ -6,7 +6,7 @@
 #include "controlscheme.h"
 #include "kinematic.h"
 
-template<class T>
+template<typename T>
 class AbstractControlScheme : public ControlScheme, public std::enable_shared_from_this<T> {
     public:
         virtual ~AbstractControlScheme() { }
@@ -24,7 +24,7 @@ class AbstractControlScheme : public ControlScheme, public std::enable_shared_fr
 };
 
 
-template<class T>
+template<typename T>
 AbstractControlScheme<T>::AbstractControlScheme(std::shared_ptr<Kinematic> kinematic) :
     m_initialized { false },
     m_kinematic { kinematic },

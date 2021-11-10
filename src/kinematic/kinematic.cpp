@@ -1,6 +1,7 @@
+#include "kinematic.h"
+
 #include <boost/log/trivial.hpp>
 
-#include "kinematic.h"
 #include "../robotcontext.h"
 #include "../motor/motorcontrol.h"
 #include "../motor/motor.h"
@@ -82,12 +83,12 @@ void Kinematic::setDriveMode(DriveMode mode)
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (mode!=m_drive_mode || !m_control_scheme) {
         BOOST_LOG_TRIVIAL(info) << "Control scheme: " << (int)m_drive_mode;
+
         if (m_control_scheme) {
-            BOOST_LOG_TRIVIAL(info) << ">>>>>";
             m_control_scheme->cleanup();
             m_control_scheme.reset();
-            BOOST_LOG_TRIVIAL(info) << "<<<<<";
         }
+
         switch (mode) {
         case DriveMode::NORMAL:
             m_control_scheme = make_shared<ControlSchemeNormal>(shared_from_this());
@@ -105,10 +106,13 @@ void Kinematic::setDriveMode(DriveMode mode)
             m_control_scheme = make_shared<ControlSchemeIdle>(shared_from_this());
             break;
         }
+
+        m_drive_mode = mode;
+
         if (m_control_scheme) {
             m_control_scheme->init();
         }
-        m_drive_mode = mode;
+
     }
 }
 

@@ -8,7 +8,9 @@
 
 class PRUDebug : public std::enable_shared_from_this<PRUDebug> {
     public:
-        PRUDebug(std::shared_ptr<class RobotContext> context);
+        explicit PRUDebug(std::shared_ptr<class RobotContext> context);
+        PRUDebug(const PRUDebug&) = delete; // No copy constructor
+        PRUDebug(PRUDebug&&) = delete; // No move constructor
         virtual ~PRUDebug();
 
         void init();

@@ -19,20 +19,22 @@ class Motor {
             BRAKE
         };
 
-        Motor(uint8_t index, std::recursive_mutex &mutex);
+        Motor(int index, std::recursive_mutex &mutex);
+        Motor(const Motor&) = delete; // No copy constructor
+        Motor(Motor&&) = delete; // No move constructor
         virtual ~Motor();
 
         void brake();
         void freeSpin();
 
-        uint8_t getIndex() const { return m_index; }
+        int getIndex() const { return m_index; }
 
         void setEnabled(bool enabled);
         bool getEnabled() const { return m_enabled; }
 
         bool getPassthrough() const { return m_passthrough; }
 
-        void setDutyUS(uint32_t us);
+        void setDutyUS(std::uint32_t us);
         void setDuty(double duty);
         double getDuty() const { return m_duty; }
         void setTargetRPM(double rpm);
@@ -45,7 +47,7 @@ class Motor {
         double getOdometer() const;
 
 
-        MotorGimbal &gimbal() { return m_gimbal; }
+        MotorGimbal *gimbal() const { return m_gimbal.get(); }
 
     protected:
         void init();
@@ -67,24 +69,31 @@ class Motor {
         static constexpr auto PID_UPDATE_INTERVAL { std::chrono::milliseconds(100) };
 
         bool m_initialized;
-        uint8_t m_index;
+        int m_index;
         std::recursive_mutex &m_mutex;
-        MotorGimbal m_gimbal;
+        std::unique_ptr<class MotorGimbal> m_gimbal;
 
         bool m_enabled;
         bool m_passthrough;
         State m_state;
 
 
-        int32_t m_last_enc_value;
+        std::int32_t m_last_enc_value;
         std::chrono::high_resolution_clock::time_point m_last_update;
 
-        int32_t m_odometer_base;
+        std::int32_t m_odometer_base;
 
         double m_duty;
         double m_target_rpm;
         double m_rpm;
         PIDController<double> m_pid;
+
+        int encoderChannel() const {
+            return m_index+1;
+        }
+        int motorChannel() const {
+            return m_index+1;
+        }
 
 };
 

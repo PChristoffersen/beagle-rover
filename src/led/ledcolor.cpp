@@ -1,5 +1,6 @@
 #include "ledcolor.h"
 
+using namespace std;
 
 LEDColor::LEDColor(uint8_t r, uint8_t g, uint8_t b) :
     m_red{ r },
@@ -31,4 +32,4 @@ LEDColor::operator uint32_t() const
 }
 
 
-LEDColor LED_BLACK(0x00, 0x00, 0x00);
+LEDColor LED_BLACK { 0x00, 0x00, 0x00 };

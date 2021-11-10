@@ -1,10 +1,11 @@
 #ifndef _TELEMETRYTYPES_H_
 #define _TELEMETRYTYPES_H_
 
+#include <cstdint>
 #include <vector>
 #include <boost/signals2.hpp>
 
-typedef boost::signals2::signal<void(const class TelemetryEvent &)> TelemetrySignal;
+using TelemetrySignal = boost::signals2::signal<void(const class TelemetryEvent &)>;
 
 
 class TelemetryEvent {
@@ -16,7 +17,7 @@ class TelemetryEvent {
 class TelemetryEventBattery : public TelemetryEvent {
     public:
         TelemetryEventBattery() {}
-        uint8_t battery_id;
+        std::uint8_t battery_id;
         std::vector<float> cell_voltage;
 };
 

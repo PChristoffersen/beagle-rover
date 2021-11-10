@@ -49,8 +49,8 @@ class TelemetryListenerWrap : public TelemetryListener, public boost::python::wr
     public:
         virtual void on_event(const TelemetryEvent &event) override {
             if (auto f = this->get_override("on_event")) {
-                if (typeid(event)==typeid(TelemetryEventBattery)) {
-                    f((const TelemetryEventBattery&)event);
+                if (const auto ev = dynamic_cast<const TelemetryEventBattery*>(&event)) {
+                    f(*ev);
                 }
                 else {
                     BOOST_LOG_TRIVIAL(warning) << "Unknown telemetry event type " << typeid(event).name();

@@ -8,17 +8,13 @@
 #include <boost/bind.hpp>
 
 #include "robot.h"
-#include "robotcontext.h"
-#include "kinematic/kinematic.h"
 
-
-
+using namespace std;
 
 int main() {
     using namespace boost::asio;
 
     io_context io;
-
 
     signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait(boost::bind(&io_context::stop, &io));

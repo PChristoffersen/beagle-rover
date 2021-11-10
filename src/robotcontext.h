@@ -9,6 +9,9 @@
 class RobotContext : public std::enable_shared_from_this<RobotContext> {
     public:
         RobotContext();
+        RobotContext(const RobotContext&) = delete; // No copy constructor
+        RobotContext(RobotContext&&) = delete; // No move constructor
+
         virtual ~RobotContext();
 
         void init();
@@ -16,7 +19,6 @@ class RobotContext : public std::enable_shared_from_this<RobotContext> {
 
         void start();
         void stop();
-
 
 
         boost::asio::io_context &io() { return m_io; }

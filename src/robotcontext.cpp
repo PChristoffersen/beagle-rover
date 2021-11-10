@@ -1,11 +1,11 @@
+#include "robotcontext.h"
+
 #include <iostream>
 #include <functional>
 #include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
-
-#include "robotcontext.h"
 
 using namespace std;
 

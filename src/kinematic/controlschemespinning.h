@@ -5,8 +5,10 @@
 
 class ControlSchemeSpinning : public AbstractControlScheme<ControlSchemeSpinning> {
     public: 
-        ControlSchemeSpinning(std::shared_ptr<class Kinematic> kinematic);
-        ~ControlSchemeSpinning();
+        explicit ControlSchemeSpinning(std::shared_ptr<class Kinematic> kinematic);
+        ControlSchemeSpinning(const ControlSchemeSpinning&) = delete; // No copy constructor
+        ControlSchemeSpinning(ControlSchemeSpinning&&) = delete; // No move constructor
+        virtual ~ControlSchemeSpinning();
 
         virtual void init() override;
         virtual void cleanup() override;

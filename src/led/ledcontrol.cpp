@@ -1,18 +1,15 @@
+#include "ledcontrol.h"
+
 #include <iostream>
 #include <boost/exception/all.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
 
-#include <robotcontrolext.h>
 
-#include "ledcontrol.h"
 #include "../robotcontext.h"
 
 
 using namespace std;
-
-
-const int LEDControl::LED_PIXEL_COUNT = RC_EXT_NEOPIXEL_COUNT;
 
 
 LEDControl::LEDControl(shared_ptr<RobotContext> context) :

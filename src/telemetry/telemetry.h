@@ -1,6 +1,7 @@
 #ifndef _TELEMETRY_H_
 #define _TELEMETRY_H_
 
+#include <cstdint>
 #include <memory>
 #include <boost/asio.hpp>
 
@@ -9,7 +10,9 @@
 
 class Telemetry : public std::enable_shared_from_this<Telemetry> {
     public:
-        Telemetry(std::shared_ptr<class RobotContext> context);
+        explicit Telemetry(std::shared_ptr<class RobotContext> context);
+        Telemetry(const Telemetry&) = delete; // No copy constructor
+        Telemetry(Telemetry&&) = delete; // No move constructor
         virtual ~Telemetry();
 
         void init();
@@ -20,7 +23,7 @@ class Telemetry : public std::enable_shared_from_this<Telemetry> {
     protected:
         void process(const TelemetryEvent &event);
         void processBattery(const TelemetryEventBattery &event);
-        void send(uint16_t appId, uint32_t data);
+        void send(std::uint16_t appId, std::uint32_t data);
 
     private:
         bool m_initialized;
