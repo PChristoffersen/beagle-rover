@@ -1,6 +1,6 @@
 #include "controlschemenormal.h"
 
-#include <math.h>
+#include <cmath>
 #include <boost/log/trivial.hpp>
 
 #include "../motor/motor.h"
@@ -13,13 +13,13 @@ using namespace std;
 ControlSchemeNormal::ControlSchemeNormal(shared_ptr<class Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
-    BOOST_LOG_TRIVIAL(trace) << "Normal()";
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 ControlSchemeNormal::~ControlSchemeNormal() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << "~Normal()";
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

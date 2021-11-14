@@ -24,6 +24,9 @@ bit1 = n/a
 bit0 = n/a
 
 */
+
+static constexpr auto TIMER_INTERVAL { 10ms };
+
 static constexpr uint8_t FBUS_FLAG_SIGNAL_LOSS { 1 << 2 };
 static constexpr uint8_t FBUS_FLAG_FAILSAFE_ACTIVE { 1 << 3 };
 
@@ -34,7 +37,6 @@ RCReceiver::RCReceiver(shared_ptr<RobotContext> context) :
     m_connected { false },
     m_rssi { 0 }
 {
-
 }
 
 
@@ -100,7 +102,7 @@ void RCReceiver::timer(boost::system::error_code error)
         return;
         
     uint32_t counter = m_fbus->counter;
-
+    
     if (counter != m_last_counter) {
         bool sig_flags = false;
         bool sig_rssi = false;
@@ -127,13 +129,17 @@ void RCReceiver::timer(boost::system::error_code error)
 
         // SIgnal data
         sigData(m_flags, m_rssi, m_channels);
-#if 0
-        if ((counter%20)==0) {
-            BOOST_LOG_TRIVIAL(info) << format("%+04x f=%+02x  r=%+02x  ch=%d   ") % (uint32_t)m_fbus->counter % (uint32_t)m_fbus->flags % (uint32_t)m_fbus->rssi % m_fbus->n_channels
-                << format("%+4d |") % m_fbus->channels[0] << " |"
-                << format("%+4d |") % m_fbus->channels[1] << " |"
-                << format("%+4d |") % m_fbus->channels[2] << " |"
-                << format("%+4d |") % m_fbus->channels[3] << " |" 
+#if 1
+        static chrono::high_resolution_clock::time_point last_update;
+        auto time = chrono::high_resolution_clock::now();
+        if ((time-last_update) > 100ms) {
+
+
+            BOOST_LOG_TRIVIAL(info) << boost::format("%+04x f=%+02x  r=%+02x  ch=%d   ") % (uint32_t)counter % (uint32_t)m_flags.value % (uint32_t)m_rssi % (uint32_t)m_channels.size()
+                << boost::format("%+4d |") % m_channels[0]
+                << boost::format("%+4d |") % m_channels[1]
+                << boost::format("%+4d |") % m_channels[2]
+                << boost::format("%+4d |") % m_channels[3]
                 ;
 
             #if 0
@@ -144,6 +150,8 @@ void RCReceiver::timer(boost::system::error_code error)
             cout << "  " << (m_fbus->channels[0]-500) << "   "  << ((m_fbus->channels[0]-500)/2000.0) << "          ";
             cout << "\r" << flush;
             #endif
+
+            last_update = time;
         }
 #endif
         m_last_counter = counter;

@@ -1,3 +1,4 @@
+#include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/python.hpp>
 #include <boost/python/enum.hpp> 
@@ -9,6 +10,7 @@
 #include "../motor/motorgimbal.h"
 #include "../motor/motorcontrol.h"
 
+using namespace std;
 using namespace boost;
 using namespace boost::python;
 
@@ -29,16 +31,19 @@ void python_export_motor()
         .def("brake", &Motor::brake)
         .def("free_spin", &Motor::freeSpin)
         .def("resetOdometer", &Motor::resetOdometer)
+        .def("__str__", +[](const Motor &m) { return (format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
     class_<MotorGimbal, noncopyable>("MotorGimbal", no_init)
         .add_property("index", &MotorGimbal::getIndex)
         .add_property("enabled", &MotorGimbal::getEnabled, &MotorGimbal::setEnabled)
         .add_property("pulse_us", &MotorGimbal::getPulseUS, &MotorGimbal::setPulseUS)
         .add_property("angle", &MotorGimbal::getAngle, &MotorGimbal::setAngle)
+        .add_property("angle_degrees", &MotorGimbal::getAngleDegrees, &MotorGimbal::setAngleDegrees)
         .add_property("trim_us", &MotorGimbal::getTrimUS, &MotorGimbal::setTrimUS)
         .add_property("limit_min", &MotorGimbal::getLimitMin, &MotorGimbal::setLimitMin)
         .add_property("limit_max", &MotorGimbal::getLimitMax, &MotorGimbal::setLimitMax)
         .def("set_limits", &MotorGimbal::setLimits)
+        .def("__str__", +[](const MotorGimbal &m) { return (format("<MotorGimbal (%d)>") % m.getIndex()).str(); })
         ;
     class_<MotorControl::MotorList, noncopyable>("MotorList")
         .def("__getitem__", +[](const MotorControl::MotorList &l, uint index){

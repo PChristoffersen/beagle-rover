@@ -2,7 +2,8 @@
 
 #include <iostream>
 #include <exception>
-#include <boost/log/trivial.hpp>
+#include <boost/log/trivial.hpp> 
+
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
@@ -15,7 +16,6 @@
 #include "debug/prudebug.h"
 
 using namespace std;
-
 
 Robot *Robot::m_instance { nullptr };
 
@@ -31,6 +31,7 @@ Robot::Robot() :
     m_kinematic { make_shared<Kinematic>(m_context, m_motor_control, m_telemetry, m_rc_receiver) },
     m_pru_debug { make_shared<PRUDebug>(m_context) }
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 Robot::~Robot() 

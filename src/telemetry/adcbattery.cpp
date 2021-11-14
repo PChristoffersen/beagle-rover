@@ -12,36 +12,42 @@
 using namespace std;
 
 
-static constexpr auto TIMER_INTERVAL { chrono::milliseconds(1000) };
+static constexpr auto TIMER_INTERVAL { 2s };
 
 
 ADCBattery::ADCBattery(shared_ptr<RobotContext> context):
     m_initialized { false },
     m_timer { context->io() }
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
 }
 
 ADCBattery::~ADCBattery() 
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     cleanup();
 }
 
 
 void ADCBattery::init() 
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+
+    m_initialized = true;
+
     m_timer.expires_after(TIMER_INTERVAL);
     timer_setup();
 
-    m_initialized = true;
 }
 
 
 void ADCBattery::cleanup() 
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     if (!m_initialized)
         return;
-    m_initialized = true;
+    m_initialized = false;
 
     m_timer.cancel();
 }

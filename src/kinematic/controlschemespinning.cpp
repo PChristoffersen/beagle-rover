@@ -12,13 +12,13 @@ using namespace std;
 ControlSchemeSpinning::ControlSchemeSpinning(shared_ptr<class Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 ControlSchemeSpinning::~ControlSchemeSpinning() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

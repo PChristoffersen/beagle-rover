@@ -1,6 +1,6 @@
 #include "controlschemepassthrough.h"
 
-#include <math.h>
+#include <cmath>
 #include <boost/log/trivial.hpp>
 
 #include "../robotcontext.h"
@@ -14,13 +14,13 @@ using namespace std;
 ControlSchemePassthrough::ControlSchemePassthrough(shared_ptr<class Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
-    BOOST_LOG_TRIVIAL(trace) << "Passthrough()";
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 ControlSchemePassthrough::~ControlSchemePassthrough() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << "~Passthrough()";
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

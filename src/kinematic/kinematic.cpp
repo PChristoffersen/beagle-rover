@@ -32,7 +32,7 @@ Kinematic::Kinematic(shared_ptr<RobotContext> context, shared_ptr<class MotorCon
 Kinematic::~Kinematic() 
 {
     cleanup();
-    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

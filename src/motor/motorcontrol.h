@@ -1,9 +1,8 @@
 #ifndef _MOTOR_CONTROL_H_
 #define _MOTOR_CONTROL_H_
 
-#include <string>
 #include <memory>
-#include <vector>
+#include <array>
 #include <mutex>
 #include <chrono>
 #include <boost/asio.hpp>
@@ -12,7 +11,7 @@
 
 class MotorControl : public std::enable_shared_from_this<MotorControl> {
     public:
-        using MotorList = std::vector<std::unique_ptr<class Motor>>;
+        static constexpr auto MOTOR_COUNT { 4 };
 
         static constexpr std::uint32_t PULSE_MIN { 500 };
         static constexpr std::uint32_t PULSE_MAX { 2500 };
@@ -21,6 +20,8 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
 
         static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0 };
         static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4 };
+
+        using MotorList = std::array<std::unique_ptr<class Motor>, MOTOR_COUNT>;
 
         enum MotorPosition {
             FRONT_LEFT = 0,
@@ -58,9 +59,6 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
         }
 
     private:
-        static constexpr auto TIMER_INTERVAL { std::chrono::milliseconds(20) };
-        static constexpr auto MOTOR_COUNT { 4 };
-
         bool m_initialized;
         bool m_enabled;
         bool m_passthrough;

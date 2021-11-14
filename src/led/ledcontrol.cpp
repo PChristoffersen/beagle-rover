@@ -22,7 +22,7 @@ LEDControl::LEDControl(shared_ptr<RobotContext> context) :
 LEDControl::~LEDControl() 
 {
     cleanup();
-    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

@@ -26,13 +26,14 @@ MotorGimbal::MotorGimbal(int index, recursive_mutex &mutex) :
     m_limit_min { MotorControl::PULSE_MIN },
     m_limit_max { MotorControl::PULSE_MAX }
 {
-
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 
 MotorGimbal::~MotorGimbal() 
 {
     cleanup();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 
@@ -72,7 +73,7 @@ void MotorGimbal::setPassthrough(bool passthrough)
 void MotorGimbal::setPulseUS(uint32_t us) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << "Gimbal[" << m_index << "] setPulseUS(" << us << ")";
+    //BOOST_LOG_TRIVIAL(info) << "Gimbal[" << m_index << "] setPulseUS(" << us << ")";
     us = clamp(us, m_limit_min, m_limit_max);
     m_pulse_us = us;
 }
@@ -90,6 +91,16 @@ double MotorGimbal::getAngle() const
 {
     return M_PI * 2.0 * (double)((int32_t)m_pulse_us - MotorControl::PULSE_CENTER) / MotorControl::PULSE_RANGE;
 }
+
+
+void MotorGimbal::setAngleDegrees(double angle) {
+    setAngle( angle * M_PI / 180.0 );
+}
+
+double MotorGimbal::getAngleDegrees() const {
+    return getAngle() * 180.0 / M_PI;
+}
+
 
 
 void MotorGimbal::setTrimUS(int32_t trim) 

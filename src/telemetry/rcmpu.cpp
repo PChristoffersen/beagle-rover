@@ -16,7 +16,7 @@ static constexpr auto GPIO_INT_PIN_CHIP { 3 };
 static constexpr auto GPIO_INT_PIN_PIN { 21 };
 
 
-static constexpr auto TIMER_INTERVAL { chrono::milliseconds(1000) };
+static constexpr auto TIMER_INTERVAL { 1000ms };
 
 
 RCMPU::RCMPU(shared_ptr<RobotContext> context):

@@ -13,6 +13,8 @@ using namespace std;
 
 //#define DEBUG_ENABLED
 
+static constexpr auto TIMER_INTERVAL { 100ms };
+
 
 
 PRUDebug::PRUDebug(shared_ptr<RobotContext> context) :

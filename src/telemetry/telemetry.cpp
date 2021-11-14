@@ -23,7 +23,7 @@ Telemetry::Telemetry(shared_ptr<RobotContext> context) :
 {
     switch (rc_model()) {
     case MODEL_BB_BLUE:
-        m_sources.push_back(make_unique<ADCBattery>(context));
+        m_sources.push_back(make_shared<ADCBattery>(context));
         break;
     default:
         break;
@@ -66,7 +66,8 @@ void Telemetry::cleanup()
 
 void Telemetry::send(uint16_t appId, uint32_t data) 
 {
-    //rc_ext_fbus_send_telemetry(appId, data);
+    //BOOST_LOG_TRIVIAL(trace) << "Send";
+    rc_ext_fbus_send_telemetry(appId, data);
 }
 
 

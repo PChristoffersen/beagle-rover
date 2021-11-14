@@ -27,7 +27,7 @@ class Telemetry : public std::enable_shared_from_this<Telemetry> {
 
     private:
         bool m_initialized;
-        std::vector<std::unique_ptr<class TelemetrySource>> m_sources;
+        std::vector<std::shared_ptr<class TelemetrySource>> m_sources;
         std::vector<boost::signals2::connection> m_source_connections;
 
 };

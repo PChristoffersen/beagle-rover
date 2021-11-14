@@ -32,6 +32,8 @@ class RobotContext : public std::enable_shared_from_this<RobotContext> {
         
         bool m_power_enabled;
 
+        void initLogging();
+
         void initBeagleBone();
         void cleanupBeagleBone();
         void initPC();

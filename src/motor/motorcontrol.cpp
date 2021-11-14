@@ -16,6 +16,9 @@
 using namespace std;
 
 
+static constexpr auto TIMER_INTERVAL { 20ms };
+
+
 
 MotorControl::MotorControl(shared_ptr<RobotContext> context) : 
     m_initialized { false },
@@ -23,11 +26,12 @@ MotorControl::MotorControl(shared_ptr<RobotContext> context) :
     m_passthrough { false },
     m_timer { context->io() }
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
     case CATEGORY_PC:
         for (int i=0; i<MOTOR_COUNT; i++) {
-            m_motors.push_back(make_unique<Motor>(i, m_mutex));
+            m_motors[i] = make_unique<Motor>(i, m_mutex);
         }
         break;
     }
@@ -37,8 +41,7 @@ MotorControl::MotorControl(shared_ptr<RobotContext> context) :
 MotorControl::~MotorControl() 
 {
     cleanup();
-    m_motors.clear();
-    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

@@ -3,7 +3,9 @@
 #include <iostream>
 #include <functional>
 #include <boost/bind.hpp>
-#include <boost/log/trivial.hpp>
+#include <boost/log/core.hpp> 
+#include <boost/log/trivial.hpp> 
+#include <boost/log/expressions.hpp> 
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
@@ -15,6 +17,9 @@ RobotContext::RobotContext() :
     m_started { false },
     m_power_enabled { false }
 {
+    initLogging();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+
     rc_model();
 }
 
@@ -25,6 +30,23 @@ RobotContext::~RobotContext()
     stop();
     cleanup();
 }
+
+
+void RobotContext::initLogging() {
+    namespace logging = boost::log;
+    namespace keywords = boost::log::keywords;
+
+    #if 1
+    constexpr auto level = logging::trivial::trace;
+    #else
+    constexpr auto level = logging::trivial::debug;
+    #endif
+
+    logging::core::get()->set_filter(
+        logging::trivial::severity >= level
+    ); 
+}
+
 
 
 void RobotContext::init() 
@@ -120,7 +142,7 @@ void RobotContext::cleanupPC()
 
 void RobotContext::start() 
 {
-    BOOST_LOG_TRIVIAL(trace) << "Starting thread";
+    BOOST_LOG_TRIVIAL(info) << "Starting thread";
     m_thread = make_shared<thread>( [&]{ m_io.run(); } );
     m_started = true;
 }
@@ -131,11 +153,11 @@ void RobotContext::stop()
     if (!m_started)
         return;
     
-    BOOST_LOG_TRIVIAL(trace) << "Stopping thread";
+    BOOST_LOG_TRIVIAL(info) << "Stopping thread";
     m_io.stop();
     m_thread->join();
     m_thread.reset();
-    BOOST_LOG_TRIVIAL(trace) << "Thread stopped";
+    BOOST_LOG_TRIVIAL(info) << "Thread stopped";
 
     m_started = false;
 }

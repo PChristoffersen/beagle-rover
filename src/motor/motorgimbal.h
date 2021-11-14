@@ -27,6 +27,9 @@ class MotorGimbal {
         void setAngle(double angle);
         double getAngle() const;
 
+        void setAngleDegrees(double angle);
+        double getAngleDegrees() const;
+
         void setTrimUS(std::int32_t trim);
         std::int32_t getTrimUS() const { return m_trim_us; }
 

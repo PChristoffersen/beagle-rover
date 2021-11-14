@@ -13,14 +13,14 @@ using namespace std;
 ControlSchemeBalancing::ControlSchemeBalancing(shared_ptr<class Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
 ControlSchemeBalancing::~ControlSchemeBalancing() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

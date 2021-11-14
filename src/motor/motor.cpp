@@ -27,6 +27,7 @@ Motor::Motor(int index, recursive_mutex &mutex) :
     m_odometer_base { 0 },
     m_pid { PID_P, PID_I, PID_D, bind(&Motor::getRPM, this), boost::bind(&Motor::setDuty, this, _1) }
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
     //m_pid.registerTimeFunction([]() { high_resolution_clock::now().count(); });
     m_pid.setOutputBounds(-1024.0, 1024.0);
 }
@@ -36,6 +37,7 @@ Motor::Motor(int index, recursive_mutex &mutex) :
 Motor::~Motor() 
 {
     cleanup();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 
