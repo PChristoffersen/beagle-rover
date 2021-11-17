@@ -11,11 +11,13 @@ project(beagle-rover-1 VERSION 1.0)
 set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
-set(Boost_ ON)
+
+find_package(Python3 3.7 COMPONENTS Development)
 find_package(PythonLibs 3.7 REQUIRED)
-find_package(Boost 1.67.0 REQUIRED COMPONENTS system thread log python REQUIRED)
+find_package(Boost 1.67.0 COMPONENTS system log python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR})
 find_library(ROBOTCONTROL robotcontrol)
 add_definitions(-DBOOST_LOG_DYN_LINK)
+
 
 # -----------------------------------------------
 # Helper libraries
@@ -37,6 +39,7 @@ set(SRC
     src/motor/motorcontrol.cpp
     src/led/ledcontrol.cpp
     src/led/ledcolor.cpp
+    src/led/ledcolorlayer.cpp
     src/led/ledanimation.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/adcbattery.cpp
@@ -84,3 +87,4 @@ target_include_directories(test_robot PRIVATE src)
 target_link_libraries(test_robot "${Boost_LIBRARIES}")
 target_link_libraries(test_robot pid)
 target_link_libraries(test_robot robotcontrolext)
+

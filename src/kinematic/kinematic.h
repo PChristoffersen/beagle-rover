@@ -4,7 +4,9 @@
 #include <memory>
 #include <mutex>
 
-class Kinematic : public std::enable_shared_from_this<Kinematic> {
+#include "../common/withmutex.h"
+
+class Kinematic : public std::enable_shared_from_this<Kinematic>, public WithMutex<std::recursive_mutex> {
     public:
         enum class SteeringMode {
             NONE,  // No servo steering
@@ -50,7 +52,6 @@ class Kinematic : public std::enable_shared_from_this<Kinematic> {
         std::shared_ptr<class RCReceiver> rc_receiver() { return m_rc_receiver; }
 
     private:
-        std::recursive_mutex m_mutex;
         bool m_initialized;
 
         std::shared_ptr<class RobotContext> m_context;

@@ -9,7 +9,10 @@
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
-class MotorControl : public std::enable_shared_from_this<MotorControl> {
+#include "../common/withmutex.h"
+
+
+class MotorControl : public std::enable_shared_from_this<MotorControl>, public WithMutex<std::recursive_mutex> {
     public:
         static constexpr auto MOTOR_COUNT { 4 };
 
@@ -58,11 +61,11 @@ class MotorControl : public std::enable_shared_from_this<MotorControl> {
             return (double)((std::int32_t)us-PULSE_CENTER)*2.0/PULSE_RANGE;
         }
 
+
     private:
         bool m_initialized;
         bool m_enabled;
         bool m_passthrough;
-        std::recursive_mutex m_mutex;
         boost::asio::high_resolution_timer m_timer;
         
         std::vector<std::unique_ptr<class Motor>> m_motor_holder;

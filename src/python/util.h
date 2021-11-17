@@ -3,6 +3,7 @@
 
 #include <string>
 #include <boost/python.hpp>
+#include <boost/log/trivial.hpp> 
 
 
 std::string parse_python_exception();
@@ -64,6 +65,9 @@ struct iterable_converter
         data->convertible = storage;
     }
 };
+
+
+
 
 
 #endif

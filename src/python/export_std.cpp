@@ -6,30 +6,30 @@
 
 #include "util.h"
 
-using namespace boost;
-using namespace boost::python;
+using namespace std;
+namespace py = boost::python;
 
-using FloatVector = std::vector<float>;
-using IntVector = std::vector<int>;
-using StringVector = std::vector<std::string>;
+using FloatVector = vector<float>;
+using IntVector = vector<int>;
+using StringVector = vector<string>;
 
 
 void python_export_std() 
 {
     iterable_converter()
         .from_python<FloatVector>();
-    class_<FloatVector>("FloatVector")
-        .def(vector_indexing_suite<FloatVector, true>() )
+    py::class_<FloatVector>("FloatVector")
+        .def(py::vector_indexing_suite<FloatVector, true>() )
         ;
     iterable_converter()
         .from_python<IntVector>();
-    class_<IntVector>("IntVector")
-        .def(vector_indexing_suite<IntVector, true>() )
+    py::class_<IntVector>("IntVector")
+        .def(py::vector_indexing_suite<IntVector, true>() )
         ;
     iterable_converter()
         .from_python<StringVector>();
-    class_<StringVector>("StringVector")
-        .def(vector_indexing_suite<StringVector, true>() )
+    py::class_<StringVector>("StringVector")
+        .def(py::vector_indexing_suite<StringVector, true>() )
         ;
 
 }

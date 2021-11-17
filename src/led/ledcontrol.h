@@ -3,14 +3,21 @@
 
 #include <cstdint>
 #include <memory>
+#include <array>
+#include <mutex>
+#include <list>
 #include <boost/asio.hpp>
 
 #include <robotcontrolext.h>
 
+#include "../common/withmutex.h"
 #include "ledcolor.h"
+#include "ledcolorlayer.h"
 
-class LEDControl : public std::enable_shared_from_this<LEDControl> {
+class LEDControl : public std::enable_shared_from_this<LEDControl>, public WithMutex<std::recursive_mutex> {
     public:
+        using LayerList = std::list<std::shared_ptr<LEDColorLayer>>;
+
         explicit LEDControl(std::shared_ptr<class RobotContext> context);
         LEDControl(const LEDControl&) = delete; // No copy constructor
         LEDControl(LEDControl&&) = delete; // No move constructor
@@ -19,19 +26,22 @@ class LEDControl : public std::enable_shared_from_this<LEDControl> {
         void init();
         void cleanup();
 
-        constexpr int count() const { return LED_PIXEL_COUNT; }
+        LEDColor getBackground() const { return m_background; }
+        void setBackground(const LEDColor &color);
 
-        void updatePixels(LEDColorList const &pixels);
-        void setAll(const LEDColor &color);
+        void show();
 
-    protected:
-        friend class LEDAnimation;
-
-        void _updatePixels(std::uint32_t pixels[]);
+        void addLayer(std::shared_ptr<class LEDColorLayer> &layer);
+        void removeLayer(std::shared_ptr<class LEDColorLayer> &layer);
+        const LayerList &layers() const { return m_layers; }
 
     private:
-        static constexpr int LED_PIXEL_COUNT { RC_EXT_NEOPIXEL_COUNT };
         bool m_initialized;
+
+        LEDColor m_background;
+        LayerList m_layers;
+
+        void clear(const LEDColor &color);
 };
 
 #endif

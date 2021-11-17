@@ -1,62 +1,65 @@
 #!/usr/bin/env python3
 
 import sys
-from math import pi as PI
+import logging
 sys.path.append('build')
 
 from time import sleep
-from build.beaglerover import Robot, LEDColor, TelemetryListener, DriveMode
+from build.beaglerover import Robot, LEDControl, LEDColorLayer
 #from beaglerover import Robot
 
-col = LEDColor(0xFF, 0x00, 0x00)
-
-colors = [
-    LEDColor(0xFF, 0x00, 0x00),
-    LEDColor(0xFF, 0x01, 0x00),
-    LEDColor(0xFF, 0x02, 0x00),
-    LEDColor(0xFF, 0x03, 0x00),
-
-    LEDColor(0xFF, 0x04, 0x00),
-    LEDColor(0xFF, 0x05, 0x00),
-    LEDColor(0xFF, 0x06, 0x00),
-    LEDColor(0xFF, 0x07, 0x00),
-
-    LEDColor(0xFF, 0x08, 0xFF),
-    LEDColor(0xFF, 0x09, 0xFF),
-    LEDColor(0xFF, 0x0A, 0xFF),
-    LEDColor(0xFF, 0x0B, 0xFF),
-    
-    LEDColor(0xFF, 0x0C, 0xFF),
-    LEDColor(0xFF, 0x0D, 0xFF),
-    LEDColor(0xFF, 0x0E, 0xFF),
-    LEDColor(0xFF, 0x0F, 0xFF),
-]
+FORMAT = '[%(asctime)s.%(msecs)03dxxx] [%(threadName)-18s] [%(levelname)s] >  %(message)s'
+logging.basicConfig(format=FORMAT, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+log = logging.getLogger("test")
 
 
-def set_leds(robot: Robot):
-    leds = robot.led_control
-    leds.update_pixels(colors)
+
+BLACK = ( 0x00, 0x00, 0x00 )
+RED   = ( 0x20, 0x00, 0x00 )
+GREEN = ( 0x00, 0x20, 0x00 )
+BLUE  = ( 0x00, 0x00, 0x20 )
+
+
+
+def colors_shift(led_control: LEDControl, layer: LEDColorLayer, color):
+    for i in range(len(layer)):
+        log.info(f"{i} - {color}")
+        
+        with led_control:
+            layer.fill(BLACK)
+            layer[i] = color
+            led_control.show()
+        
+        sleep(0.1)
+
 
 def main():
     robot = Robot()
-
     robot.init()
 
-    set_leds(robot)
+    led_control = robot.led_control
+
+    layer = LEDColorLayer(0)
+    led_control.add_layer(layer)
 
     try:
         while True:
-            sleep(2)
+            log.info("RED")
+            colors_shift(led_control, layer, RED)
+            log.info("GREEN")
+            colors_shift(led_control, layer, GREEN)
+            log.info("BLUE")
+            colors_shift(led_control, layer, BLUE)
+
     except KeyboardInterrupt:
-        print("Shutdown")
+        log.info("Shutdown")
+
+    led_control = None
 
     robot.cleanup()
     robot = None
-    print("Done")
+    log.info("Done")
 
-    robot.cleanup()
-    robot = None
-    print("Done")
 
 
 if __name__ == '__main__':

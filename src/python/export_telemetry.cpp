@@ -6,8 +6,8 @@
 #include "../telemetry/telemetry.h"
 #include "util.h"
 
-using namespace boost;
-using namespace boost::python;
+using namespace std;
+namespace py = boost::python;
 
 
 class TelemetryListener {
@@ -34,7 +34,7 @@ class TelemetryListener {
             try {
                 on_event(event);
             }
-            catch (const error_already_set &err) {
+            catch (const py::error_already_set &err) {
                 BOOST_LOG_TRIVIAL(warning) << "Event error: " << parse_python_exception();
             }
             PyGILState_Release(gstate);
@@ -62,18 +62,21 @@ class TelemetryListenerWrap : public TelemetryListener, public boost::python::wr
 
 void python_export_telemetry() 
 {
-    register_ptr_to_python<std::shared_ptr<Telemetry> >();
+    py::register_ptr_to_python<shared_ptr<Telemetry> >();
 
-    class_<Telemetry, noncopyable>("Telemetry", no_init)
+    py::class_<Telemetry, boost::noncopyable>("Telemetry", py::no_init)
         ;
-    class_<TelemetryListenerWrap, noncopyable>("TelemetryListener")
+        
+    py::class_<TelemetryListenerWrap, boost::noncopyable>("TelemetryListener")
         .def("connect", &TelemetryListenerWrap::connect)
         .def("disconnect", &TelemetryListenerWrap::disconnect)
         .def("on_event", pure_virtual(&TelemetryListenerWrap::on_event))
         ;
-    class_<TelemetryEvent>("TelemetryEvent", no_init)
+
+    py::class_<TelemetryEvent>("TelemetryEvent", py::no_init)
         ;
-    class_<TelemetryEventBattery, bases<TelemetryEvent>>("TelemetryEventBattery")
+
+    py::class_<TelemetryEventBattery, py::bases<TelemetryEvent>>("TelemetryEventBattery")
         .def_readonly("battery_id", &TelemetryEventBattery::battery_id)
         .def_readonly("cell_voltages", &TelemetryEventBattery::cell_voltage)
         ;

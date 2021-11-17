@@ -14,7 +14,8 @@ using namespace std;
 
 
 /*
-flags = bit7 = ch17 = digital channel (0x80)
+flags = 
+bit7 = ch17 = digital channel (0x80)
 bit6 = ch18 = digital channel (0x40)
 bit5 = Frame lost, equivalent red LED on receiver (0x20)
 bit4 = failsafe activated (0x10)
@@ -24,6 +25,7 @@ bit1 = n/a
 bit0 = n/a
 
 */
+
 
 static constexpr auto TIMER_INTERVAL { 10ms };
 
@@ -49,18 +51,17 @@ RCReceiver::~RCReceiver()
 
 void RCReceiver::init() 
 {    
-    const lock_guard<mutex> lock(m_mutex);
+    const lock_guard<recursive_mutex> lock(m_mutex);
 
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
         m_fbus = rc_ext_fbus_get_shm();
+        m_timer.expires_after(TIMER_INTERVAL);
+        timer_setup();
         break;
     default:
         break;
     }
-
-    m_timer.expires_after(TIMER_INTERVAL);
-    timer_setup();
 
     m_initialized = true;
 }
@@ -68,7 +69,7 @@ void RCReceiver::init()
 
 void RCReceiver::cleanup() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const lock_guard<recursive_mutex> lock(m_mutex);
 
     if (!m_initialized) 
         return;
@@ -92,7 +93,7 @@ void RCReceiver::timer_setup() {
 
 void RCReceiver::timer(boost::system::error_code error) 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const lock_guard<recursive_mutex> lock(m_mutex);
 
     if (error!=boost::system::errc::success || !m_initialized) {
         return;
@@ -127,14 +128,19 @@ void RCReceiver::timer(boost::system::error_code error)
             m_channels[i] = m_fbus->channels[i];
         }
 
-        // SIgnal data
+        // Signal data
         sigData(m_flags, m_rssi, m_channels);
+        if (sig_flags)
+            sigFlags(m_flags);
+        if (sig_rssi)
+            sigRSSI(m_rssi);
+
+        // Print data
 #if 1
         static chrono::high_resolution_clock::time_point last_update;
-        auto time = chrono::high_resolution_clock::now();
+        auto time { chrono::high_resolution_clock::now() };
+        
         if ((time-last_update) > 100ms) {
-
-
             BOOST_LOG_TRIVIAL(info) << boost::format("%+04x f=%+02x  r=%+02x  ch=%d   ") % (uint32_t)counter % (uint32_t)m_flags.value % (uint32_t)m_rssi % (uint32_t)m_channels.size()
                 << boost::format("%+4d |") % m_channels[0]
                 << boost::format("%+4d |") % m_channels[1]
@@ -142,24 +148,10 @@ void RCReceiver::timer(boost::system::error_code error)
                 << boost::format("%+4d |") % m_channels[3]
                 ;
 
-            #if 0
-            for (int i=0; i<8; i++) {
-                uint32_t ch = m_fbus->channels[i];
-                cout << format("%+4d |") % ch;
-            }
-            cout << "  " << (m_fbus->channels[0]-500) << "   "  << ((m_fbus->channels[0]-500)/2000.0) << "          ";
-            cout << "\r" << flush;
-            #endif
-
             last_update = time;
         }
 #endif
         m_last_counter = counter;
-
-        //if (sig_flags)
-        //    sigFlags(m_flags);
-        //if (sig_rssi)
-        //    sigRSSI(m_rssi);
     }
 
     timer_setup();

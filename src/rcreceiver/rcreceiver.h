@@ -9,8 +9,9 @@
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
+#include "../common/withmutex.h"
 
-class RCReceiver : public std::enable_shared_from_this<RCReceiver> {
+class RCReceiver : public std::enable_shared_from_this<RCReceiver>, public WithMutex<std::recursive_mutex> {
     public:
         union Flags {
             std::byte value;
@@ -37,6 +38,9 @@ class RCReceiver : public std::enable_shared_from_this<RCReceiver> {
         using SignalRSSI = boost::signals2::signal<void(std::uint8_t)>;
         using SignalData = boost::signals2::signal<void(Flags flags, std::uint8_t rssi, const ChannelList &channels)>;
 
+        SignalFlags sigFlags;
+        SignalRSSI sigRSSI;
+        SignalData sigData;
 
         explicit RCReceiver(std::shared_ptr<class RobotContext> context);
         RCReceiver(const RCReceiver&) = delete; // No copy constructor
@@ -50,14 +54,14 @@ class RCReceiver : public std::enable_shared_from_this<RCReceiver> {
         std::uint8_t getRSSI() const { return m_rssi; }
         Flags getFlags() const { return m_flags; }
 
-        const ChannelList &getChannels() const { return m_channels; }
+        ChannelList getChannels() { 
+            const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+            return m_channels; 
+        }
+        const ChannelList &channels() const { return m_channels; }
 
-        SignalFlags sigFlags;
-        SignalRSSI sigRSSI;
-        SignalData sigData;
     private:
         bool m_initialized;
-        std::mutex m_mutex;
         boost::asio::steady_timer m_timer;
         std::uint32_t m_last_counter;
         volatile shm_fbus_t *m_fbus;

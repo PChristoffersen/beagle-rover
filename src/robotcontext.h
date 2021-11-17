@@ -6,7 +6,10 @@
 #include <thread>
 #include <boost/asio.hpp>
 
-class RobotContext : public std::enable_shared_from_this<RobotContext> {
+#include "common/withmutex.h"
+
+
+class RobotContext : public std::enable_shared_from_this<RobotContext>, public WithMutex<std::recursive_mutex> {
     public:
         RobotContext();
         RobotContext(const RobotContext&) = delete; // No copy constructor
@@ -26,7 +29,6 @@ class RobotContext : public std::enable_shared_from_this<RobotContext> {
     private:
         bool m_initialized;
         bool m_started;
-        std::mutex m_mutex;
         boost::asio::io_context m_io;
         std::shared_ptr<std::thread> m_thread;
         

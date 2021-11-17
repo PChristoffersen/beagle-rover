@@ -2,9 +2,6 @@
 
 #include "util.h"
 
-using namespace boost;
-using namespace boost::python;
-
 void python_export_std();
 void python_export_motor();
 void python_export_telemetry();

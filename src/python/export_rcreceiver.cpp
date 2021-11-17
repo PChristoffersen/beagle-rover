@@ -5,18 +5,25 @@
 #include "util.h"
 #include "../rcreceiver/rcreceiver.h"
 
-using namespace boost;
-using namespace boost::python;
+using namespace std;
+namespace py = boost::python;
 
 
 void python_export_rcreceiver() 
 {
 
-    register_ptr_to_python<std::shared_ptr<RCReceiver> >();
+    py::register_ptr_to_python<shared_ptr<RCReceiver> >();
 
-    class_<RCReceiver, noncopyable>("RCReceiver", no_init)
+    py::class_<RCReceiver, boost::noncopyable>("RCReceiver", py::no_init)
         .add_property("connected", &RCReceiver::isConnected)
         .add_property("flags", &RCReceiver::getFlags)
         .add_property("rssi", &RCReceiver::getRSSI)
+        .def("__enter__", +[](RCReceiver &rc) {
+            rc.lock();
+            return rc.shared_from_this();
+        })
+        .def("__exit__", +[](RCReceiver &rc, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
+            rc.unlock();
+        })
         ;
 }

@@ -36,7 +36,7 @@ void RobotContext::initLogging() {
     namespace logging = boost::log;
     namespace keywords = boost::log::keywords;
 
-    #if 1
+    #if 0
     constexpr auto level = logging::trivial::trace;
     #else
     constexpr auto level = logging::trivial::debug;
@@ -51,6 +51,8 @@ void RobotContext::initLogging() {
 
 void RobotContext::init() 
 {
+    const lock_guard<recursive_mutex> lock(m_mutex);
+
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
         initBeagleBone();
@@ -67,6 +69,8 @@ void RobotContext::init()
 
 void RobotContext::cleanup() 
 {
+    const lock_guard<recursive_mutex> lock(m_mutex);
+
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -142,6 +146,8 @@ void RobotContext::cleanupPC()
 
 void RobotContext::start() 
 {
+    const lock_guard<recursive_mutex> lock(m_mutex);
+
     BOOST_LOG_TRIVIAL(info) << "Starting thread";
     m_thread = make_shared<thread>( [&]{ m_io.run(); } );
     m_started = true;
@@ -150,6 +156,8 @@ void RobotContext::start()
 
 void RobotContext::stop() 
 {
+    const lock_guard<recursive_mutex> lock(m_mutex);
+
     if (!m_started)
         return;
     

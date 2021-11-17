@@ -11,19 +11,19 @@
 #include "../kinematic/kinematic.h"
 
 
-using namespace boost;
-using namespace boost::python;
+using namespace std;
+namespace py = boost::python;
 
 void python_export_robot() 
 {
-    register_ptr_to_python<std::shared_ptr<Robot> >();
+    py::register_ptr_to_python<shared_ptr<Robot> >();
 
-    class_<Robot, noncopyable>("Robot")
-        .add_property("rc_receiver", make_function(+[](const Robot &r){ return r.rcReceiver().get(); }, return_internal_reference<>()))
-        .add_property("motor_control", make_function(+[](const Robot &r){ return r.motorControl().get(); }, return_internal_reference<>()))
-        .add_property("led_control", make_function(+[](const Robot &r){ return r.ledControl().get(); }, return_internal_reference<>()))
-        .add_property("telemetry", make_function(+[](const Robot &r){ return r.telemetry().get(); }, return_internal_reference<>()))
-        .add_property("kinematic", make_function(+[](const Robot &r){ return r.kinematic().get(); }, return_internal_reference<>()))
+    py::class_<Robot, boost::noncopyable>("Robot")
+        .add_property("rc_receiver", py::make_function(+[](const Robot &r){ return r.rcReceiver().get(); }, py::return_internal_reference<>()))
+        .add_property("motor_control", py::make_function(+[](const Robot &r){ return r.motorControl().get(); }, py::return_internal_reference<>()))
+        .add_property("led_control", py::make_function(+[](const Robot &r){ return r.ledControl().get(); }, py::return_internal_reference<>()))
+        .add_property("telemetry", py::make_function(+[](const Robot &r){ return r.telemetry().get(); }, py::return_internal_reference<>()))
+        .add_property("kinematic", py::make_function(+[](const Robot &r){ return r.kinematic().get(); }, py::return_internal_reference<>()))
         .add_property("armed", &Robot::getArmed, &Robot::setArmed)
         .def("init", &Robot::init)
         .def("cleanup", &Robot::cleanup)
