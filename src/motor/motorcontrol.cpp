@@ -11,16 +11,19 @@
 #include "motor.h"
 #include "motorgimbal.h"
 #include "../robotcontext.h"
-#include "../rcreceiver/rcreceiver.h"
+#include "../rc/rcreceiver.h"
 
 using namespace std;
+
+
+namespace Robot::Motor {
 
 
 static constexpr auto TIMER_INTERVAL { 20ms };
 
 
 
-MotorControl::MotorControl(shared_ptr<RobotContext> context) : 
+Control::Control(shared_ptr<Robot::Context> context) : 
     m_initialized { false },
     m_enabled { false },
     m_passthrough { false },
@@ -38,14 +41,14 @@ MotorControl::MotorControl(shared_ptr<RobotContext> context) :
 }
 
 
-MotorControl::~MotorControl() 
+Control::~Control() 
 {
     cleanup();
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
-void MotorControl::init() 
+void Control::init() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -62,7 +65,7 @@ void MotorControl::init()
 }
 
 
-void MotorControl::cleanup() 
+void Control::cleanup() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -84,7 +87,7 @@ void MotorControl::cleanup()
 
 
 
-void MotorControl::brake() 
+void Control::brake() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     for (auto &motor : m_motors) {
@@ -92,7 +95,7 @@ void MotorControl::brake()
     }
 }
 
-void MotorControl::freeSpin() 
+void Control::freeSpin() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     for (auto &motor : m_motors) {
@@ -102,7 +105,7 @@ void MotorControl::freeSpin()
 
 
 
-void MotorControl::setEnabled(bool enabled) 
+void Control::setEnabled(bool enabled) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -130,7 +133,7 @@ void MotorControl::setEnabled(bool enabled)
 }
 
 
-void MotorControl::resetOdometer() 
+void Control::resetOdometer() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -141,7 +144,7 @@ void MotorControl::resetOdometer()
 
 
 
-void MotorControl::setPassthrough(bool passthrough) 
+void Control::setPassthrough(bool passthrough) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (passthrough != m_passthrough) {
@@ -179,7 +182,7 @@ void MotorControl::setPassthrough(bool passthrough)
 }
 
 
-void MotorControl::timer_setup() {
+void Control::timer_setup() {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
         [self_ptr=weak_from_this()] (auto &error) {
@@ -191,7 +194,7 @@ void MotorControl::timer_setup() {
 }
 
 
-void MotorControl::timer(boost::system::error_code error) 
+void Control::timer(boost::system::error_code error) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (error!=boost::system::errc::success || !m_initialized) {
@@ -213,3 +216,5 @@ void MotorControl::timer(boost::system::error_code error)
     timer_setup();
 }
 
+
+};

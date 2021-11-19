@@ -8,10 +8,11 @@
 #include <robotcontrolext.h>
 
 #include "../robotcontext.h"
+#include "../motor/motorcontrol.h"
 
 using namespace std;
 
-
+namespace Robot::RC {
 
 /*
 flags = 
@@ -29,11 +30,24 @@ bit0 = n/a
 
 static constexpr auto TIMER_INTERVAL { 10ms };
 
-static constexpr uint8_t FBUS_FLAG_SIGNAL_LOSS { 1 << 2 };
-static constexpr uint8_t FBUS_FLAG_FAILSAFE_ACTIVE { 1 << 3 };
+
+Receiver::ChannelList::ChannelList() :
+    m_count { 0 }
+{
+    fill(Robot::Motor::PULSE_CENTER);
+}
 
 
-RCReceiver::RCReceiver(shared_ptr<RobotContext> context) :
+void Receiver::ChannelList::setCount(size_t count) 
+{
+    if (m_count!=count) {
+        std::fill(begin()+count, end(), Robot::Motor::PULSE_CENTER);
+        m_count = count;
+    }
+}
+
+
+Receiver::Receiver(shared_ptr<Robot::Context> context) :
     m_initialized { true },
     m_timer { context->io() },
     m_connected { false },
@@ -42,14 +56,14 @@ RCReceiver::RCReceiver(shared_ptr<RobotContext> context) :
 }
 
 
-RCReceiver::~RCReceiver() 
+Receiver::~Receiver() 
 {
     cleanup();
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
-void RCReceiver::init() 
+void Receiver::init() 
 {    
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -67,7 +81,7 @@ void RCReceiver::init()
 }
 
 
-void RCReceiver::cleanup() 
+void Receiver::cleanup() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -79,7 +93,7 @@ void RCReceiver::cleanup()
 }
 
 
-void RCReceiver::timer_setup() {
+void Receiver::timer_setup() {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
         [self_ptr=weak_from_this()] (auto &error) {
@@ -91,7 +105,7 @@ void RCReceiver::timer_setup() {
 }
 
 
-void RCReceiver::timer(boost::system::error_code error) 
+void Receiver::timer(boost::system::error_code error) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -119,14 +133,11 @@ void RCReceiver::timer(boost::system::error_code error)
             sig_rssi = true;
         }
 
-        auto chsize = m_channels.size();
-        if (chsize!=m_fbus->n_channels) {
-            chsize = m_fbus->n_channels;
-            m_channels.resize(chsize);
-        }
+        auto chsize = m_fbus->n_channels;
         for (auto i=0; i<chsize; i++) {
             m_channels[i] = m_fbus->channels[i];
         }
+        m_channels.setCount(chsize);
 
         // Signal data
         sigData(m_flags, m_rssi, m_channels);
@@ -156,3 +167,6 @@ void RCReceiver::timer(boost::system::error_code error)
 
     timer_setup();
 }
+
+
+};

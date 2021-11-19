@@ -11,8 +11,9 @@
 
 using namespace std;
 
+namespace Robot {
 
-RobotContext::RobotContext() : 
+Context::Context() : 
     m_initialized { false },
     m_started { false },
     m_power_enabled { false }
@@ -24,7 +25,7 @@ RobotContext::RobotContext() :
 }
 
 
-RobotContext::~RobotContext() 
+Context::~Context() 
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     stop();
@@ -32,7 +33,7 @@ RobotContext::~RobotContext()
 }
 
 
-void RobotContext::initLogging() {
+void Context::initLogging() {
     namespace logging = boost::log;
     namespace keywords = boost::log::keywords;
 
@@ -49,7 +50,7 @@ void RobotContext::initLogging() {
 
 
 
-void RobotContext::init() 
+void Context::init() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -67,7 +68,7 @@ void RobotContext::init()
 }
 
 
-void RobotContext::cleanup() 
+void Context::cleanup() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -95,7 +96,7 @@ void RobotContext::cleanup()
 
 
 
-void RobotContext::initBeagleBone() 
+void Context::initBeagleBone() 
 {
     if (rc_adc_init()<0) {
         BOOST_THROW_EXCEPTION(runtime_error("Error initializing ADC"));
@@ -123,7 +124,7 @@ void RobotContext::initBeagleBone()
 }
 
 
-void RobotContext::cleanupBeagleBone() 
+void Context::cleanupBeagleBone() 
 {
     rc_ext_fbus_cleanup();
     rc_ext_pru_cleanup();
@@ -135,16 +136,16 @@ void RobotContext::cleanupBeagleBone()
 }
 
 
-void RobotContext::initPC() 
+void Context::initPC() 
 {
 }
 
-void RobotContext::cleanupPC() 
+void Context::cleanupPC() 
 {
 }
 
 
-void RobotContext::start() 
+void Context::start() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -154,7 +155,7 @@ void RobotContext::start()
 }
 
 
-void RobotContext::stop() 
+void Context::stop() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -171,3 +172,4 @@ void RobotContext::stop()
 }
 
 
+};

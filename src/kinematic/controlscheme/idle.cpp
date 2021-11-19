@@ -1,20 +1,21 @@
-#include "controlschemeidle.h"
+#include "idle.h"
 
 #include <boost/log/trivial.hpp>
 #include <boost/system/error_code.hpp>
 
-#include "../robotcontext.h"
-#include "../motor/motor.h"
-#include "../motor/motorgimbal.h"
-#include "../motor/motorcontrol.h"
+#include "../../robotcontext.h"
+#include "../../motor/motor.h"
+#include "../../motor/motorgimbal.h"
+#include "../../motor/motorcontrol.h"
 
 using namespace std;
 
+namespace Robot::Kinematic {
 
-static constexpr auto IDLE_DELAY { chrono::seconds(2) };
+static constexpr auto IDLE_DELAY { 2s };
 
 
-ControlSchemeIdle::ControlSchemeIdle(shared_ptr<class Kinematic> kinematic) :
+ControlSchemeIdle::ControlSchemeIdle(shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }, 
     m_timer { m_context->io() }
 {
@@ -93,3 +94,6 @@ void ControlSchemeIdle::timer(boost::system::error_code error)
         motor->gimbal()->setEnabled(false);
     }
 }
+
+
+};

@@ -11,7 +11,7 @@ void python_export_kinematic();
 void python_export_robot();
 
 
-BOOST_PYTHON_MODULE(beaglerover) 
+BOOST_PYTHON_MODULE(robotcontrol) 
 {
     PyEval_InitThreads();
 

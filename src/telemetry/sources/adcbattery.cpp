@@ -5,17 +5,19 @@
 
 #include <robotcontrol.h>
 
-#include "telemetry.h"
-#include "telemetrytypes.h"
-#include "../robotcontext.h"
+#include "../telemetry.h"
+#include "../telemetrytypes.h"
+#include "../../robotcontext.h"
 
 using namespace std;
 
+namespace Robot::Telemetry {
 
 static constexpr auto TIMER_INTERVAL { 2s };
 
 
-ADCBattery::ADCBattery(shared_ptr<RobotContext> context):
+ADCBattery::ADCBattery(shared_ptr<Robot::Context> context):
+    AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() }
 {
@@ -75,7 +77,7 @@ void ADCBattery::timer(boost::system::error_code error)
         return;
     }
     
-    TelemetryEventBattery event;
+    EventBattery event;
     event.battery_id = 0x00;
     event.cell_voltage.push_back(pack_voltage/2.0f);
     event.cell_voltage.push_back(pack_voltage/2.0f);
@@ -85,3 +87,5 @@ void ADCBattery::timer(boost::system::error_code error)
     timer_setup();
 }
 
+
+};

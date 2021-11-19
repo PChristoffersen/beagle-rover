@@ -5,21 +5,24 @@
 #include <vector>
 #include <boost/signals2.hpp>
 
-using TelemetrySignal = boost::signals2::signal<void(const class TelemetryEvent &)>;
+namespace Robot::Telemetry {
+
+    using Signal = boost::signals2::signal<void(const class Event &)>;
 
 
-class TelemetryEvent {
-    public:
-        virtual ~TelemetryEvent() = default;
+    class Event {
+        public:
+            virtual ~Event() = default;
+    };
+
+
+    class EventBattery : public Event {
+        public:
+            EventBattery() {}
+            std::uint8_t battery_id;
+            std::vector<float> cell_voltage;
+    };
+
 };
-
-
-class TelemetryEventBattery : public TelemetryEvent {
-    public:
-        TelemetryEventBattery() {}
-        std::uint8_t battery_id;
-        std::vector<float> cell_voltage;
-};
-
 
 #endif

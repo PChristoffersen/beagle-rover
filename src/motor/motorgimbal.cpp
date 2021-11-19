@@ -13,39 +13,40 @@
 
 using namespace std;
 
+namespace Robot::Motor {
 
 
-MotorGimbal::MotorGimbal(int index, recursive_mutex &mutex) :
+Gimbal::Gimbal(int index, recursive_mutex &mutex) :
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
     m_enabled { false },
     m_passthrough { false },
-    m_pulse_us { MotorControl::PULSE_CENTER },
+    m_pulse_us { PULSE_CENTER },
     m_trim_us { 0 }, 
-    m_limit_min { MotorControl::PULSE_MIN },
-    m_limit_max { MotorControl::PULSE_MAX }
+    m_limit_min { PULSE_MIN },
+    m_limit_max { PULSE_MAX }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 
-MotorGimbal::~MotorGimbal() 
+Gimbal::~Gimbal() 
 {
     cleanup();
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 
-void MotorGimbal::init() 
+void Gimbal::init() 
 {
     m_last_pulse = chrono::high_resolution_clock::now();
-    m_pulse_us = MotorControl::PULSE_CENTER;
+    m_pulse_us = PULSE_CENTER;
     m_initialized = true;
 }
 
 
-void MotorGimbal::cleanup() 
+void Gimbal::cleanup() 
 {
     if (!m_initialized)
         return;
@@ -53,7 +54,7 @@ void MotorGimbal::cleanup()
 }
 
 
-void MotorGimbal::setEnabled(bool enable) 
+void Gimbal::setEnabled(bool enable) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     //BOOST_LOG_TRIVIAL(info) << "Enable " << enable;
@@ -61,7 +62,7 @@ void MotorGimbal::setEnabled(bool enable)
 }
 
 
-void MotorGimbal::setPassthrough(bool passthrough) 
+void Gimbal::setPassthrough(bool passthrough) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     //BOOST_LOG_TRIVIAL(info) << "Enable " << enable;
@@ -70,7 +71,7 @@ void MotorGimbal::setPassthrough(bool passthrough)
 
 
 
-void MotorGimbal::setPulseUS(uint32_t us) 
+void Gimbal::setPulseUS(uint32_t us) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     //BOOST_LOG_TRIVIAL(info) << "Gimbal[" << m_index << "] setPulseUS(" << us << ")";
@@ -79,58 +80,58 @@ void MotorGimbal::setPulseUS(uint32_t us)
 }
 
 
-void MotorGimbal::setAngle(double angle) 
+void Gimbal::setAngle(double angle) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    uint32_t pulse = angle * MotorControl::PULSE_RANGE / (M_PI * 2.0) + MotorControl::PULSE_CENTER;
+    uint32_t pulse = angle * PULSE_RANGE / (M_PI * 2.0) + PULSE_CENTER;
     setPulseUS(pulse);
 }
 
 
-double MotorGimbal::getAngle() const 
+double Gimbal::getAngle() const 
 {
-    return M_PI * 2.0 * (double)((int32_t)m_pulse_us - MotorControl::PULSE_CENTER) / MotorControl::PULSE_RANGE;
+    return M_PI * 2.0 * (double)((int32_t)m_pulse_us - PULSE_CENTER) / PULSE_RANGE;
 }
 
 
-void MotorGimbal::setAngleDegrees(double angle) {
+void Gimbal::setAngleDegrees(double angle) {
     setAngle( angle * M_PI / 180.0 );
 }
 
-double MotorGimbal::getAngleDegrees() const {
+double Gimbal::getAngleDegrees() const {
     return getAngle() * 180.0 / M_PI;
 }
 
 
 
-void MotorGimbal::setTrimUS(int32_t trim) 
+void Gimbal::setTrimUS(int32_t trim) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    m_trim_us = clamp(trim, -(int32_t)MotorControl::PULSE_RANGE, (int32_t)MotorControl::PULSE_RANGE);
+    m_trim_us = clamp(trim, -(int32_t)PULSE_RANGE, (int32_t)PULSE_RANGE);
 }
 
-void MotorGimbal::setLimits(uint32_t lmin, uint32_t lmax) 
+void Gimbal::setLimits(uint32_t lmin, uint32_t lmax) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     setLimitMin(lmin);
     setLimitMax(lmax);
 }
 
-void MotorGimbal::setLimitMin(uint32_t limit) 
+void Gimbal::setLimitMin(uint32_t limit) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    m_limit_min = clamp(limit, MotorControl::PULSE_MIN, MotorControl::PULSE_MAX);
+    m_limit_min = clamp(limit, PULSE_MIN, PULSE_MAX);
 }
 
-void MotorGimbal::setLimitMax(uint32_t limit) 
+void Gimbal::setLimitMax(uint32_t limit) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    m_limit_max = clamp(limit, MotorControl::PULSE_MIN, MotorControl::PULSE_MAX);
+    m_limit_max = clamp(limit, PULSE_MIN, PULSE_MAX);
 }
 
 
 
-void MotorGimbal::update() 
+void Gimbal::update() 
 {
     if (m_enabled && !m_passthrough && m_pulse_us>0) {
         auto time = chrono::high_resolution_clock::now();
@@ -142,3 +143,5 @@ void MotorGimbal::update()
         }
     }
 }
+
+};

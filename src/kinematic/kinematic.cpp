@@ -7,17 +7,18 @@
 #include "../motor/motor.h"
 #include "../motor/motorgimbal.h"
 
-#include "controlschemeidle.h"
-#include "controlschemenormal.h"
-#include "controlschemespinning.h"
-#include "controlschemebalancing.h"
-#include "controlschemepassthrough.h"
+#include "controlscheme/idle.h"
+#include "controlscheme/normal.h"
+#include "controlscheme/spinning.h"
+#include "controlscheme/balancing.h"
+#include "controlscheme/passthrough.h"
 
 
 using namespace std;
 
+namespace Robot::Kinematic {
 
-Kinematic::Kinematic(shared_ptr<RobotContext> context, shared_ptr<class MotorControl> motor_control, shared_ptr<class Telemetry> telemetry, std::shared_ptr<class RCReceiver> receiver) :
+Kinematic::Kinematic(shared_ptr<Robot::Context> context, shared_ptr<Robot::Motor::Control> motor_control, shared_ptr<Robot::Telemetry::Telemetry> telemetry, shared_ptr<Robot::RC::Receiver> receiver) :
     m_initialized { false },
     m_context { context },
     m_motor_control { motor_control },
@@ -82,7 +83,7 @@ void Kinematic::setDriveMode(DriveMode mode)
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (mode!=m_drive_mode || !m_control_scheme) {
-        BOOST_LOG_TRIVIAL(info) << "Control scheme: " << (int)m_drive_mode;
+        BOOST_LOG_TRIVIAL(info) << "Kinematic scheme: " << (int)m_drive_mode;
 
         if (m_control_scheme) {
             m_control_scheme->cleanup();
@@ -116,4 +117,4 @@ void Kinematic::setDriveMode(DriveMode mode)
     }
 }
 
-
+};

@@ -5,8 +5,7 @@ import logging
 sys.path.append('build')
 
 from time import sleep
-from build.beaglerover import Robot, LEDControl, LEDColorLayer
-#from beaglerover import Robot
+from build.robotcontrol import Robot, LEDControl, LEDColorLayer
 
 FORMAT = '[%(asctime)s.%(msecs)03dxxx] [%(threadName)-18s] [%(levelname)s] >  %(message)s'
 logging.basicConfig(format=FORMAT, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
@@ -21,16 +20,16 @@ BLUE  = ( 0x00, 0x00, 0x20 )
 
 
 
-def colors_shift(led_control: LEDControl, layer: LEDColorLayer, color):
+def colors_shift(layer: LEDColorLayer, color):
     for i in range(len(layer)):
-        log.info(f"{i} - {color}")
+        #log.info(f"{i} - {color}")
         
-        with led_control:
+        with layer:
             layer.fill(BLACK)
             layer[i] = color
-            led_control.show()
-        
-        sleep(0.1)
+            layer.show()
+
+        sleep(0.05)
 
 
 def main():
@@ -40,20 +39,23 @@ def main():
     led_control = robot.led_control
 
     layer = LEDColorLayer(0)
-    led_control.add_layer(layer)
+    led_control.attach_layer(layer)
+
+    layer.depth
 
     try:
         while True:
             log.info("RED")
-            colors_shift(led_control, layer, RED)
+            colors_shift(layer, RED)
             log.info("GREEN")
-            colors_shift(led_control, layer, GREEN)
+            colors_shift(layer, GREEN)
             log.info("BLUE")
-            colors_shift(led_control, layer, BLUE)
+            colors_shift(layer, BLUE)
 
     except KeyboardInterrupt:
         log.info("Shutdown")
 
+    layer.detach()
     led_control = None
 
     robot.cleanup()

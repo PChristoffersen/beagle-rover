@@ -23,7 +23,7 @@ static int clear_strip() {
     for (int i=0; i<RC_EXT_NEOPIXEL_COUNT; i++) {
         pixels[i] = 0x00000000;
     }
-    return rc_ext_neopixel_set(pixels, RC_EXT_NEOPIXEL_COUNT);
+    return rc_ext_neopixel_set(pixels);
 }
 
 int rc_ext_neopixel_init() {
@@ -39,12 +39,17 @@ void rc_ext_neopixel_cleanup() {
 }
 
 
-int rc_ext_neopixel_set(uint32_t *pixels, int count) {
+int rc_ext_neopixel_set(uint32_t pixels[RC_EXT_NEOPIXEL_COUNT]) {
     neopixel_message_t msg;
     msg.msg.type = MSG_TYPE_NEOPIXEL_SET;
-    memcpy(&msg.pixels, pixels, sizeof(uint32_t)*count);
-    if (count<RC_EXT_NEOPIXEL_COUNT) {
-        memset(&msg.pixels[count], 0x00, sizeof(uint32_t)*(RC_EXT_NEOPIXEL_COUNT-count));
+    // Reorder pixels in a way that makes more sense
+    // [0-8]  = "Front" led strip left to right
+    // [9-15] = "Back"  led strip left to right
+    for (int i=0; i<RC_EXT_NEOPIXEL_COUNT/2; ++i) {
+        // Front
+        msg.pixels[RC_EXT_NEOPIXEL_COUNT/2-i-1] = pixels[i+RC_EXT_NEOPIXEL_COUNT/2];
+        // Back
+        msg.pixels[RC_EXT_NEOPIXEL_COUNT-i-1]   = pixels[i];
     }
     return rc_ext_pru_send_message(&msg, sizeof(msg));
 }

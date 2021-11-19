@@ -11,37 +11,49 @@
 #include <robotcontrolext.h>
 
 #include "../common/withmutex.h"
+#include "../robotcontext.h"
 #include "ledcolor.h"
 #include "ledcolorlayer.h"
 
-class LEDControl : public std::enable_shared_from_this<LEDControl>, public WithMutex<std::recursive_mutex> {
-    public:
-        using LayerList = std::list<std::shared_ptr<LEDColorLayer>>;
+namespace Robot::LED {
 
-        explicit LEDControl(std::shared_ptr<class RobotContext> context);
-        LEDControl(const LEDControl&) = delete; // No copy constructor
-        LEDControl(LEDControl&&) = delete; // No move constructor
-        virtual ~LEDControl();
+    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
+        public:
+            using LayerList = std::list<std::shared_ptr<ColorLayer>>;
 
-        void init();
-        void cleanup();
+            explicit Control(std::shared_ptr<Robot::Context> context);
+            Control(const Control&) = delete; // No copy constructor
+            Control(Control&&) = delete; // No move constructor
+            virtual ~Control();
 
-        LEDColor getBackground() const { return m_background; }
-        void setBackground(const LEDColor &color);
+            void init();
+            void cleanup();
 
-        void show();
+            Color getBackground() const { return m_background; }
+            void setBackground(const Color &color);
 
-        void addLayer(std::shared_ptr<class LEDColorLayer> &layer);
-        void removeLayer(std::shared_ptr<class LEDColorLayer> &layer);
-        const LayerList &layers() const { return m_layers; }
+            void show();
 
-    private:
-        bool m_initialized;
+            void attachLayer(std::shared_ptr<ColorLayer> &layer);
+            void detachLayer(std::shared_ptr<ColorLayer> &layer);
+            const LayerList &layers() const { return m_layers; }
 
-        LEDColor m_background;
-        LayerList m_layers;
+        protected:
+            friend class ColorLayer;
+            void removeLayer(std::shared_ptr<ColorLayer> &layer);
 
-        void clear(const LEDColor &color);
+        private:
+            bool m_initialized;
+
+            Color m_background;
+            LayerList m_layers;
+
+            std::chrono::high_resolution_clock::time_point m_last_show;
+
+            void clear(const Color &color);
+    };
+
 };
+
 
 #endif

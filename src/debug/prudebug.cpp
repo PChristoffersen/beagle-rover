@@ -6,32 +6,30 @@
 
 #include <robotcontrolext.h>
 
-#include "../robotcontext.h"
-
 using namespace std;
 
-
+namespace Robot::PRU {
 //#define DEBUG_ENABLED
 
 static constexpr auto TIMER_INTERVAL { 100ms };
 
 
 
-PRUDebug::PRUDebug(shared_ptr<RobotContext> context) :
+Debug::Debug(shared_ptr<Robot::Context> context) :
     m_initialized { false },
     m_timer { context->io() }
 {
 }
 
 
-PRUDebug::~PRUDebug() 
+Debug::~Debug() 
 {
     cleanup();
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
-void PRUDebug::init() 
+void Debug::init() 
 {
     #ifdef DEBUG_ENABLED
     rc_ext_debug_init();
@@ -44,7 +42,7 @@ void PRUDebug::init()
 }
 
 
-void PRUDebug::cleanup() 
+void Debug::cleanup() 
 {
     const lock_guard<mutex> lock(m_mutex);
     if (!m_initialized)
@@ -55,7 +53,7 @@ void PRUDebug::cleanup()
 }
 
 
-void PRUDebug::timer_setup() {
+void Debug::timer_setup() {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
         [self_ptr=weak_from_this()] (auto &error) {
@@ -66,7 +64,7 @@ void PRUDebug::timer_setup() {
     );
 }
 
-void PRUDebug::timer(boost::system::error_code error) 
+void Debug::timer(boost::system::error_code error) 
 {
     const lock_guard<mutex> lock(m_mutex);
     if (error!=boost::system::errc::success || !m_initialized) {
@@ -80,3 +78,6 @@ void PRUDebug::timer(boost::system::error_code error)
 
     timer_setup();
 }
+
+    
+};

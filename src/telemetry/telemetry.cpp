@@ -7,18 +7,19 @@
 #include <robotcontrolext.h>
 
 #include "telemetrytypes.h"
-#include "adcbattery.h"
-#include "rcmpu.h"
+#include "sources/adcbattery.h"
+#include "sources/rcmpu.h"
 #include "../robotcontext.h"
 
 
 using namespace std;
 
+namespace Robot::Telemetry {
 
 static constexpr uint16_t TELEMETRY_BATTERY { 0x0300 };
 
 
-Telemetry::Telemetry(shared_ptr<RobotContext> context) :
+Telemetry::Telemetry(shared_ptr<Robot::Context> context) :
     m_initialized { false }
 {
     switch (rc_model()) {
@@ -71,14 +72,14 @@ void Telemetry::send(uint16_t appId, uint32_t data)
 }
 
 
-void Telemetry::process(const TelemetryEvent &event) 
+void Telemetry::process(const Event &event) 
 {
-    if (const auto ev = dynamic_cast<const TelemetryEventBattery*>(&event)) {
+    if (const auto ev = dynamic_cast<const EventBattery*>(&event)) {
         processBattery(*ev);
     }
 }
 
-void Telemetry::processBattery(const TelemetryEventBattery &event) 
+void Telemetry::processBattery(const EventBattery &event) 
 {
     auto n_cells = event.cell_voltage.size();
     for (size_t i=0; i<n_cells; i+=2) {
@@ -95,3 +96,6 @@ void Telemetry::processBattery(const TelemetryEventBattery &event)
     }
     sig_event(event);
 }
+
+    
+};

@@ -3,17 +3,21 @@
 
 #include "telemetrytypes.h"
 
-class TelemetrySource {
-    public:
-        virtual ~TelemetrySource() {}
+namespace Robot::Telemetry {
 
-        virtual void init() = 0;
-        virtual void cleanup() = 0;
+    class Source {
+        public:
+            virtual ~Source() {}
 
-    protected:
-        friend class Telemetry;
+            virtual void init() = 0;
+            virtual void cleanup() = 0;
 
-        TelemetrySignal sig_event;
+        protected:
+            friend class Telemetry;
+
+            Signal sig_event;
+    };
+
 };
 
 #endif

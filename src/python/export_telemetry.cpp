@@ -7,6 +7,7 @@
 #include "util.h"
 
 using namespace std;
+using namespace Robot::Telemetry;
 namespace py = boost::python;
 
 
@@ -27,9 +28,9 @@ class TelemetryListener {
             m_connection.disconnect();
         }
 
-        virtual void on_event(const TelemetryEvent &event) = 0;
+        virtual void on_event(const Event &event) = 0;
 
-        void event(const TelemetryEvent &event) {
+        void event(const Event &event) {
             PyGILState_STATE gstate = PyGILState_Ensure();
             try {
                 on_event(event);
@@ -47,9 +48,9 @@ class TelemetryListener {
 
 class TelemetryListenerWrap : public TelemetryListener, public boost::python::wrapper<TelemetryListener> {
     public:
-        virtual void on_event(const TelemetryEvent &event) override {
+        virtual void on_event(const Event &event) override {
             if (auto f = this->get_override("on_event")) {
-                if (const auto ev = dynamic_cast<const TelemetryEventBattery*>(&event)) {
+                if (const auto ev = dynamic_cast<const EventBattery*>(&event)) {
                     f(*ev);
                 }
                 else {
@@ -62,9 +63,7 @@ class TelemetryListenerWrap : public TelemetryListener, public boost::python::wr
 
 void python_export_telemetry() 
 {
-    py::register_ptr_to_python<shared_ptr<Telemetry> >();
-
-    py::class_<Telemetry, boost::noncopyable>("Telemetry", py::no_init)
+    py::class_<Telemetry, shared_ptr<Telemetry>, boost::noncopyable>("Telemetry", py::no_init)
         ;
         
     py::class_<TelemetryListenerWrap, boost::noncopyable>("TelemetryListener")
@@ -73,12 +72,12 @@ void python_export_telemetry()
         .def("on_event", pure_virtual(&TelemetryListenerWrap::on_event))
         ;
 
-    py::class_<TelemetryEvent>("TelemetryEvent", py::no_init)
+    py::class_<Event>("TelemetryEvent", py::no_init)
         ;
 
-    py::class_<TelemetryEventBattery, py::bases<TelemetryEvent>>("TelemetryEventBattery")
-        .def_readonly("battery_id", &TelemetryEventBattery::battery_id)
-        .def_readonly("cell_voltages", &TelemetryEventBattery::cell_voltage)
+    py::class_<EventBattery, py::bases<Event>>("TelemetryEventBattery")
+        .def_readonly("battery_id", &EventBattery::battery_id)
+        .def_readonly("cell_voltages", &EventBattery::cell_voltage)
         ;
 
 }

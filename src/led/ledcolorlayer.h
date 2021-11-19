@@ -6,29 +6,49 @@
 #include "ledcolor.h"
 #include <robotcontrolext.h>
 
+namespace Robot::LED {
 
-constexpr unsigned int LED_PIXEL_COUNT { RC_EXT_NEOPIXEL_COUNT };
+    constexpr unsigned int PIXEL_COUNT { RC_EXT_NEOPIXEL_COUNT };
 
-using LEDColorArray = std::array<LEDColor, LED_PIXEL_COUNT>;
-using LEDRawColorArray = std::array<LEDColor::raw_type, LED_PIXEL_COUNT>;
+    using ColorArray = std::array<Color, PIXEL_COUNT>;
+    using RawColorArray = std::array<Color::raw_type, PIXEL_COUNT>;
 
 
-class LEDColorLayer : public LEDColorArray, public std::enable_shared_from_this<LEDColorLayer> {
-    public:
-        LEDColorLayer(int depth);
+    class ColorLayer : public ColorArray, public std::enable_shared_from_this<ColorLayer> {
+        public:
+            explicit ColorLayer(int depth);
+            virtual ~ColorLayer();
 
-        void setVisible(bool visible);
+            void setVisible(bool visible);
 
-        int depth() const { return m_depth; }
-        bool visible() const { return m_visible; }
+            void show();
 
-    private:
-        int m_depth;
-        bool m_visible;
+            int depth() const { return m_depth; }
+            bool visible() const { return m_visible; }
+            
+            void detach();
+
+            void lock();
+            void unlock();
+
+            const std::weak_ptr<class Control> &control() const { return m_control; }
+
+        protected:
+            friend class Control;
+
+            void setControl(const std::shared_ptr<class Control> &control);
+
+        private:
+            int m_depth;
+            bool m_visible;
+
+            std::weak_ptr<class Control> m_control;
+    };
+
+
+    ColorArray &operator+=(ColorArray &dst, const ColorLayer &layer);
+    RawColorArray &operator+=(RawColorArray &dst, const ColorLayer &layer);
 };
 
-
-LEDColorArray &operator+=(LEDColorArray &dst, const LEDColorLayer &layer);
-LEDRawColorArray &operator+=(LEDRawColorArray &dst, const LEDColorLayer &layer);
 
 #endif

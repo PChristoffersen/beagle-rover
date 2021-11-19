@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 
-project(beagle-rover-1 VERSION 1.0)
+project(robot-control VERSION 1.0)
 
 set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
@@ -33,7 +33,7 @@ set(SRC
     src/robot.cpp
     src/robotcontext.cpp
     src/debug/prudebug.cpp
-    src/rcreceiver/rcreceiver.cpp
+    src/rc/rcreceiver.cpp
     src/motor/motor.cpp
     src/motor/motorgimbal.cpp
     src/motor/motorcontrol.cpp
@@ -42,14 +42,14 @@ set(SRC
     src/led/ledcolorlayer.cpp
     src/led/ledanimation.cpp
     src/telemetry/telemetry.cpp
-    src/telemetry/adcbattery.cpp
-    src/telemetry/rcmpu.cpp
+    src/telemetry/sources/adcbattery.cpp
+    src/telemetry/sources/rcmpu.cpp
     src/kinematic/kinematic.cpp
-    src/kinematic/controlschemeidle.cpp
-    src/kinematic/controlschemenormal.cpp
-    src/kinematic/controlschemespinning.cpp
-    src/kinematic/controlschemebalancing.cpp
-    src/kinematic/controlschemepassthrough.cpp
+    src/kinematic/controlscheme/idle.cpp
+    src/kinematic/controlscheme/normal.cpp
+    src/kinematic/controlscheme/spinning.cpp
+    src/kinematic/controlscheme/balancing.cpp
+    src/kinematic/controlscheme/passthrough.cpp
 )
 #target_link_directories(robot PRIVATE robotcontrol-ext)
 
@@ -59,7 +59,7 @@ set(SRC
 # -----------------------------------------------
 # Without this, any build libraries automatically have names "lib{x}.so"
 set(CMAKE_SHARED_MODULE_PREFIX "")
-add_library(beaglerover MODULE 
+add_library(robotcontrol MODULE 
     ${SRC}
     src/python/module.cpp
     src/python/util.cpp
@@ -71,10 +71,10 @@ add_library(beaglerover MODULE
     src/python/export_kinematic.cpp
     src/python/export_robot.cpp
 )
-target_include_directories(beaglerover PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(beaglerover PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-target_link_libraries(beaglerover PRIVATE pid)
-target_link_libraries(beaglerover PRIVATE robotcontrolext)
+target_include_directories(robotcontrol PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(robotcontrol PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+target_link_libraries(robotcontrol PRIVATE pid)
+target_link_libraries(robotcontrol PRIVATE robotcontrolext)
 
 # -----------------------------------------------
 # Standalone executable

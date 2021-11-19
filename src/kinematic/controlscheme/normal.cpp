@@ -1,37 +1,40 @@
-#include "controlschemespinning.h"
+#include "normal.h"
 
+#include <cmath>
 #include <boost/log/trivial.hpp>
 
-#include "../motor/motor.h"
-#include "../motor/motorgimbal.h"
-#include "../motor/motorcontrol.h"
+#include "../../motor/motor.h"
+#include "../../motor/motorgimbal.h"
+#include "../../motor/motorcontrol.h"
 
 using namespace std;
 
+namespace Robot::Kinematic {
 
-ControlSchemeSpinning::ControlSchemeSpinning(shared_ptr<class Kinematic> kinematic) :
+
+ControlSchemeNormal::ControlSchemeNormal(shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
-ControlSchemeSpinning::~ControlSchemeSpinning() 
+ControlSchemeNormal::~ControlSchemeNormal() 
 {
     cleanup();
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
-void ControlSchemeSpinning::init() 
+void ControlSchemeNormal::init() 
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    const lock_guard<mutex> lock(m_mutex);
 
-    // Set all motor angles to 0 degrees and throttle to 0
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    
     for (auto &motor : m_motor_control->getMotors()) {
         motor->setDuty(0.0);
-        motor->freeSpin();
         motor->setEnabled(true);
-        motor->gimbal()->setAngle(0.0);
+        motor->gimbal()->setAngle(M_PI_2);
         motor->gimbal()->setEnabled(true);
     }
 
@@ -39,14 +42,13 @@ void ControlSchemeSpinning::init()
 }
 
 
-void ControlSchemeSpinning::cleanup() 
+void ControlSchemeNormal::cleanup() 
 {
     const lock_guard<mutex> lock(m_mutex);
-
     if (!m_initialized) 
         return;
     m_initialized = false;
-
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
+};

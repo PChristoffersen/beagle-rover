@@ -3,11 +3,14 @@
 #include <iostream>
 #include <boost/log/trivial.hpp>
 
-#include "telemetry.h"
-#include "telemetrytypes.h"
-#include "../robotcontext.h"
+#include "../telemetry.h"
+#include "../telemetrytypes.h"
+#include "../../robotcontext.h"
 
 using namespace std;
+
+namespace Robot::Telemetry {
+
 
 // bus for Robotics Cape and BeagleboneBlue is 2, interrupt pin is on gpio3.21
 // change these for your platform
@@ -19,7 +22,8 @@ static constexpr auto GPIO_INT_PIN_PIN { 21 };
 static constexpr auto TIMER_INTERVAL { 1000ms };
 
 
-RCMPU::RCMPU(shared_ptr<RobotContext> context):
+RCMPU::RCMPU(shared_ptr<Robot::Context> context):
+    AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() }
 {
@@ -88,3 +92,4 @@ void RCMPU::timer(boost::system::error_code error)
     timer_setup();
 }
 
+};

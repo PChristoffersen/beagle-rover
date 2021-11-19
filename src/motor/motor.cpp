@@ -12,14 +12,14 @@
 
 using namespace std;
 
-
+namespace Robot::Motor {
 
 
 Motor::Motor(int index, recursive_mutex &mutex) :
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
-    m_gimbal { make_unique<MotorGimbal>(index, mutex) },
+    m_gimbal { make_unique<Gimbal>(index, mutex) },
     m_enabled { false },
     m_passthrough { false },
     m_state { FREE_SPIN },
@@ -88,7 +88,7 @@ void Motor::freeSpin()
 
 
 void Motor::setDutyUS(uint32_t us) {
-    setDuty(MotorControl::pulseToPos(us));
+    setDuty(Control::pulseToPos(us));
 }
 
 
@@ -169,4 +169,4 @@ void Motor::update()
 
 }
 
-
+};

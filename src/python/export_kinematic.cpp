@@ -6,35 +6,34 @@
 #include "../kinematic/kinematic.h"
 
 using namespace std;
+using namespace Robot::Kinematic;
 namespace py = boost::python;
 
 
 void python_export_kinematic() 
 {
-    py::register_ptr_to_python<shared_ptr<Kinematic> >();
-
-    py::enum_<Kinematic::SteeringMode>("SteeringMode")
-        .value("NONE", Kinematic::SteeringMode::NONE)
-        .value("FRONT", Kinematic::SteeringMode::FRONT)
-        .value("REAR", Kinematic::SteeringMode::REAR)
-        .value("ALL", Kinematic::SteeringMode::ALL)
-        .value("SKID", Kinematic::SteeringMode::SKID)
+    py::enum_<SteeringMode>("SteeringMode")
+        .value("NONE", SteeringMode::NONE)
+        .value("FRONT", SteeringMode::FRONT)
+        .value("REAR", SteeringMode::REAR)
+        .value("ALL", SteeringMode::ALL)
+        .value("SKID", SteeringMode::SKID)
         ;
-    py::enum_<Kinematic::DriveMode>("DriveMode")
-        .value("NONE", Kinematic::DriveMode::NONE)
-        .value("NORMAL", Kinematic::DriveMode::NORMAL)
-        .value("SPINNING", Kinematic::DriveMode::SPINNING)
-        .value("BALANCING", Kinematic::DriveMode::BALANCING)
-        .value("PASSTHROUGH", Kinematic::DriveMode::PASSTHROUGH)
+    py::enum_<DriveMode>("DriveMode")
+        .value("NONE", DriveMode::NONE)
+        .value("NORMAL", DriveMode::NORMAL)
+        .value("SPINNING", DriveMode::SPINNING)
+        .value("BALANCING", DriveMode::BALANCING)
+        .value("PASSTHROUGH", DriveMode::PASSTHROUGH)
         ;
-    py::enum_<Kinematic::Orientation>("Orientation")
-        .value("NORTH", Kinematic::Orientation::NORTH)
-        .value("SOUTH", Kinematic::Orientation::SOUTH)
-        .value("EAST", Kinematic::Orientation::EAST)
-        .value("WEST", Kinematic::Orientation::WEST)
+    py::enum_<Orientation>("Orientation")
+        .value("NORTH", Orientation::NORTH)
+        .value("SOUTH", Orientation::SOUTH)
+        .value("EAST", Orientation::EAST)
+        .value("WEST", Orientation::WEST)
         ;
 
-    py::class_<Kinematic, boost::noncopyable>("Kinematic", py::no_init)
+    py::class_<Kinematic, shared_ptr<Kinematic>, boost::noncopyable>("Kinematic", py::no_init)
         .add_property("steering_mode", &Kinematic::getSteeringMode, &Kinematic::setSteeringMode)
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .def("__enter__", +[](Kinematic &kinematic) {

@@ -1,16 +1,18 @@
-#include "controlschemebalancing.h"
+#include "balancing.h"
 
 #include <cmath>
 #include <boost/log/trivial.hpp>
 
-#include "../motor/motor.h"
-#include "../motor/motorgimbal.h"
-#include "../motor/motorcontrol.h"
+#include "../../motor/motor.h"
+#include "../../motor/motorgimbal.h"
+#include "../../motor/motorcontrol.h"
 
 using namespace std;
 
+namespace Robot::Kinematic {
 
-ControlSchemeBalancing::ControlSchemeBalancing(shared_ptr<class Kinematic> kinematic) :
+
+ControlSchemeBalancing::ControlSchemeBalancing(shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
@@ -34,7 +36,7 @@ void ControlSchemeBalancing::init()
 
     // Set all motor angles to 0 degrees and throttle to 0
     {
-        auto &motor = motors[MotorControl::FRONT_LEFT];
+        auto &motor = motors[Robot::Motor::Control::FRONT_LEFT];
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
@@ -42,7 +44,7 @@ void ControlSchemeBalancing::init()
         motor->gimbal()->setEnabled(true);
     }
     {
-        auto &motor = motors[MotorControl::FRONT_RIGHT];
+        auto &motor = motors[Robot::Motor::Control::FRONT_RIGHT];
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
@@ -50,14 +52,14 @@ void ControlSchemeBalancing::init()
         motor->gimbal()->setEnabled(true);
     }
     {
-        auto &motor = motors[MotorControl::REAR_LEFT];
+        auto &motor = motors[Robot::Motor::Control::REAR_LEFT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
         motor->gimbal()->setAngle(M_PI_2);
         motor->gimbal()->setEnabled(true);
     }
     {
-        auto &motor = motors[MotorControl::REAR_RIGHT];
+        auto &motor = motors[Robot::Motor::Control::REAR_RIGHT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
         motor->gimbal()->setAngle(M_PI_2);
@@ -78,3 +80,6 @@ void ControlSchemeBalancing::cleanup()
 
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
+
+
+};

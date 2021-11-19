@@ -19,7 +19,7 @@ int main() {
     signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait(boost::bind(&io_context::stop, &io));
 
-    auto robot{ std::make_unique<Robot>() };
+    auto robot{ std::make_unique<Robot::Robot>() };
 
     try {
         robot->init();

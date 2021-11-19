@@ -7,15 +7,9 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "robotcontext.h"
-#include "rcreceiver/rcreceiver.h"
-#include "motor/motorcontrol.h"
-#include "led/ledcontrol.h"
-#include "telemetry/telemetry.h"
-#include "kinematic/kinematic.h"
-#include "debug/prudebug.h"
-
 using namespace std;
+
+namespace Robot {
 
 Robot *Robot::m_instance { nullptr };
 
@@ -23,13 +17,13 @@ Robot *Robot::m_instance { nullptr };
 Robot::Robot() : 
     m_initialized { false },
     m_armed { false },
-    m_context { make_shared<RobotContext>() },
-    m_rc_receiver { make_shared<RCReceiver>(m_context) },
-    m_motor_control { make_shared<MotorControl>(m_context) },
-    m_led_control { make_shared<LEDControl>(m_context) },
-    m_telemetry { make_shared<Telemetry>(m_context) },
-    m_kinematic { make_shared<Kinematic>(m_context, m_motor_control, m_telemetry, m_rc_receiver) },
-    m_pru_debug { make_shared<PRUDebug>(m_context) }
+    m_context { make_shared<Context>() },
+    m_rc_receiver { make_shared<RC::Receiver>(m_context) },
+    m_motor_control { make_shared<Motor::Control>(m_context) },
+    m_led_control { make_shared<LED::Control>(m_context) },
+    m_telemetry { make_shared<Telemetry::Telemetry>(m_context) },
+    m_kinematic { make_shared<Kinematic::Kinematic>(m_context, m_motor_control, m_telemetry, m_rc_receiver) },
+    m_pru_debug { make_shared<PRU::Debug>(m_context) }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
@@ -95,3 +89,6 @@ void Robot::setArmed(bool enable)
     //BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     m_armed = enable;
 }
+
+
+};
