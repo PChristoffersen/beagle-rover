@@ -5,34 +5,35 @@
 #include <memory>
 #include <chrono>
 #include <mutex>
+#include "../robottypes.h"
 
 namespace Robot::Motor {
 
     class Gimbal {
         public:
-            Gimbal(int index, std::recursive_mutex &mutex);
+            Gimbal(uint index, std::recursive_mutex &mutex);
             Gimbal(const Gimbal&) = delete; // No copy constructor
             Gimbal(Gimbal&&) = delete; // No move constructor
             virtual ~Gimbal();
 
-            int getIndex() const { return m_index; }
+            uint getIndex() const { return m_index; }
 
             void setEnabled(bool enable);
             bool getEnabled() const { return m_enabled; }
 
             bool getPassthrough() const { return m_passthrough; }
 
+            void setValue(const Robot::InputValue value);
+            Robot::InputValue getValue() const { return m_value; }
+
             void setPulseUS(std::uint32_t us);
-            std::uint32_t getPulseUS() const { return m_pulse_us; }
+            std::uint32_t getPulseUS() const { return m_value.asServoPulse(); }
 
             void setAngle(double angle);
             double getAngle() const;
 
-            void setAngleDegrees(double angle);
-            double getAngleDegrees() const;
-
-            void setTrimUS(std::int32_t trim);
-            std::int32_t getTrimUS() const { return m_trim_us; }
+            void setAngleRadians(double angle);
+            double getAngleRadians() const;
 
             void setLimits(std::uint32_t lmin, std::uint32_t lmax);
             void setLimitMin(std::uint32_t limit);
@@ -52,23 +53,19 @@ namespace Robot::Motor {
             friend class Motor;
             friend class Control;
         private:
-            static constexpr auto PULSE_INTERVAL { std::chrono::milliseconds(20) };
-
             bool m_initialized;
-            int m_index;
+            uint m_index;
             std::recursive_mutex &m_mutex;
             bool m_enabled;
             bool m_passthrough;
-            std::uint32_t m_pulse_us;
+            InputValue m_value;
             std::chrono::high_resolution_clock::time_point m_last_pulse;
 
-            std::int32_t m_trim_us;
             std::uint32_t m_limit_min;
             std::uint32_t m_limit_max;
+            std::int32_t  m_trim;
 
-            int servoChannel() const {
-                return m_index+1;
-            }
+            inline uint servoChannel() const;
     };
 
 };

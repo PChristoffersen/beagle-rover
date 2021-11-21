@@ -32,6 +32,8 @@ void ControlSchemePassthrough::init()
 
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     
+    m_motor_control->setPassthrough(true, SERVO_PASSTHROUGH_OFFSET);
+
     m_rc_connection = m_rc_receiver->sigData.connect(
         [self_ptr=weak_from_this()] (const auto flags, const auto rssi, const auto &channels) {
             if (auto self = self_ptr.lock()) { 
@@ -60,7 +62,7 @@ void ControlSchemePassthrough::cleanup()
         motor->setEnabled(false);
         motor->gimbal()->setEnabled(false);
     }
-    m_motor_control->setPassthrough(false);
+    m_motor_control->setPassthrough(false, SERVO_PASSTHROUGH_OFFSET);
 }
 
 
@@ -72,11 +74,11 @@ void ControlSchemePassthrough::onRCData(Robot::RC::Receiver::Flags flags, uint8_
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 
     for (auto &motor : m_motor_control->getMotors()) {
-        uint32_t servo_val = channels[Robot::Motor::Control::SERVO_PASSTHROUGH_OFFSET+motor->gimbal()->getIndex()];
-        uint32_t motor_val = channels[Robot::Motor::Control::MOTOR_PASSTHROUGH_OFFSET+motor->getIndex()];
+        auto servo_val = channels[SERVO_PASSTHROUGH_OFFSET+motor->gimbal()->getIndex()];
+        auto motor_val = channels[MOTOR_PASSTHROUGH_OFFSET+motor->getIndex()];
 
-        motor->gimbal()->setPulseUS(servo_val);
-        motor->setDutyUS(motor_val);
+        motor->gimbal()->setValue(servo_val);
+        motor->setValue(motor_val);
     }
 }
 

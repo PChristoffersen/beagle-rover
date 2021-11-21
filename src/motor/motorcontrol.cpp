@@ -33,7 +33,7 @@ Control::Control(shared_ptr<Robot::Context> context) :
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
     case CATEGORY_PC:
-        for (int i=0; i<MOTOR_COUNT; i++) {
+        for (uint i=0; i<MOTOR_COUNT; i++) {
             m_motors[i] = make_unique<Motor>(i, m_mutex);
         }
         break;
@@ -144,7 +144,7 @@ void Control::resetOdometer()
 
 
 
-void Control::setPassthrough(bool passthrough) 
+void Control::setPassthrough(bool passthrough, off_t servo_offset) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (passthrough != m_passthrough) {
@@ -157,11 +157,11 @@ void Control::setPassthrough(bool passthrough)
         // Set limits
         array<fbus_servo_limit_t, RC_SERVO_CH_MAX> limits;
         for (auto &limit : limits) {
-            limit.low = PULSE_MIN;
-            limit.high = PULSE_MAX;
+            limit.low = Robot::InputValue::PULSE_MIN;
+            limit.high = Robot::InputValue::PULSE_MAX;
         }
         for (const auto &motor : m_motors) {
-            auto &limit = limits[motor->gimbal()->getIndex()];
+            auto &limit = limits[servo_offset+motor->gimbal()->getIndex()];
             limit.low = motor->gimbal()->getLimitMin();
             limit.high = motor->gimbal()->getLimitMax();
 
@@ -174,7 +174,7 @@ void Control::setPassthrough(bool passthrough)
         if (passthrough) {
             for (const auto &motor : m_motors) {
                 auto index = motor->gimbal()->getIndex();
-                map[SERVO_PASSTHROUGH_OFFSET+index] = index;
+                map[servo_offset+index] = index;
             }
         }
         rc_ext_fbus_set_servo_map(map.data());

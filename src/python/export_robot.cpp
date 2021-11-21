@@ -1,7 +1,6 @@
 #include <memory>
 #include <boost/python.hpp>
 
-#include "../robot.h"
 #include "../rc/rcreceiver.h"
 #include "../telemetry/telemetry.h"
 #include "../motor/motor.h"
@@ -9,6 +8,7 @@
 #include "../led/ledcontrol.h"
 #include "../led/ledcolor.h"
 #include "../kinematic/kinematic.h"
+#include "../robot.h"
 
 
 using namespace std;

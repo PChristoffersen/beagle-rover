@@ -15,7 +15,7 @@ using namespace std;
 namespace Robot::Motor {
 
 
-Motor::Motor(int index, recursive_mutex &mutex) :
+Motor::Motor(uint index, recursive_mutex &mutex) :
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
@@ -76,19 +76,19 @@ void Motor::brake()
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     m_state = BRAKE;
-    //rc_motor_brake(MOTOR_CHANNEL(m_index));
+    rc_motor_brake(motorChannel());
 }
 
 void Motor::freeSpin() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     m_state = FREE_SPIN;
-    //rc_motor_free_spin(MOTOR_CHANNEL(m_index));
+    rc_motor_free_spin(motorChannel());
 }
 
 
-void Motor::setDutyUS(uint32_t us) {
-    setDuty(Control::pulseToPos(us));
+void Motor::setValue(Robot::InputValue value) {
+    setDuty(value.asPercent()*2.0-1.0);
 }
 
 
@@ -98,7 +98,9 @@ void Motor::setDuty(double duty)
     BOOST_LOG_TRIVIAL(info) << "Motor[" << m_index << "] setDuty(" << duty << ")";
     m_duty = duty;
     m_state = RUNNING;
-    //rc_motor_set(MOTOR_CHANNEL(m_index), duty);
+    if (m_enabled) {
+        rc_motor_set(motorChannel(), duty);
+    }
 }
 
 void Motor::setTargetRPM(double rpm) 
@@ -114,10 +116,10 @@ void Motor::setEnabled(bool enabled)
     m_enabled = enabled;
     // TODO Disable motor
     if (m_enabled) {
-
+        rc_motor_set(motorChannel(), m_duty);
     }
     else {
-
+        rc_motor_set(motorChannel(), 0);
     }
 }
 
@@ -168,5 +170,15 @@ void Motor::update()
     m_gimbal->update();
 
 }
+
+
+inline uint Motor::encoderChannel() const {
+    return m_index+1;
+}
+
+inline uint Motor::motorChannel() const {
+    return m_index+1;
+}
+
 
 };

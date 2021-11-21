@@ -14,18 +14,9 @@
 
 namespace Robot::Motor {
 
-    static constexpr std::uint32_t PULSE_MIN { 500u };
-    static constexpr std::uint32_t PULSE_MAX { 2500u };
-    static constexpr std::int32_t PULSE_CENTER { (PULSE_MAX+PULSE_MIN)/2 };
-    static constexpr std::int32_t PULSE_RANGE { (PULSE_MAX-PULSE_MIN) };
-
-
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
         public:
             static constexpr auto MOTOR_COUNT { 4 };
-
-            static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0u };
-            static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4u };
 
             using MotorList = std::array<std::unique_ptr<class Motor>, MOTOR_COUNT>;
 
@@ -53,17 +44,12 @@ namespace Robot::Motor {
             void setEnabled(bool enabled);
             bool getEnabled() const { return m_enabled; }
 
-            void setPassthrough(bool passthrough);
+            void setPassthrough(bool passthrough, off_t servo_offset);
             bool getPassthrough() const { return m_passthrough; }
 
             void resetOdometer();
 
             const MotorList &getMotors() const { return m_motors; }
-
-            static double pulseToPos(std::uint32_t us) {
-                return (double)((std::int32_t)us-PULSE_CENTER)*2.0/PULSE_RANGE;
-            }
-
 
         private:
             bool m_initialized;

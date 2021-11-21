@@ -34,14 +34,13 @@ static constexpr auto TIMER_INTERVAL { 10ms };
 Receiver::ChannelList::ChannelList() :
     m_count { 0 }
 {
-    fill(Robot::Motor::PULSE_CENTER);
 }
 
 
 void Receiver::ChannelList::setCount(size_t count) 
 {
     if (m_count!=count) {
-        std::fill(begin()+count, end(), Robot::Motor::PULSE_CENTER);
+        std::fill(begin()+count, end(), Robot::InputValue::UNSET_VALUE);
         m_count = count;
     }
 }
@@ -153,10 +152,10 @@ void Receiver::timer(boost::system::error_code error)
         
         if ((time-last_update) > 100ms) {
             BOOST_LOG_TRIVIAL(info) << boost::format("%+04x f=%+02x  r=%+02x  ch=%d   ") % (uint32_t)counter % (uint32_t)m_flags.value % (uint32_t)m_rssi % (uint32_t)m_channels.size()
-                << boost::format("%+4d |") % m_channels[0]
-                << boost::format("%+4d |") % m_channels[1]
-                << boost::format("%+4d |") % m_channels[2]
-                << boost::format("%+4d |") % m_channels[3]
+                << boost::format("%+4d |") % m_channels[0].asServoPulse()
+                << boost::format("%+4d |") % m_channels[1].asServoPulse()
+                << boost::format("%+4d |") % m_channels[2].asServoPulse()
+                << boost::format("%+4d |") % m_channels[3].asServoPulse()
                 ;
 
             last_update = time;

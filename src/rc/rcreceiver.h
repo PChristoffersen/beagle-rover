@@ -12,6 +12,7 @@
 
 #include "../common/withmutex.h"
 #include "../robotcontext.h"
+#include "../robottypes.h"
 
 namespace Robot::RC {
 
@@ -38,7 +39,7 @@ namespace Robot::RC {
 
             static constexpr auto MAX_CHANNELS { 24u };
 
-            class ChannelList : public std::array<std::uint32_t, MAX_CHANNELS> {
+            class ChannelList : public std::array<Robot::InputValue, MAX_CHANNELS> {
                 public:
                     ChannelList();
                     std::size_t count() const { return m_count; }

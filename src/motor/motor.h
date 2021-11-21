@@ -10,6 +10,7 @@
 
 #include "motorcontrol.h"
 #include "motorgimbal.h"
+#include "../robottypes.h"
 
 namespace Robot::Motor {
 
@@ -21,7 +22,7 @@ namespace Robot::Motor {
                 BRAKE
             };
 
-            Motor(int index, std::recursive_mutex &mutex);
+            Motor(uint index, std::recursive_mutex &mutex);
             Motor(const Motor&) = delete; // No copy constructor
             Motor(Motor&&) = delete; // No move constructor
             virtual ~Motor();
@@ -36,7 +37,8 @@ namespace Robot::Motor {
 
             bool getPassthrough() const { return m_passthrough; }
 
-            void setDutyUS(std::uint32_t us);
+
+            void setValue(const Robot::InputValue value);
             void setDuty(double duty);
             double getDuty() const { return m_duty; }
             void setTargetRPM(double rpm);
@@ -71,7 +73,7 @@ namespace Robot::Motor {
             static constexpr auto PID_UPDATE_INTERVAL { std::chrono::milliseconds(100) };
 
             bool m_initialized;
-            int m_index;
+            uint m_index;
             std::recursive_mutex &m_mutex;
             std::unique_ptr<Gimbal> m_gimbal;
 
@@ -90,12 +92,8 @@ namespace Robot::Motor {
             double m_rpm;
             PIDController<double> m_pid;
 
-            int encoderChannel() const {
-                return m_index+1;
-            }
-            int motorChannel() const {
-                return m_index+1;
-            }
+            inline uint encoderChannel() const;
+            inline uint motorChannel() const;
 
     };
 
