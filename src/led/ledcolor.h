@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <array>
+#include <iostream>
+
 
 namespace Robot::LED {
 
@@ -33,7 +35,6 @@ namespace Robot::LED {
 
             Color &operator=(const Color &other);
             Color &operator=(const raw_type other);
-            Color operator+(const Color &other) const;
 
             operator raw_type() const { return m_data; }
 
@@ -48,10 +49,10 @@ namespace Robot::LED {
             raw_type m_data;
 
             static inline raw_type raw_argb(raw_type a, raw_type r, raw_type g, raw_type b);
+
+            friend raw_type &operator<<(raw_type &value, const Color &color);
+            friend std::ostream &operator<<(std::ostream &os, const Color &color);
     };
-
-
-    Color::raw_type operator+(Color::raw_type raw, const Color &color);
 
 
 };

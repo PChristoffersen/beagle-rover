@@ -7,6 +7,13 @@
 #include <boost/format.hpp>
 
 #include "../robotcontext.h"
+#include "animation/headlights.h"
+#include "animation/indicator.h"
+#include "animation/construction.h"
+#include "animation/police.h"
+#include "animation/ambulance.h"
+#include "animation/knightrider.h"
+#include "animation/rainbow.h"
 
 
 using namespace std;
@@ -14,9 +21,11 @@ using namespace std;
 namespace Robot::LED {
 
 
-Control::Control(shared_ptr<Robot::Context> context) :
+Control::Control(const shared_ptr<Robot::Context> &context) :
+    m_context { context },
     m_initialized { false },
-    m_background { Color::BLACK }
+    m_background { Color::BLACK },
+    m_animation_mode { AnimationMode::NONE }
 {
 
 }
@@ -34,6 +43,10 @@ void Control::init()
     const lock_guard<recursive_mutex> lock(m_mutex);
     m_initialized = true;
     clear(Color::BLACK);
+
+    m_indicator = make_shared<Indicator>(m_context);
+    m_indicator->init();
+    attachLayer(m_indicator->layer());
 }
 
 
@@ -43,14 +56,17 @@ void Control::cleanup()
     if (!m_initialized) 
         return;
     m_initialized = false;
-    #if 0
-    while (!m_animation.empty()) {
-        LEDAnimation *animation = m_animation.top();
-        animation->stop();
-        m_animation.pop();
-        delete animation;
+    if (m_animation) {
+        detachLayer(m_animation->layer());
+        m_animation->cleanup();
+        m_animation = nullptr;
     }
-    #endif
+    if (m_indicator) {
+        detachLayer(m_indicator->layer());
+        m_indicator->cleanup();
+        m_indicator = nullptr;
+    }
+
     clear(Color::BLACK);
 }
 
@@ -75,6 +91,77 @@ void Control::setBackground(const Color &color)
 }
 
 
+
+void Control::setAnimation(AnimationMode mode) 
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
+    BOOST_LOG_TRIVIAL(info) << "Animation: " << (int)mode;
+    if (mode!=m_animation_mode) {
+        if (m_animation) {
+            detachLayer(m_animation->layer());
+            m_animation->cleanup();
+            m_animation = nullptr;
+        }
+
+        switch (mode) {
+        case AnimationMode::NONE:
+            break;
+        case AnimationMode::HEADLIGHTS:
+            m_animation = make_shared<Headlights>(m_context);
+            break;
+        case AnimationMode::CONSTRUCTION:
+            m_animation = make_shared<Construction>(m_context);
+            break;
+        case AnimationMode::POLICE:
+            m_animation = make_shared<Police>(m_context);
+            break;
+        case AnimationMode::AMBULANCE:
+            m_animation = make_shared<Ambulance>(m_context);
+            break;
+        case AnimationMode::KNIGHT_RIDER:
+            m_animation = make_shared<KnightRider>(m_context);
+            break;
+        case AnimationMode::RAINBOW:
+            m_animation = make_shared<Rainbow>(m_context);
+            break;
+        }
+
+
+        m_animation_mode = mode;
+
+        if (m_animation) {
+            m_animation->init();
+            attachLayer(m_animation->layer());
+        }
+        show();
+    }
+}
+
+
+void Control::setIndicators(IndicatorMode mode) 
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
+    BOOST_LOG_TRIVIAL(info) << "Indicator: " << (int)mode;
+    if (mode!=m_indicator_mode) {
+        switch (mode) {
+        case IndicatorMode::NONE:
+            m_indicator->none();
+            break;
+        case IndicatorMode::LEFT:
+            m_indicator->left();
+            break;
+        case IndicatorMode::RIGHT:
+            m_indicator->right();
+            break;
+        case IndicatorMode::HAZARD:
+            m_indicator->hazard();
+            break;
+        }
+        m_indicator_mode = mode;
+    }
+}
+
+
 void Control::show()
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
@@ -89,12 +176,12 @@ void Control::show()
     RawColorArray pixels;
     pixels.fill(m_background);
     for (const auto &layer : m_layers) {
-        pixels += *layer;
+        pixels << *layer;
     }
 
     #if 0
     for (int i=0; i<pixels.size(); ++i) {
-        BOOST_LOG_TRIVIAL(info) << boost::format("    out %2d %+08x") % i % pixels[i];
+        BOOST_LOG_TRIVIAL(info) << boost::format("    out %2d ") % i << Color(pixels[i]);
     }
     #endif
 
@@ -106,7 +193,7 @@ void Control::show()
 }
 
 
-void Control::attachLayer(std::shared_ptr<ColorLayer> &layer)
+void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -135,7 +222,7 @@ void Control::attachLayer(std::shared_ptr<ColorLayer> &layer)
 }
 
 
-void Control::detachLayer(std::shared_ptr<ColorLayer> &layer) 
+void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (auto self = layer->control().lock()) {
@@ -146,7 +233,7 @@ void Control::detachLayer(std::shared_ptr<ColorLayer> &layer)
     }
 }
 
-void Control::removeLayer(std::shared_ptr<ColorLayer> &layer) 
+void Control::removeLayer(const std::shared_ptr<ColorLayer> &layer) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     m_layers.remove(layer);

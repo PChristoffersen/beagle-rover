@@ -1,23 +1,26 @@
 #ifndef _LED_ANIMATION_H_
 #define _LED_ANIMATION_H_
 
-#include <cstdint>
 #include <memory>
-#include <boost/asio.hpp>
+#include "ledcolorlayer.h"
 
+namespace Robot::LED {
 
-class LEDAnimation : public std::enable_shared_from_this<LEDAnimation> {
-    public:
-        LEDAnimation(boost::asio::io_context &io, std::shared_ptr<class LEDControl> control);
+    class Animation {
+        public:
+            Animation() : m_layer { std::make_shared<ColorLayer>(LAYER_DEPTH_ANIMATION) } {}
+            Animation(int depth) : m_layer { std::make_shared<ColorLayer>(depth) } {}
+            virtual ~Animation() = default;
 
-        virtual void start();
-        virtual void stop();
-    
-    protected:
-        std::weak_ptr<class LEDControl> m_control;
-        boost::asio::steady_timer m_timer;
+            virtual void init() = 0;
+            virtual void cleanup() = 0;
+        
+            const std::shared_ptr<ColorLayer> &layer() { return m_layer; }
 
-        virtual void timer()=0;
+        protected:
+            std::shared_ptr<ColorLayer> m_layer;
+    };
+
 };
 
 #endif

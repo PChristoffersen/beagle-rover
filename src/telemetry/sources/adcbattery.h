@@ -11,7 +11,7 @@ namespace Robot::Telemetry {
 
     class ADCBattery : public AbstractSource<ADCBattery> {
         public:
-            explicit ADCBattery(std::shared_ptr<Robot::Context> context);
+            explicit ADCBattery(const std::shared_ptr<Robot::Context> &context);
             ADCBattery(const ADCBattery&) = delete; // No copy constructor
             ADCBattery(ADCBattery&&) = delete; // No move constructor
             virtual ~ADCBattery();

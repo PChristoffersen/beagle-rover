@@ -22,7 +22,7 @@ namespace Robot::Motor {
                 BRAKE
             };
 
-            Motor(uint index, std::recursive_mutex &mutex);
+            Motor(uint index, std::recursive_mutex &mutex, const std::shared_ptr<Robot::Context> &context);
             Motor(const Motor&) = delete; // No copy constructor
             Motor(Motor&&) = delete; // No move constructor
             virtual ~Motor();
@@ -62,16 +62,7 @@ namespace Robot::Motor {
 
             friend class Control;
         private:
-            static constexpr auto PID_P { 1.0 };
-            static constexpr auto PID_I { 0.1 };
-            static constexpr auto PID_D { 0.0 };
-
-            static constexpr auto ENCODER_CPR { 20 };
-            static constexpr auto GEARING { 100 };
-            static constexpr auto WHEEL_CIRC_MM { 300.0 };
-
-            static constexpr auto PID_UPDATE_INTERVAL { std::chrono::milliseconds(100) };
-
+            std::shared_ptr<Robot::Context> m_context;
             bool m_initialized;
             uint m_index;
             std::recursive_mutex &m_mutex;

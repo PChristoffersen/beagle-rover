@@ -16,7 +16,7 @@ namespace Robot::Telemetry {
 static constexpr auto TIMER_INTERVAL { 2s };
 
 
-ADCBattery::ADCBattery(shared_ptr<Robot::Context> context):
+ADCBattery::ADCBattery(const shared_ptr<Robot::Context> &context):
     AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() }
@@ -79,6 +79,7 @@ void ADCBattery::timer(boost::system::error_code error)
     
     EventBattery event;
     event.battery_id = 0x00;
+    event.voltage = pack_voltage;
     event.cell_voltage.push_back(pack_voltage/2.0f);
     event.cell_voltage.push_back(pack_voltage/2.0f);
 

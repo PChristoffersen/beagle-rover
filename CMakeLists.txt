@@ -40,7 +40,13 @@ set(SRC
     src/led/ledcontrol.cpp
     src/led/ledcolor.cpp
     src/led/ledcolorlayer.cpp
-    src/led/ledanimation.cpp
+    src/led/animation/indicator.cpp
+    src/led/animation/headlights.cpp
+    src/led/animation/construction.cpp
+    src/led/animation/police.cpp
+    src/led/animation/ambulance.cpp
+    src/led/animation/knightrider.cpp
+    src/led/animation/rainbow.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/sources/adcbattery.cpp
     src/telemetry/sources/rcmpu.cpp
@@ -50,6 +56,7 @@ set(SRC
     src/kinematic/controlscheme/spinning.cpp
     src/kinematic/controlscheme/balancing.cpp
     src/kinematic/controlscheme/passthrough.cpp
+    src/system/wifi.cpp
 )
 #target_link_directories(robot PRIVATE robotcontrol-ext)
 

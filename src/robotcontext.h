@@ -24,6 +24,9 @@ namespace Robot {
             void start();
             void stop();
 
+            void motorPower(bool enable);
+            void servoPower(bool enable);
+            void rcPower(bool enable);
 
             boost::asio::io_context &io() { return m_io; }
 
@@ -33,7 +36,8 @@ namespace Robot {
             boost::asio::io_context m_io;
             std::shared_ptr<std::thread> m_thread;
             
-            bool m_power_enabled;
+            uint m_motor_power_rail_cnt;
+            uint m_servo_power_rail_cnt;
 
             void initLogging();
 

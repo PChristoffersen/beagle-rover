@@ -5,7 +5,9 @@
 
 
 using namespace std;
-using namespace Robot::LED;
+
+
+namespace Robot::LED {
 
 
 
@@ -63,12 +65,8 @@ Color &Color::operator=(const raw_type other) {
 }
 
 
-Color Color::operator+(const Color &other) const {
-    return Color { m_data + other };
-}
-
-
-Color::raw_type Robot::LED::operator+(Color::raw_type dst, const Color &src_color) {
+Color::raw_type &operator<<(Color::raw_type &dst, const Color &src_color) {
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " " << src_color;
     Color::raw_type src_a = src_color.alpha();
     if (src_a==0x00) {
         return dst;
@@ -88,7 +86,15 @@ Color::raw_type Robot::LED::operator+(Color::raw_type dst, const Color &src_colo
 
     //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("  %+08x + %+08x = %+08x   red=%+08x green=%+08x blue=%+08x") % dst % (uint32_t)src % (alpha | red | green | blue) % red % green % blue;
 
-    return alpha | red | green | blue;
+    dst = alpha | red | green | blue;
+
+    return dst;
 }
 
 
+std::ostream &operator<<(std::ostream &os, const Color &color) {
+    return os << boost::format("%+02x%+02x%+02x%+02x") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue() % (uint32_t)color.alpha();
+}
+
+
+};

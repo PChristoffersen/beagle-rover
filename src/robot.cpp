@@ -21,9 +21,10 @@ Robot::Robot() :
     m_rc_receiver { make_shared<RC::Receiver>(m_context) },
     m_motor_control { make_shared<Motor::Control>(m_context) },
     m_led_control { make_shared<LED::Control>(m_context) },
-    m_telemetry { make_shared<Telemetry::Telemetry>(m_context) },
+    m_telemetry { make_shared<Telemetry::Telemetry>(m_context, m_rc_receiver) },
     m_kinematic { make_shared<Kinematic::Kinematic>(m_context, m_motor_control, m_telemetry, m_rc_receiver) },
-    m_pru_debug { make_shared<PRU::Debug>(m_context) }
+    m_pru_debug { make_shared<PRU::Debug>(m_context) },
+    m_wifi { make_shared<System::WiFi>(m_context) }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
@@ -50,6 +51,7 @@ void Robot::init()
     m_led_control->init();
     m_kinematic->init();
     m_pru_debug->init();
+    m_wifi->init();
 
     m_context->start();
 
@@ -66,6 +68,7 @@ void Robot::cleanup()
 
     setArmed(false);
 
+    m_wifi->cleanup();
     m_pru_debug->cleanup();
     m_rc_receiver->cleanup();
     m_telemetry->cleanup();

@@ -19,8 +19,9 @@ namespace Robot::Telemetry {
 static constexpr uint16_t TELEMETRY_BATTERY { 0x0300 };
 
 
-Telemetry::Telemetry(shared_ptr<Robot::Context> context) :
-    m_initialized { false }
+Telemetry::Telemetry(const shared_ptr<Robot::Context> &context, const shared_ptr<Robot::RC::Receiver> &receiver) :
+    m_initialized { false },
+    m_receiver { receiver }
 {
     switch (rc_model()) {
     case MODEL_BB_BLUE:
@@ -65,10 +66,16 @@ void Telemetry::cleanup()
 }
 
 
+// TODO Refactor this to the RC Receiver >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 void Telemetry::send(uint16_t appId, uint32_t data) 
 {
     //BOOST_LOG_TRIVIAL(trace) << "Send";
-    rc_ext_fbus_send_telemetry(appId, data);
+    if (auto receiver = m_receiver.lock()) {
+        if (receiver->getEnabled() && !receiver->getFlags().bits.frame_lost) {
+            rc_ext_fbus_send_telemetry(appId, data);
+        }
+    }
 }
 
 
@@ -97,5 +104,6 @@ void Telemetry::processBattery(const EventBattery &event)
     sig_event(event);
 }
 
+// TODO Refactor this to the RC Receiver <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     
 };

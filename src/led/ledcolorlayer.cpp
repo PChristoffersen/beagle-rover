@@ -6,11 +6,12 @@
 #include "ledcontrol.h"
 
 using namespace std;
-using namespace Robot::LED;
+
+namespace Robot::LED {
 
 ColorLayer::ColorLayer(int depth) :
     m_depth { depth },
-    m_visible { true }
+    m_visible { false }
 {
 }
 
@@ -68,21 +69,13 @@ void ColorLayer::setControl(const std::shared_ptr<Control> &control)
 
 
 
-ColorArray &Robot::LED::operator+=(ColorArray &dst, const ColorLayer &layer) 
-{
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " COL  layer=" << layer.depth();
+RawColorArray &operator<<(RawColorArray &dst, const ColorLayer &layer) {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " <<  layer=" << layer.depth();
     if (layer.visible()) {
-        transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), plus<>());
+        transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), [](auto &&dst, auto &&src){ return dst<<src; });
     }
     return dst;
 }
 
 
-RawColorArray &Robot::LED::operator+=(RawColorArray &dst, const ColorLayer &layer) 
-{
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " RAW  layer=" << layer.depth();
-    if (layer.visible()) {
-        transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), plus<>());
-    }
-    return dst;
-}
+};

@@ -59,13 +59,16 @@ namespace Robot::RC {
             SignalRSSI sigRSSI;
             SignalData sigData;
 
-            explicit Receiver(std::shared_ptr<Robot::Context> context);
+            explicit Receiver(const std::shared_ptr<Robot::Context> &context);
             Receiver(const Receiver&) = delete; // No copy constructor
             Receiver(Receiver&&) = delete; // No move constructor
             virtual ~Receiver();
 
             void init();
             void cleanup();
+
+            void setEnabled(bool enabled);
+            bool getEnabled() const { return m_enabled; }
 
             bool isConnected() const { return m_connected; }
             std::uint8_t getRSSI() const { return m_rssi; }
@@ -74,7 +77,9 @@ namespace Robot::RC {
             const ChannelList &channels() const { return m_channels; }
 
         private:
+            std::shared_ptr<Robot::Context> m_context;
             bool m_initialized;
+            bool m_enabled;
             boost::asio::steady_timer m_timer;
             std::uint32_t m_last_counter;
             volatile shm_fbus_t *m_fbus;
@@ -84,9 +89,9 @@ namespace Robot::RC {
             Flags m_flags;
             bool m_connected;
 
-            void timer_setup();
+            void timerSetup();
             void timer(boost::system::error_code error);
-    };
+   };
  
 };
 

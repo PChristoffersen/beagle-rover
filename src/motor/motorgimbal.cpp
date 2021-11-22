@@ -26,7 +26,8 @@ static constexpr int32_t GIMBAL_TRIM[] {
 };
 
 
-Gimbal::Gimbal(uint index, recursive_mutex &mutex) :
+Gimbal::Gimbal(uint index, recursive_mutex &mutex, const std::shared_ptr<Robot::Context> &context) :
+    m_context { context },
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
@@ -60,14 +61,18 @@ void Gimbal::cleanup()
     if (!m_initialized)
         return;
     m_initialized = false;
+    setEnabled(false);
 }
 
 
-void Gimbal::setEnabled(bool enable) 
+void Gimbal::setEnabled(bool enabled) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << "Gimbal[" << m_index << "] Enable " << enable;
-    m_enabled = enable;
+    if (enabled!=m_enabled) {
+        m_enabled = enabled;
+        BOOST_LOG_TRIVIAL(info) << "Gimbal[" << m_index << "] Enable " << enabled;
+        m_context->servoPower(m_enabled);
+    }
 }
 
 

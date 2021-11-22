@@ -27,7 +27,7 @@ namespace Robot::Motor {
                 REAR_RIGHT = 3,
             };
 
-            explicit Control(std::shared_ptr<Robot::Context> context);
+            explicit Control(const std::shared_ptr<Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();

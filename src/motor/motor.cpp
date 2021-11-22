@@ -14,12 +14,24 @@ using namespace std;
 
 namespace Robot::Motor {
 
+static constexpr auto PID_P { 1.0 };
+static constexpr auto PID_I { 0.1 };
+static constexpr auto PID_D { 0.0 };
 
-Motor::Motor(uint index, recursive_mutex &mutex) :
+static constexpr auto ENCODER_CPR { 20 };
+static constexpr auto GEARING { 100 };
+static constexpr auto WHEEL_CIRC_MM { 300.0 };
+
+static constexpr auto PID_UPDATE_INTERVAL { 100ms };
+
+
+
+Motor::Motor(uint index, recursive_mutex &mutex, const std::shared_ptr<Robot::Context> &context) :
+    m_context { context },
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
-    m_gimbal { make_unique<Gimbal>(index, mutex) },
+    m_gimbal { make_unique<Gimbal>(index, mutex, context) },
     m_enabled { false },
     m_passthrough { false },
     m_state { FREE_SPIN },
@@ -65,10 +77,7 @@ void Motor::cleanup()
 
     m_gimbal->cleanup();
 
-    if (m_state!=FREE_SPIN) {
-        rc_motor_free_spin(motorChannel());
-        m_state = FREE_SPIN;
-    }
+    setEnabled(false);
 }
 
 
@@ -113,13 +122,16 @@ void Motor::setTargetRPM(double rpm)
 void Motor::setEnabled(bool enabled) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    m_enabled = enabled;
-    // TODO Disable motor
-    if (m_enabled) {
-        rc_motor_set(motorChannel(), m_duty);
-    }
-    else {
-        rc_motor_set(motorChannel(), 0);
+    if (enabled!=m_enabled) {
+        m_enabled = enabled;
+        if (m_enabled) {
+            m_context->motorPower(true);
+            rc_motor_set(motorChannel(), m_duty);
+        }
+        else {
+            rc_motor_set(motorChannel(), 0);
+            m_context->motorPower(false);
+        }
     }
 }
 

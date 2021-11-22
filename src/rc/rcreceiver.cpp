@@ -46,8 +46,9 @@ void Receiver::ChannelList::setCount(size_t count)
 }
 
 
-Receiver::Receiver(shared_ptr<Robot::Context> context) :
-    m_initialized { true },
+Receiver::Receiver(const shared_ptr<Robot::Context> &context) :
+    m_initialized { false },
+    m_enabled { false },
     m_timer { context->io() },
     m_connected { false },
     m_rssi { 0 }
@@ -70,7 +71,7 @@ void Receiver::init()
 	case CATEGORY_BEAGLEBONE:
         m_fbus = rc_ext_fbus_get_shm();
         m_timer.expires_after(TIMER_INTERVAL);
-        timer_setup();
+        timerSetup();
         break;
     default:
         break;
@@ -92,7 +93,40 @@ void Receiver::cleanup()
 }
 
 
-void Receiver::timer_setup() {
+
+void Receiver::setEnabled(bool enabled)
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
+
+    if (enabled!=m_enabled) {
+        m_enabled = enabled;
+
+        if (m_enabled) {
+            switch (rc_model_category()) {
+            case CATEGORY_BEAGLEBONE:
+                m_timer.expires_after(TIMER_INTERVAL);
+                timerSetup();
+                m_context->rcPower(true);
+                break;
+            default:
+                break;
+            }
+        }
+        else {
+            switch (rc_model_category()) {
+            case CATEGORY_BEAGLEBONE:
+                m_timer.cancel();
+                m_context->rcPower(false);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+
+void Receiver::timerSetup() {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
         [self_ptr=weak_from_this()] (auto &error) {
@@ -104,16 +138,14 @@ void Receiver::timer_setup() {
 }
 
 
+
 void Receiver::timer(boost::system::error_code error) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
 
-    if (error!=boost::system::errc::success || !m_initialized) {
+    if (error!=boost::system::errc::success || !m_initialized || !m_fbus) {
         return;
     }
-
-    if (!m_fbus) 
-        return;
         
     uint32_t counter = m_fbus->counter;
     
@@ -164,7 +196,7 @@ void Receiver::timer(boost::system::error_code error)
         m_last_counter = counter;
     }
 
-    timer_setup();
+    timerSetup();
 }
 
 

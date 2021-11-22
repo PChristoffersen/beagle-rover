@@ -20,6 +20,7 @@ namespace Robot::Telemetry {
         public:
             EventBattery() {}
             std::uint8_t battery_id;
+            float voltage;
             std::vector<float> cell_voltage;
     };
 

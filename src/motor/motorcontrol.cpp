@@ -23,7 +23,7 @@ static constexpr auto TIMER_INTERVAL { 20ms };
 
 
 
-Control::Control(shared_ptr<Robot::Context> context) : 
+Control::Control(const shared_ptr<Robot::Context> &context) : 
     m_initialized { false },
     m_enabled { false },
     m_passthrough { false },
@@ -34,7 +34,7 @@ Control::Control(shared_ptr<Robot::Context> context) :
 	case CATEGORY_BEAGLEBONE:
     case CATEGORY_PC:
         for (uint i=0; i<MOTOR_COUNT; i++) {
-            m_motors[i] = make_unique<Motor>(i, m_mutex);
+            m_motors[i] = make_unique<Motor>(i, m_mutex, context);
         }
         break;
     }
@@ -55,8 +55,6 @@ void Control::init()
     for (auto &motor : m_motors) {
        motor->init();
     }
-
-    rc_motor_standby(0);
 
     m_timer.expires_after(TIMER_INTERVAL);
     timer_setup();
@@ -114,21 +112,6 @@ void Control::setEnabled(bool enabled)
     for (auto &motor : m_motors) {
         motor->setEnabled(m_enabled);
         motor->gimbal()->setEnabled(false);
-    }
-
-    switch (rc_model_category()) {
-	case CATEGORY_BEAGLEBONE:
-        if (m_enabled) {
-            rc_servo_power_rail_en(1);
-            rc_motor_standby(0);
-        }
-        else {
-            rc_servo_power_rail_en(0);
-            rc_motor_standby(1);
-        }
-        break;
-    default:
-        break;
     }
 }
 

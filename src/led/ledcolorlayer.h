@@ -8,11 +8,14 @@
 
 namespace Robot::LED {
 
-    constexpr unsigned int PIXEL_COUNT { RC_EXT_NEOPIXEL_COUNT };
+    constexpr uint PIXEL_COUNT { RC_EXT_NEOPIXEL_COUNT };
+
+    constexpr auto LAYER_DEPTH_ANIMATION { 10 };
+    constexpr auto LAYER_DEPTH_INDICATORS { LAYER_DEPTH_ANIMATION+1 };
+    constexpr auto LAYER_RC_INDICATORS { 100 };
 
     using ColorArray = std::array<Color, PIXEL_COUNT>;
     using RawColorArray = std::array<Color::raw_type, PIXEL_COUNT>;
-
 
     class ColorLayer : public ColorArray, public std::enable_shared_from_this<ColorLayer> {
         public:
@@ -39,15 +42,29 @@ namespace Robot::LED {
             void setControl(const std::shared_ptr<class Control> &control);
 
         private:
-            int m_depth;
+            const int m_depth;
             bool m_visible;
 
             std::weak_ptr<class Control> m_control;
+
+            friend RawColorArray &operator<<(RawColorArray &dst, const ColorLayer &layer);
     };
 
+    class ColorLayerLock {
+        public:
+            ColorLayerLock(const std::shared_ptr<ColorLayer> &layer) : 
+                m_layer { layer }
+            {
+                m_layer->lock();
+            }
+            ~ColorLayerLock() 
+            {
+                m_layer->unlock();
+            }
+        private:
+            const std::shared_ptr<ColorLayer> &m_layer;
+    };
 
-    ColorArray &operator+=(ColorArray &dst, const ColorLayer &layer);
-    RawColorArray &operator+=(RawColorArray &dst, const ColorLayer &layer);
 };
 
 

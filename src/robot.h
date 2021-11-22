@@ -12,6 +12,8 @@
 #include "telemetry/telemetry.h"
 #include "kinematic/kinematic.h"
 #include "debug/prudebug.h"
+#include "system/wifi.h"
+
 
 namespace Robot {
 
@@ -36,6 +38,7 @@ namespace Robot {
             const std::shared_ptr<LED::Control> &ledControl() const { return m_led_control; }
             const std::shared_ptr<Telemetry::Telemetry> &telemetry() const { return m_telemetry; }
             const std::shared_ptr<Kinematic::Kinematic> &kinematic() const { return m_kinematic; }
+            const std::shared_ptr<System::WiFi> &wifi() const { return m_wifi; }
 
         private:
             static class Robot *m_instance;
@@ -49,6 +52,7 @@ namespace Robot {
             std::shared_ptr<Telemetry::Telemetry> m_telemetry;
             std::shared_ptr<Kinematic::Kinematic> m_kinematic;
             std::shared_ptr<PRU::Debug> m_pru_debug;
+            std::shared_ptr<System::WiFi> m_wifi;
 
     };
 

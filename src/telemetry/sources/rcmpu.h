@@ -12,7 +12,7 @@ namespace Robot::Telemetry {
 
     class RCMPU : public AbstractSource<RCMPU> {
         public:
-            explicit RCMPU(std::shared_ptr<Robot::Context> context);
+            explicit RCMPU(const std::shared_ptr<Robot::Context> &context);
             RCMPU(const RCMPU&) = delete; // No copy constructor
             RCMPU(RCMPU&&) = delete; // No move constructor
             virtual ~RCMPU();

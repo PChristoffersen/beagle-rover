@@ -16,7 +16,6 @@ namespace py = boost::python;
 
 
 
-
 static Color tuple2color(const py::tuple & value) 
 {
     if (py::len(value)==3) {
@@ -59,13 +58,23 @@ void python_export_led()
         ;
     */
 
-    /*
-    class_<Color>("Color", init<uint8_t, uint8_t, uint8_t>())
-        .add_property("red", &Color::getRed)
-        .add_property("green", &Color::getGreen)
-        .add_property("blue", &Color::getBlue)
+    py::enum_<AnimationMode>("LEDAnimation")
+        .value("NONE", AnimationMode::NONE)
+        .value("HEADLIGHTS", AnimationMode::HEADLIGHTS)
+        .value("CONSTRUCTION", AnimationMode::CONSTRUCTION)
+        .value("POLICE", AnimationMode::POLICE)
+        .value("AMBULANCE", AnimationMode::AMBULANCE)
+        .value("KNIGHT_RIDER", AnimationMode::KNIGHT_RIDER)
+        .value("RAINBOW", AnimationMode::RAINBOW)
         ;
-    */
+
+    py::enum_<IndicatorMode>("LEDIndicator")
+        .value("NONE", IndicatorMode::NONE)
+        .value("LEFT", IndicatorMode::LEFT)
+        .value("RIGHT", IndicatorMode::RIGHT)
+        .value("HAZARD", IndicatorMode::HAZARD)
+        ;
+
    py::class_<ColorLayer, shared_ptr<ColorLayer>, boost::noncopyable>("LEDColorLayer", py::init<int>())
         .add_property("depth", &ColorLayer::depth)
         .add_property("visible", &ColorLayer::visible, &ColorLayer::setVisible)
@@ -109,6 +118,8 @@ void python_export_led()
             +[](Control &ctl, py::tuple &value) {
                 ctl.setBackground(tuple2color(value));
             })
+        .add_property("animation", &Control::getAnimation, &Control::setAnimation)
+        .add_property("indicators", &Control::getIndicators, &Control::setIndicators)
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("show", &Control::show)

@@ -22,7 +22,7 @@ static constexpr auto GPIO_INT_PIN_PIN { 21 };
 static constexpr auto TIMER_INTERVAL { 1000ms };
 
 
-RCMPU::RCMPU(shared_ptr<Robot::Context> context):
+RCMPU::RCMPU(const shared_ptr<Robot::Context> &context):
     AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() }

@@ -42,7 +42,7 @@ namespace Robot::Kinematic {
             void init();
             void cleanup();
 
-            Kinematic(std::shared_ptr<Robot::Context> context, std::shared_ptr<Robot::Motor::Control> motor_control, std::shared_ptr<Robot::Telemetry::Telemetry> telemetry, std::shared_ptr<Robot::RC::Receiver> receiver);
+            Kinematic(const std::shared_ptr<Robot::Context> &context, const std::shared_ptr<Robot::Motor::Control> &motor_control, const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry, const std::shared_ptr<Robot::RC::Receiver> &receiver);
             Kinematic(const Kinematic&) = delete; // No copy constructor
             Kinematic(Kinematic&&) = delete; // No move constructor
             virtual ~Kinematic();

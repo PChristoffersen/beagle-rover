@@ -18,7 +18,7 @@ using namespace std;
 
 namespace Robot::Kinematic {
 
-Kinematic::Kinematic(shared_ptr<Robot::Context> context, shared_ptr<Robot::Motor::Control> motor_control, shared_ptr<Robot::Telemetry::Telemetry> telemetry, shared_ptr<Robot::RC::Receiver> receiver) :
+Kinematic::Kinematic(const std::shared_ptr<Robot::Context> &context, const std::shared_ptr<Robot::Motor::Control> &motor_control, const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry, const std::shared_ptr<Robot::RC::Receiver> &receiver) :
     m_initialized { false },
     m_context { context },
     m_motor_control { motor_control },
@@ -54,7 +54,7 @@ void Kinematic::cleanup()
 
     if (m_control_scheme) {
         m_control_scheme->cleanup();
-        m_control_scheme.reset();
+        m_control_scheme = nullptr;
     }
 }
 
@@ -87,7 +87,7 @@ void Kinematic::setDriveMode(DriveMode mode)
 
         if (m_control_scheme) {
             m_control_scheme->cleanup();
-            m_control_scheme.reset();
+            m_control_scheme = nullptr;
         }
 
         switch (mode) {

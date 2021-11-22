@@ -6,7 +6,7 @@ from math import pi as PI
 sys.path.append('build')
 
 from time import sleep
-from build.robotcontrol import Robot, TelemetryListener, DriveMode
+from build.robotcontrol import Robot, TelemetryListener, DriveMode, LEDColorLayer, LEDAnimation
 
 from datetime import datetime
 

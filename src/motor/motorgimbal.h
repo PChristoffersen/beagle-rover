@@ -6,12 +6,13 @@
 #include <chrono>
 #include <mutex>
 #include "../robottypes.h"
+#include "../robotcontext.h"
 
 namespace Robot::Motor {
 
     class Gimbal {
         public:
-            Gimbal(uint index, std::recursive_mutex &mutex);
+            Gimbal(uint index, std::recursive_mutex &mutex, const std::shared_ptr<Robot::Context> &context);
             Gimbal(const Gimbal&) = delete; // No copy constructor
             Gimbal(Gimbal&&) = delete; // No move constructor
             virtual ~Gimbal();
@@ -53,6 +54,7 @@ namespace Robot::Motor {
             friend class Motor;
             friend class Control;
         private:
+            std::shared_ptr<Robot::Context> m_context;
             bool m_initialized;
             uint m_index;
             std::recursive_mutex &m_mutex;

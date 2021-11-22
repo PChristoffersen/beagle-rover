@@ -16,7 +16,7 @@ namespace Robot {
 Context::Context() : 
     m_initialized { false },
     m_started { false },
-    m_power_enabled { false }
+    m_servo_power_rail_cnt { 0 }
 {
     initLogging();
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
@@ -120,7 +120,8 @@ void Context::initBeagleBone()
         BOOST_THROW_EXCEPTION(runtime_error("Error initializing FBUS"));
     }
 
-    rc_servo_power_rail_en(1);
+    rc_motor_standby(1);
+    rc_servo_power_rail_en(0);
 }
 
 
@@ -165,11 +166,66 @@ void Context::stop()
     BOOST_LOG_TRIVIAL(info) << "Stopping thread";
     m_io.stop();
     m_thread->join();
-    m_thread.reset();
+    m_thread = nullptr;
     BOOST_LOG_TRIVIAL(info) << "Thread stopped";
 
     m_started = false;
 }
+
+
+void Context::motorPower(bool enable) 
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
+    if (!m_initialized)
+        return;
+
+    if (enable) {
+        m_motor_power_rail_cnt++;
+        BOOST_LOG_TRIVIAL(info) << "MotorPowerRail++ " << m_motor_power_rail_cnt;
+        if (m_motor_power_rail_cnt==1) {
+            rc_motor_standby(0);
+        }
+    }
+    else {
+        m_motor_power_rail_cnt--;
+        BOOST_LOG_TRIVIAL(info) << "MotorPowerRail-- " << m_motor_power_rail_cnt;
+        if (m_motor_power_rail_cnt==0) {
+            rc_motor_standby(1);
+        }
+    }
+}
+
+
+void Context::servoPower(bool enable) 
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
+    if (!m_initialized)
+        return;
+        
+    if (enable) {
+        m_servo_power_rail_cnt++;
+        BOOST_LOG_TRIVIAL(info) << "ServoPowerRail++ " << m_servo_power_rail_cnt;
+        if (m_servo_power_rail_cnt==1) {
+            rc_servo_power_rail_en(1);
+        }
+    }
+    else {
+        assert(m_servo_power_rail_cnt>0);
+        m_servo_power_rail_cnt--;
+        BOOST_LOG_TRIVIAL(info) << "ServoPowerRail-- " << m_servo_power_rail_cnt;
+        if (m_servo_power_rail_cnt==0) {
+            rc_servo_power_rail_en(0);
+        }
+    }
+}
+
+
+void Context::rcPower(bool enable) 
+{
+    // RC Receiver is powered from the servo rail
+    servoPower(enable);
+}
+
 
 
 };
