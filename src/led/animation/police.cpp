@@ -9,8 +9,8 @@ namespace Robot::LED {
 
 
 static constexpr auto TIMER_INTERVAL { 300ms };
-static const Color LED_COLOR1 { 0xFF, 0x00, 0x00 };
-static const Color LED_COLOR2 { 0x00, 0x00, 0xFF };
+static constexpr Color LED_COLOR1 { 0xFF, 0x00, 0x00 };
+static constexpr Color LED_COLOR2 { 0x00, 0x00, 0xFF };
 
 
 Police::Police(const std::shared_ptr<Robot::Context> &context) :

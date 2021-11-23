@@ -66,7 +66,7 @@ void ControlSchemePassthrough::cleanup()
 }
 
 
-void ControlSchemePassthrough::onRCData(Robot::RC::Receiver::Flags flags, uint8_t rssi, const Robot::RC::Receiver::ChannelList &channels) {
+void ControlSchemePassthrough::onRCData(Robot::RC::Flags flags, uint8_t rssi, const Robot::RC::ChannelList &channels) {
     const lock_guard<mutex> lock(m_mutex);
     if (!m_initialized) 
         return;

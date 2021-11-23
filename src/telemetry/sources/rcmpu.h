@@ -17,7 +17,7 @@ namespace Robot::Telemetry {
             RCMPU(RCMPU&&) = delete; // No move constructor
             virtual ~RCMPU();
 
-            void init();
+            void init(const std::shared_ptr<Telemetry> &telemetry);
             void cleanup();
 
         protected:

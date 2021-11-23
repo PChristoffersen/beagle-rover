@@ -16,7 +16,7 @@ namespace Robot::Telemetry {
             ADCBattery(ADCBattery&&) = delete; // No move constructor
             virtual ~ADCBattery();
 
-            void init();
+            void init(const std::shared_ptr<Telemetry> &telemetry);
             void cleanup();
 
         private:

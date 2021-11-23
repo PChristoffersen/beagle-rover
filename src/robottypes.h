@@ -19,10 +19,10 @@ namespace Robot {
             static constexpr std::int32_t PULSE_RANGE { (PULSE_MAX-PULSE_MIN) };
             static constexpr std::uint32_t UNSET_VALUE { 0 };
 
-            InputValue() : m_value { UNSET_VALUE } { }
-            InputValue(value_t v) : m_value { clamp(v) } { }
-            InputValue(InputValue &other) : m_value { other.m_value } { }
-            InputValue(InputValue &&other) : m_value { other.m_value } { }
+            constexpr InputValue() : m_value { UNSET_VALUE } { }
+            constexpr InputValue(value_t v) : m_value { clamp(v) } { }
+            constexpr InputValue(InputValue &other) : m_value { other.m_value } { }
+            constexpr InputValue(InputValue &&other) : m_value { other.m_value } { }
 
             InputValue &operator=(const InputValue &other) { m_value = other.m_value; return *this; }
             InputValue &operator=(const std::uint32_t value) { fromMicroSeconds(value); return *this; }
@@ -69,17 +69,6 @@ namespace Robot {
             }
 
 
-            void unset() 
-            {
-                m_value = UNSET_VALUE;
-            }
-
-            void center() 
-            { 
-                m_value = PULSE_CENTER;
-            }
-
-
             inline operator bool() const 
             {
                 return m_value != UNSET_VALUE;
@@ -91,10 +80,15 @@ namespace Robot {
             }
 
 
+            static const InputValue UNSET;
+            static const InputValue CENTER;
+            static const InputValue MIN;
+            static const InputValue MAX;
+
         private:
             std::uint32_t m_value;
 
-            inline static value_t clamp(value_t v) {
+            inline constexpr static value_t clamp(value_t v) {
                 return std::clamp(v, PULSE_MIN, PULSE_MAX);
             }
 
@@ -103,6 +97,11 @@ namespace Robot {
             }
 
     };
+
+    constexpr InputValue InputValue::UNSET { InputValue::UNSET_VALUE };
+    constexpr InputValue InputValue::CENTER { InputValue::PULSE_CENTER };
+    constexpr InputValue InputValue::MIN { InputValue::PULSE_MIN };
+    constexpr InputValue InputValue::MAX { InputValue::PULSE_MAX };
 
 };
 

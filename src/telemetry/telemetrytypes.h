@@ -7,6 +7,8 @@
 
 namespace Robot::Telemetry {
 
+    class Telemetry;
+
     using Signal = boost::signals2::signal<void(const class Event &)>;
 
 

@@ -10,51 +10,16 @@
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
-#include "../common/withmutex.h"
 #include "../robotcontext.h"
-#include "../robottypes.h"
+#include "../common/withmutex.h"
+#include "../telemetry/telemetrytypes.h"
+#include "rctypes.h"
+
 
 namespace Robot::RC {
 
     class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex> {
         public:
-            union Flags {
-                std::byte value;
-                struct {
-                    bool ch17:1;
-                    bool ch18:1;
-                    bool frame_lost:1;
-                    bool failsafe:1;
-                    bool _reserved3:1;
-                    bool _reserved2:1;
-                    bool _reserved1:1;
-                    bool _reserved0:1;
-                } bits;
-                Flags() : value{ 0x00 } {}
-                Flags(const std::uint8_t v) : value{v} {}
-                Flags(const std::byte v) : value{v} {}
-                bool operator!=(const Flags &other) { return value!=other.value; }
-                bool operator!=(const std::uint8_t other) { return value!=(std::byte)other; }
-            };
-
-            static constexpr auto MAX_CHANNELS { 24u };
-
-            class ChannelList : public std::array<Robot::InputValue, MAX_CHANNELS> {
-                public:
-                    ChannelList();
-                    std::size_t count() const { return m_count; }
-                protected:
-                    friend class Receiver;
-                    void setCount(std::size_t count);
-                private:
-                    std::size_t m_count;
-            };
-
-            //using Flags = std::byte;
-            using SignalFlags = boost::signals2::signal<void(Flags)>;
-            using SignalRSSI = boost::signals2::signal<void(std::uint8_t)>;
-            using SignalData = boost::signals2::signal<void(Flags flags, std::uint8_t rssi, const ChannelList &channels)>;
-
             SignalFlags sigFlags;
             SignalRSSI sigRSSI;
             SignalData sigData;
@@ -64,13 +29,13 @@ namespace Robot::RC {
             Receiver(Receiver&&) = delete; // No move constructor
             virtual ~Receiver();
 
-            void init();
+            void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
 
             void setEnabled(bool enabled);
             bool getEnabled() const { return m_enabled; }
 
-            bool isConnected() const { return m_connected; }
+            bool isConnected() const { return m_flags.bits.frame_lost; }
             std::uint8_t getRSSI() const { return m_rssi; }
             Flags getFlags() const { return m_flags; }
 
@@ -85,12 +50,16 @@ namespace Robot::RC {
             volatile shm_fbus_t *m_fbus;
 
             ChannelList m_channels;
-            std::uint8_t m_rssi;
+            RSSI m_rssi;
             Flags m_flags;
-            bool m_connected;
+
+            boost::signals2::connection m_telemetry_connection;
 
             void timerSetup();
             void timer(boost::system::error_code error);
+
+            void telemetryEvent(const Robot::Telemetry::Event &event);
+            void sendTelemetry(std::uint16_t appId, std::uint32_t data);
    };
  
 };

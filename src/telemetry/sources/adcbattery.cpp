@@ -32,9 +32,10 @@ ADCBattery::~ADCBattery()
 }
 
 
-void ADCBattery::init() 
+void ADCBattery::init(const std::shared_ptr<Telemetry> &telemetry) 
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    AbstractSource::init(telemetry);
 
     m_initialized = true;
 
@@ -52,6 +53,7 @@ void ADCBattery::cleanup()
     m_initialized = false;
 
     m_timer.cancel();
+    AbstractSource::cleanup();
 }
 
 
@@ -83,7 +85,7 @@ void ADCBattery::timer(boost::system::error_code error)
     event.cell_voltage.push_back(pack_voltage/2.0f);
     event.cell_voltage.push_back(pack_voltage/2.0f);
 
-    sig_event(event);
+    send(event);
 
     timer_setup();
 }

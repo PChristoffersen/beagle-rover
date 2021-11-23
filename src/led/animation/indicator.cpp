@@ -9,7 +9,7 @@ namespace Robot::LED {
 
 
 static constexpr auto TIMER_INTERVAL { 500ms };
-static const Color INDICATOR_COLOR { 0xEE, 0xBE, 0x00 };
+static constexpr Color INDICATOR_COLOR { 0xEE, 0xBE, 0x00 };
 
 Indicator::Indicator(const std::shared_ptr<Robot::Context> &context) :
     AbstractAnimation { context, LAYER_DEPTH_INDICATORS, TIMER_INTERVAL },

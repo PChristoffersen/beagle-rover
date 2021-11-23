@@ -51,7 +51,7 @@ Gimbal::~Gimbal()
 void Gimbal::init() 
 {
     m_last_pulse = chrono::high_resolution_clock::now();
-    m_value.unset();
+    m_value = Robot::InputValue::UNSET;
     m_initialized = true;
 }
 

@@ -1,6 +1,7 @@
 #include "rcreceiver.h"
 
 #include <algorithm>
+#include <boost/assert.hpp>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
@@ -9,10 +10,15 @@
 
 #include "../robotcontext.h"
 #include "../motor/motorcontrol.h"
+#include "../telemetry/telemetry.h"
+
 
 using namespace std;
 
 namespace Robot::RC {
+
+static constexpr uint16_t TELEMETRY_BATTERY { 0x0300 };
+
 
 /*
 flags = 
@@ -31,26 +37,10 @@ bit0 = n/a
 static constexpr auto TIMER_INTERVAL { 10ms };
 
 
-Receiver::ChannelList::ChannelList() :
-    m_count { 0 }
-{
-}
-
-
-void Receiver::ChannelList::setCount(size_t count) 
-{
-    if (m_count!=count) {
-        std::fill(begin()+count, end(), Robot::InputValue::UNSET_VALUE);
-        m_count = count;
-    }
-}
-
-
 Receiver::Receiver(const shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_enabled { false },
     m_timer { context->io() },
-    m_connected { false },
     m_rssi { 0 }
 {
 }
@@ -63,7 +53,7 @@ Receiver::~Receiver()
 }
 
 
-void Receiver::init() 
+void Receiver::init(const shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
 {    
     const lock_guard<recursive_mutex> lock(m_mutex);
 
@@ -77,6 +67,8 @@ void Receiver::init()
         break;
     }
 
+    m_telemetry_connection = telemetry->sig_event.connect([&](const auto &e){ telemetryEvent(e); });
+
     m_initialized = true;
 }
 
@@ -84,14 +76,13 @@ void Receiver::init()
 void Receiver::cleanup() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-
     if (!m_initialized) 
         return;
     m_initialized = false;
+    m_telemetry_connection.disconnect();
     m_timer.cancel();
     m_fbus = nullptr;
 }
-
 
 
 void Receiver::setEnabled(bool enabled)
@@ -197,6 +188,33 @@ void Receiver::timer(boost::system::error_code error)
     }
 
     timerSetup();
+}
+
+
+void Receiver::telemetryEvent(const Robot::Telemetry::Event &event) 
+{
+    if (const auto ev = dynamic_cast<const Robot::Telemetry::EventBattery*>(&event)) {
+        auto n_cells = ev->cell_voltage.size();
+        for (size_t i=0; i<n_cells; i+=2) {
+            uint32_t cv1 = ev->cell_voltage[i]*500;
+            uint32_t cv2 = 0;
+            if (i+1<n_cells) {
+                cv2 = ev->cell_voltage[i]*500;
+            }
+            uint32_t data = ((uint32_t) cv1 & 0x0fff) << 20 | ((uint32_t) cv2 & 0x0fff) << 8 | n_cells << 4 | ev->battery_id;
+            sendTelemetry(TELEMETRY_BATTERY + i/2, data);
+        }
+    }
+}
+
+void Receiver::sendTelemetry(uint16_t appId, uint32_t data) 
+{
+    const lock_guard<recursive_mutex> lock(m_mutex);
+    BOOST_LOG_TRIVIAL(trace) << "Send telemetry appId=" << boost::format("%+04x") % appId << " data="<< boost::format("%+08x") % data;
+    if (!m_enabled || !m_flags.bits.frame_lost)
+        return;
+
+    rc_ext_fbus_send_telemetry(appId, data);
 }
 
 

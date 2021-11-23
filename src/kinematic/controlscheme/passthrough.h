@@ -6,7 +6,7 @@
 
 #include <robotcontrolext.h>
 
-#include "../../rc/rcreceiver.h"
+#include "../../rc/rctypes.h"
 #include "abstractcontrolscheme.h"
 
 namespace Robot::Kinematic {
@@ -27,7 +27,7 @@ namespace Robot::Kinematic {
 
             boost::signals2::connection m_rc_connection;
 
-            void onRCData(Robot::RC::Receiver::Flags flags, uint8_t rssi, const Robot::RC::Receiver::ChannelList &channels);
+            void onRCData(Robot::RC::Flags flags, Robot::RC::RSSI rssi, const Robot::RC::ChannelList &channels);
     };
 
 };

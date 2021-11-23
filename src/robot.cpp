@@ -45,7 +45,7 @@ void Robot::init()
     m_instance = this;
 
     m_context->init();
-    m_rc_receiver->init();
+    m_rc_receiver->init(m_telemetry);
     m_telemetry->init();
     m_motor_control->init();
     m_led_control->init();

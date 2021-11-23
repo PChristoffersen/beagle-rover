@@ -5,7 +5,6 @@
 #include <memory>
 #include <boost/asio.hpp>
 
-#include "telemetrysource.h"
 #include "telemetrytypes.h"
 #include "../robotcontext.h"
 #include "../rc/rcreceiver.h"
@@ -26,16 +25,14 @@ namespace Robot::Telemetry {
             Signal sig_event;
 
         protected:
+            friend class Source;
+            
             void process(const Event &event);
-            void processBattery(const EventBattery &event);
-            void send(std::uint16_t appId, std::uint32_t data);
 
         private:
             bool m_initialized;
             std::weak_ptr<Robot::RC::Receiver> m_receiver;
             std::vector<std::shared_ptr<class Source>> m_sources;
-            std::vector<boost::signals2::connection> m_source_connections;
-
     };
         
 };

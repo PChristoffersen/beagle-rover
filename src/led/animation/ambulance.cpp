@@ -9,7 +9,7 @@ namespace Robot::LED {
 
 
 static constexpr auto TIMER_INTERVAL { 500ms };
-static const Color LED_COLOR { 0x00, 0x00, 0xFF };
+static constexpr Color LED_COLOR { 0x00, 0x00, 0xFF };
 
 
 Ambulance::Ambulance(const std::shared_ptr<Robot::Context> &context) :

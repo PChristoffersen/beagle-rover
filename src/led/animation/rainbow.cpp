@@ -14,7 +14,6 @@ static constexpr auto TIMER_INTERVAL { 100ms };
 Rainbow::Rainbow(const std::shared_ptr<Robot::Context> &context) :
     AbstractAnimation { context, TIMER_INTERVAL }
 {
-
 }
 
 

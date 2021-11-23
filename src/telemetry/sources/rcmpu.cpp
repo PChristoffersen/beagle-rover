@@ -36,8 +36,10 @@ RCMPU::~RCMPU()
 }
 
 
-void RCMPU::init() 
+void RCMPU::init(const std::shared_ptr<Telemetry> &telemetry) 
 {
+    AbstractSource::init(telemetry);
+
 	rc_mpu_config_t conf = rc_mpu_default_config();
 	conf.i2c_bus = I2C_BUS;
 	conf.gpio_interrupt_pin_chip = GPIO_INT_PIN_CHIP;
@@ -68,6 +70,8 @@ void RCMPU::cleanup()
     m_timer.cancel();
 
 	rc_mpu_power_off();
+    
+    AbstractSource::cleanup();
 }
 
 
