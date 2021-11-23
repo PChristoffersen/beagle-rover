@@ -22,7 +22,6 @@ Kinematic::Kinematic(const std::shared_ptr<Robot::Context> &context, const std::
     m_initialized { false },
     m_context { context },
     m_motor_control { motor_control },
-    m_telemetry { telemetry },
     m_rc_receiver { receiver },
     m_steering_mode { SteeringMode::NONE },
     m_drive_mode { DriveMode::NONE }

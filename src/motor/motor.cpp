@@ -36,12 +36,9 @@ Motor::Motor(uint index, recursive_mutex &mutex, const std::shared_ptr<Robot::Co
     m_passthrough { false },
     m_state { FREE_SPIN },
     m_last_enc_value { 0 },
-    m_odometer_base { 0 },
-    m_pid { PID_P, PID_I, PID_D, bind(&Motor::getRPM, this), boost::bind(&Motor::setDuty, this, _1) }
+    m_odometer_base { 0 }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
-    //m_pid.registerTimeFunction([]() { high_resolution_clock::now().count(); });
-    m_pid.setOutputBounds(-1024.0, 1024.0);
 }
 
 

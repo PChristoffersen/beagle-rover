@@ -56,7 +56,6 @@ namespace Robot::Kinematic {
 
             std::shared_ptr<Robot::Context> context() { return m_context; }
             std::shared_ptr<Robot::Motor::Control> motorControl() { return m_motor_control; }
-            std::shared_ptr<Robot::Telemetry::Telemetry> telemetry() { return m_telemetry; }
             std::shared_ptr<Robot::RC::Receiver> rc_receiver() { return m_rc_receiver; }
 
         private:
@@ -64,7 +63,6 @@ namespace Robot::Kinematic {
 
             std::shared_ptr<Robot::Context> m_context;
             std::shared_ptr<Robot::Motor::Control> m_motor_control;
-            std::shared_ptr<Robot::Telemetry::Telemetry> m_telemetry;
             std::shared_ptr<Robot::RC::Receiver> m_rc_receiver;
             std::shared_ptr<ControlScheme> m_control_scheme;
 

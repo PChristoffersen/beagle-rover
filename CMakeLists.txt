@@ -22,7 +22,6 @@ add_definitions(-DBOOST_LOG_DYN_LINK)
 # -----------------------------------------------
 # Helper libraries
 # -----------------------------------------------
-add_subdirectory("${CMAKE_SOURCE_DIR}/lib/pid")
 add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
 
 
@@ -80,7 +79,6 @@ add_library(robotcontrol MODULE
 )
 target_include_directories(robotcontrol PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(robotcontrol PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-target_link_libraries(robotcontrol PRIVATE pid)
 target_link_libraries(robotcontrol PRIVATE robotcontrolext)
 
 # -----------------------------------------------
@@ -92,6 +90,5 @@ add_executable(test_robot
 )
 target_include_directories(test_robot PRIVATE src)
 target_link_libraries(test_robot "${Boost_LIBRARIES}")
-target_link_libraries(test_robot pid)
 target_link_libraries(test_robot robotcontrolext)
 

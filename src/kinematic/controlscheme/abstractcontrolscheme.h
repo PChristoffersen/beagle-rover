@@ -22,7 +22,6 @@ namespace Robot::Kinematic {
                 m_kinematic { kinematic },
                 m_context { kinematic->context() },
                 m_motor_control { kinematic->motorControl() },
-                m_telemetry { kinematic->telemetry() },
                 m_rc_receiver { kinematic->rc_receiver() }
             {
             }
@@ -32,7 +31,6 @@ namespace Robot::Kinematic {
             std::weak_ptr<Kinematic> m_kinematic;
             std::shared_ptr<Robot::Context> m_context;
             std::shared_ptr<Robot::Motor::Control> m_motor_control;
-            std::shared_ptr<Robot::Telemetry::Telemetry> m_telemetry;
             std::shared_ptr<Robot::RC::Receiver> m_rc_receiver;
     };
 

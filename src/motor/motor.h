@@ -6,7 +6,6 @@
 #include <mutex>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
-#include <PID.h>
 
 #include "motorcontrol.h"
 #include "motorgimbal.h"
@@ -81,7 +80,6 @@ namespace Robot::Motor {
             double m_duty;
             double m_target_rpm;
             double m_rpm;
-            PIDController<double> m_pid;
 
             inline uint encoderChannel() const;
             inline uint motorChannel() const;
