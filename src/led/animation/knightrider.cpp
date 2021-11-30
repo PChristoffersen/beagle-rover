@@ -9,7 +9,7 @@ namespace Robot::LED {
 
 
 static constexpr auto TIMER_INTERVAL { 100ms };
-static constexpr Color LED_COLOR1 { 0xFF, 0x00, 0x00, 0x60 };
+static constexpr Color LED_COLOR1 { 0xFF, 0x00, 0x00, 0x40 };
 static constexpr Color LED_COLOR2 { 0xFF, 0x00, 0x00, 0x08 };
 
 

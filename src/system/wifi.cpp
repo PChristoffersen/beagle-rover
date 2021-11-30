@@ -1,5 +1,6 @@
 #include "wifi.h"
 
+#include <sys/ioctl.h>
 #include <algorithm>
 #include <linux/wireless.h>
 #include <boost/format.hpp>
@@ -16,13 +17,13 @@ WiFi::WiFi(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_sockfd { -1 }
 {
-    BOOST_LOG_TRIVIAL(info) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 
 WiFi::~WiFi() 
 {
-    BOOST_LOG_TRIVIAL(info) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     cleanup();
 }
 
@@ -30,7 +31,7 @@ WiFi::~WiFi()
 void WiFi::init()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     m_initialized = true;
 
     m_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -45,7 +46,7 @@ void WiFi::init()
 void WiFi::cleanup()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << __PRETTY_FUNCTION__;
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     if (!m_initialized)
         return;
     m_initialized = false;

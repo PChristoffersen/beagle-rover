@@ -3,7 +3,7 @@
 import sys
 import logging
 from math import pi as PI
-sys.path.append('build')
+sys.path.append('../build')
 
 from time import sleep
 from build.robotcontrol import Robot, TelemetryListener, DriveMode
@@ -24,18 +24,18 @@ def print_battery(event):
 def set_motors(robot: Robot, pos):
     log.info(f"Setting pulse {pos} us")
     for motor in robot.motor_control.motors:
-        motor.gimbal.pulse_us = pos
+        motor.servo.pulse_us = pos
     
 
 def test_motor_angles(robot: Robot):
     motors = robot.motor_control.motors
     motor = motors[0]
-    gimbal = motor.gimbal
+    servo = motor.servo
 
     angles = [ -PI/2, 0, PI/2 ]
     for angle in angles:
-        gimbal.angle = angle
-        log.info(f"Motor: pulse={gimbal.pulse_us}  angle_rad={gimbal.angle}  angle_deg={gimbal.angle_degrees}")
+        servo.angle = angle
+        log.info(f"Motor: pulse={servo.pulse_us}  angle_rad={servo.angle}  angle_deg={servo.angle_degrees}")
 
 
 
@@ -54,10 +54,10 @@ def main():
 
     #for motor in robot.motor_control.motors:
     #    log.info("Enabling motor "+str(motor.index))
-    #    motor.gimbal.pulse_us = 1500
-    #    motor.gimbal.angle = PI/2
-    #    motor.gimbal.enabled = True
-    #    log.info(f"{motor} {motor.index} gimbal {motor.gimbal} {motor.gimbal.index}")
+    #    motor.servo.pulse_us = 1500
+    #    motor.servo.angle = PI/2
+    #    motor.servo.enabled = True
+    #    log.info(f"{motor} {motor.index} servo {motor.servo} {motor.servo.index}")
     #log.info("")
 
     #test_motor_angles(robot)

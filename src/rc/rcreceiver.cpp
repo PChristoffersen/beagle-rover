@@ -38,10 +38,13 @@ static constexpr auto TIMER_INTERVAL { 10ms };
 
 
 Receiver::Receiver(const shared_ptr<Robot::Context> &context) :
+    m_context { context },
     m_initialized { false },
     m_enabled { false },
     m_timer { context->io() },
-    m_rssi { 0 }
+    m_rssi { 0 },
+    m_fbus { nullptr },
+    m_last_counter { numeric_limits<uint32_t>::max() }
 {
 }
 
@@ -55,7 +58,7 @@ Receiver::~Receiver()
 
 void Receiver::init(const shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
 {    
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
@@ -75,7 +78,7 @@ void Receiver::init(const shared_ptr<Robot::Telemetry::Telemetry> &telemetry)
 
 void Receiver::cleanup() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -87,31 +90,20 @@ void Receiver::cleanup()
 
 void Receiver::setEnabled(bool enabled)
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
+    BOOST_LOG_TRIVIAL(info) <<  "Receiver enabled=" << enabled;
 
     if (enabled!=m_enabled) {
         m_enabled = enabled;
 
         if (m_enabled) {
-            switch (rc_model_category()) {
-            case CATEGORY_BEAGLEBONE:
-                m_timer.expires_after(TIMER_INTERVAL);
-                timerSetup();
-                m_context->rcPower(true);
-                break;
-            default:
-                break;
-            }
+            m_timer.expires_after(TIMER_INTERVAL);
+            timerSetup();
+            m_context->rcPower(true);
         }
         else {
-            switch (rc_model_category()) {
-            case CATEGORY_BEAGLEBONE:
-                m_timer.cancel();
-                m_context->rcPower(false);
-                break;
-            default:
-                break;
-            }
+            m_timer.cancel();
+            m_context->rcPower(false);
         }
     }
 }
@@ -132,7 +124,7 @@ void Receiver::timerSetup() {
 
 void Receiver::timer(boost::system::error_code error) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     if (error!=boost::system::errc::success || !m_initialized || !m_fbus) {
         return;
@@ -163,8 +155,9 @@ void Receiver::timer(boost::system::error_code error)
 
         // Signal data
         sigData(m_flags, m_rssi, m_channels);
-        if (sig_flags)
+        if (sig_flags) {
             sigFlags(m_flags);
+        }
         if (sig_rssi)
             sigRSSI(m_rssi);
 
@@ -174,11 +167,12 @@ void Receiver::timer(boost::system::error_code error)
         auto time { chrono::high_resolution_clock::now() };
         
         if ((time-last_update) > 100ms) {
-            BOOST_LOG_TRIVIAL(info) << boost::format("%+04x f=%+02x  r=%+02x  ch=%d   ") % (uint32_t)counter % (uint32_t)m_flags.value % (uint32_t)m_rssi % (uint32_t)m_channels.size()
-                << boost::format("%+4d |") % m_channels[0].asServoPulse()
-                << boost::format("%+4d |") % m_channels[1].asServoPulse()
-                << boost::format("%+4d |") % m_channels[2].asServoPulse()
-                << boost::format("%+4d |") % m_channels[3].asServoPulse()
+            BOOST_LOG_TRIVIAL(info) << boost::format("%+08d f=%+02x r=%+02x ch=%d ") % (uint32_t)counter % (uint32_t)m_flags % (uint32_t)m_rssi % (uint32_t)m_channels.count()
+                << " | " << m_channels[0]
+                << " | " << m_channels[1]
+                << " | " << m_channels[2]
+                << " | " << m_channels[3]
+                << " |"
                 ;
 
             last_update = time;
@@ -209,11 +203,10 @@ void Receiver::telemetryEvent(const Robot::Telemetry::Event &event)
 
 void Receiver::sendTelemetry(uint16_t appId, uint32_t data) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << "Send telemetry appId=" << boost::format("%+04x") % appId << " data="<< boost::format("%+08x") % data;
-    if (!m_enabled || !m_flags.bits.frame_lost)
+    const guard lock(m_mutex);
+    if (!m_enabled || m_flags.frameLost())
         return;
-
+    
     rc_ext_fbus_send_telemetry(appId, data);
 }
 

@@ -8,7 +8,8 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "motorgimbal.h"
+#include "../robotcontext.h"
+#include "motorservo.h"
 
 using namespace std;
 
@@ -31,7 +32,7 @@ Motor::Motor(uint index, recursive_mutex &mutex, const std::shared_ptr<Robot::Co
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
-    m_gimbal { make_unique<Gimbal>(index, mutex, context) },
+    m_servo { make_unique<Servo>(index, mutex, context) },
     m_enabled { false },
     m_passthrough { false },
     m_state { FREE_SPIN },
@@ -59,10 +60,12 @@ void Motor::init()
     m_duty = 0.0;
     m_target_rpm = 0.0;
 
+    #ifdef REAL_ROBOT
     rc_motor_free_spin(motorChannel());
+    #endif
     m_state = FREE_SPIN;
 
-    m_gimbal->init();
+    m_servo->init();
     m_initialized = true;
 }
 
@@ -72,7 +75,7 @@ void Motor::cleanup()
         return;
     m_initialized = false;
 
-    m_gimbal->cleanup();
+    m_servo->cleanup();
 
     setEnabled(false);
 }
@@ -82,18 +85,22 @@ void Motor::brake()
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     m_state = BRAKE;
+    #ifdef REAL_ROBOT
     rc_motor_brake(motorChannel());
+    #endif
 }
 
 void Motor::freeSpin() 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
     m_state = FREE_SPIN;
+    #ifdef REAL_ROBOT
     rc_motor_free_spin(motorChannel());
+    #endif
 }
 
 
-void Motor::setValue(Robot::InputValue value) {
+void Motor::setValue(const Value value) {
     setDuty(value.asPercent()*2.0-1.0);
 }
 
@@ -101,18 +108,21 @@ void Motor::setValue(Robot::InputValue value) {
 void Motor::setDuty(double duty) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << "Motor[" << m_index << "] setDuty(" << duty << ")";
-    m_duty = duty;
+    BOOST_LOG_TRIVIAL(info) << *this << " setDuty(" << duty << ")";
     m_state = RUNNING;
     if (m_enabled) {
+        // TODO Set duty in update function
+        #ifdef REAL_ROBOT
         rc_motor_set(motorChannel(), duty);
+        #endif
     }
+    m_duty = duty;
 }
 
 void Motor::setTargetRPM(double rpm) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    cout << m_index << " setRPM(" << rpm << ")" << endl;
+    cout << m_index << *this << " setRPM(" << rpm << ")" << endl;
 }
 
 
@@ -121,12 +131,17 @@ void Motor::setEnabled(bool enabled)
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (enabled!=m_enabled) {
         m_enabled = enabled;
+        BOOST_LOG_TRIVIAL(info) << *this << " Enable " << enabled;
         if (m_enabled) {
             m_context->motorPower(true);
+            #ifdef REAL_ROBOT
             rc_motor_set(motorChannel(), m_duty);
+            #endif
         }
         else {
+            #ifdef REAL_ROBOT
             rc_motor_set(motorChannel(), 0);
+            #endif
             m_context->motorPower(false);
         }
     }
@@ -154,6 +169,7 @@ double Motor::getOdometer() const
 
 void Motor::update() 
 {
+    #if 0
     static const auto MINUTE = chrono::duration_cast<chrono::nanoseconds>(chrono::minutes(1)).count();
 
     auto time = chrono::high_resolution_clock::now();
@@ -175,9 +191,7 @@ void Motor::update()
         m_last_enc_value = value;
         m_last_update = time;
     }
-
-    m_gimbal->update();
-
+    #endif
 }
 
 

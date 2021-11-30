@@ -7,6 +7,8 @@
 #include <boost/exception/all.hpp>
 #include <boost/bind.hpp>
 
+#include "led/ledcontrol.h"
+#include "rc/rcreceiver.h"
 #include "robot.h"
 
 using namespace std;
@@ -24,7 +26,7 @@ int main() {
     try {
         robot->init();
 
-        io.run_one();
+        sleep(1);
 
         std::cout << "Stopping..." << std::endl;
 

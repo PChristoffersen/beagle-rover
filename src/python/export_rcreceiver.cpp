@@ -13,6 +13,7 @@ namespace py = boost::python;
 void python_export_rcreceiver() 
 {
     py::class_<Receiver, shared_ptr<Receiver>, boost::noncopyable>("RCReceiver", py::no_init)
+        .add_property("enabled", &Receiver::getEnabled, &Receiver::setEnabled)
         .add_property("connected", &Receiver::isConnected)
         .add_property("flags", &Receiver::getFlags)
         .add_property("rssi", &Receiver::getRSSI)

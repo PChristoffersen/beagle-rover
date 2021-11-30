@@ -8,7 +8,7 @@ using namespace std;
 namespace Robot::LED {
 
 
-static constexpr auto TIMER_INTERVAL { 500ms };
+static constexpr auto TIMER_INTERVAL { 250ms };
 static constexpr Color LED_COLOR { 0x00, 0x00, 0xFF };
 
 

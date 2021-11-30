@@ -13,12 +13,16 @@ ColorLayer::ColorLayer(int depth) :
     m_depth { depth },
     m_visible { false }
 {
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
 ColorLayer::~ColorLayer() 
 {
-    detach();
+    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    if (auto control = m_control.lock()) {
+        control->removeLayer(nullptr);
+    }
 }
 
 
@@ -39,7 +43,7 @@ void ColorLayer::show()
 void ColorLayer::detach() 
 {
     if (auto control = m_control.lock()) {
-        auto self = shared_from_this();
+        const auto &self = shared_from_this();
         control->removeLayer(self);
     }
     m_control.reset();

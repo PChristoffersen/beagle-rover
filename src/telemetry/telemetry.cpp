@@ -16,9 +16,8 @@ using namespace std;
 
 namespace Robot::Telemetry {
 
-Telemetry::Telemetry(const shared_ptr<Robot::Context> &context, const shared_ptr<Robot::RC::Receiver> &receiver) :
-    m_initialized { false },
-    m_receiver { receiver }
+Telemetry::Telemetry(const shared_ptr<Robot::Context> &context) :
+    m_initialized { false }
 {
     switch (rc_model()) {
     case MODEL_BB_BLUE:

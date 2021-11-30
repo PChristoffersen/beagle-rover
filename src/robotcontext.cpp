@@ -16,6 +16,7 @@ namespace Robot {
 Context::Context() : 
     m_initialized { false },
     m_started { false },
+    m_motor_power_rail_cnt { 0 },
     m_servo_power_rail_cnt { 0 }
 {
     initLogging();
@@ -52,7 +53,7 @@ void Context::initLogging() {
 
 void Context::init() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
@@ -70,7 +71,7 @@ void Context::init()
 
 void Context::cleanup() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     if (!m_initialized)
         return;
@@ -148,7 +149,7 @@ void Context::cleanupPC()
 
 void Context::start() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     BOOST_LOG_TRIVIAL(info) << "Starting thread";
     m_thread = make_shared<thread>( [&]{ m_io.run(); } );
@@ -158,7 +159,7 @@ void Context::start()
 
 void Context::stop() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     if (!m_started)
         return;
@@ -175,22 +176,28 @@ void Context::stop()
 
 void Context::motorPower(bool enable) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (!m_initialized)
         return;
 
     if (enable) {
         m_motor_power_rail_cnt++;
-        BOOST_LOG_TRIVIAL(info) << "MotorPowerRail++ " << m_motor_power_rail_cnt;
         if (m_motor_power_rail_cnt==1) {
+            BOOST_LOG_TRIVIAL(info) << "Enabling motor power";
+            #ifdef REAL_ROBOT
             rc_motor_standby(0);
+            #endif
+            sig_motor_power(true);
         }
     }
     else {
         m_motor_power_rail_cnt--;
-        BOOST_LOG_TRIVIAL(info) << "MotorPowerRail-- " << m_motor_power_rail_cnt;
         if (m_motor_power_rail_cnt==0) {
+            BOOST_LOG_TRIVIAL(info) << "Disabling motor power";
+            sig_motor_power(false);
+            #ifdef REAL_ROBOT
             rc_motor_standby(1);
+            #endif
         }
     }
 }
@@ -198,23 +205,31 @@ void Context::motorPower(bool enable)
 
 void Context::servoPower(bool enable) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (!m_initialized)
         return;
         
     if (enable) {
         m_servo_power_rail_cnt++;
-        BOOST_LOG_TRIVIAL(info) << "ServoPowerRail++ " << m_servo_power_rail_cnt;
         if (m_servo_power_rail_cnt==1) {
+            BOOST_LOG_TRIVIAL(info) << "Enabling servo power";
+            #ifdef REAL_ROBOT
             rc_servo_power_rail_en(1);
+            #endif
+            sig_servo_power(true);
+            sig_rc_power(true);
         }
     }
     else {
         assert(m_servo_power_rail_cnt>0);
         m_servo_power_rail_cnt--;
-        BOOST_LOG_TRIVIAL(info) << "ServoPowerRail-- " << m_servo_power_rail_cnt;
         if (m_servo_power_rail_cnt==0) {
+            BOOST_LOG_TRIVIAL(info) << "Disabling servo power";
+            sig_rc_power(false);
+            sig_servo_power(false);
+            #ifdef REAL_ROBOT
             rc_servo_power_rail_en(0);
+            #endif
         }
     }
 }

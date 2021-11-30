@@ -25,14 +25,16 @@ Color::raw_type &operator<<(Color::raw_type &dst, const Color &src_color) {
     //res.b = dst.b * (1 - src.a) + src.b * src.a
     //res.a = dst.a * (1 - src.a) + src.a
 
-    Color::raw_type red   = (dst & Color::RED_MASK)*(0xFF-src_a)/0xFF   + (src & Color::RED_MASK)*src_a/0xFF;
-    Color::raw_type green = (dst & Color::GREEN_MASK)*(0xFF-src_a)/0xFF + (src & Color::GREEN_MASK)*src_a/0xFF;
-    Color::raw_type blue  = (dst & Color::BLUE_MASK)*(0xFF-src_a)/0xFF  + (src & Color::BLUE_MASK)*src_a/0xFF;
+    Color::raw_type red   = ( (dst & Color::RED_MASK)*(0xFF-src_a)/0xFF   + (src & Color::RED_MASK)*src_a/0xFF   ) & Color::RED_MASK;
+    Color::raw_type green = ( (dst & Color::GREEN_MASK)*(0xFF-src_a)/0xFF + (src & Color::GREEN_MASK)*src_a/0xFF ) & Color::GREEN_MASK;
+    Color::raw_type blue  = ( (dst & Color::BLUE_MASK)*(0xFF-src_a)/0xFF  + (src & Color::BLUE_MASK)*src_a/0xFF  ) & Color::BLUE_MASK;
     Color::raw_type alpha = 0xFF << Color::ALPHA_SHIFT;
 
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("RedD  %+08x -> %+08x") % (uint32_t)(dst & Color::RED_MASK) % ((dst & Color::RED_MASK)*(0xFF-src_a)/0xFF);
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("RedS  %+08x -> %+08x") % (uint32_t)(src & Color::RED_MASK) % ((src & Color::RED_MASK)*src_a/0xFF);
     //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("  %+08x + %+08x = %+08x   red=%+08x green=%+08x blue=%+08x") % dst % (uint32_t)src % (alpha | red | green | blue) % red % green % blue;
 
-    dst = alpha | red | green | blue;
+    dst = alpha | red;// | green | blue;
 
     return dst;
 }

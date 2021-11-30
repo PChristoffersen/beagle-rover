@@ -8,8 +8,9 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
+#include "motortypes.h"
 #include "motor.h"
-#include "motorgimbal.h"
+#include "motorservo.h"
 #include "../robotcontext.h"
 #include "../rc/rcreceiver.h"
 
@@ -18,25 +19,25 @@ using namespace std;
 
 namespace Robot::Motor {
 
+static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0u };
+static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4u };
 
-static constexpr auto TIMER_INTERVAL { 20ms };
+static constexpr auto MOTOR_TIMER_INTERVAL { 20ms };
+static constexpr auto SERVO_TIMER_INTERVAL { 20ms };
 
 
 
 Control::Control(const shared_ptr<Robot::Context> &context) : 
+    m_context { context },
     m_initialized { false },
     m_enabled { false },
     m_passthrough { false },
-    m_timer { context->io() }
+    m_motor_timer { context->io() },
+    m_servo_timer { context->io() }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
-    switch (rc_model_category()) {
-	case CATEGORY_BEAGLEBONE:
-    case CATEGORY_PC:
-        for (uint i=0; i<MOTOR_COUNT; i++) {
-            m_motors[i] = make_unique<Motor>(i, m_mutex, context);
-        }
-        break;
+    for (uint i=0; i<MOTOR_COUNT; i++) {
+        m_motors[i] = make_unique<Motor>(i, m_mutex, context);
     }
 }
 
@@ -48,30 +49,39 @@ Control::~Control()
 }
 
 
-void Control::init() 
+void Control::init(const std::shared_ptr<::Robot::RC::Receiver> &receiver) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
+    BOOST_ASSERT_MSG(!m_initialized, "Already initialized");
+    m_initialized = true;
 
     for (auto &motor : m_motors) {
        motor->init();
     }
 
-    m_timer.expires_after(TIMER_INTERVAL);
-    timer_setup();
+    onMotorPower(m_context->motorPower());
+    m_motor_power_con = m_context->sig_motor_power.connect([&](bool enabled){ onMotorPower(enabled); });
+    onServoPower(m_context->servoPower());
+    m_servo_power_con = m_context->sig_servo_power.connect([&](bool enabled){ onServoPower(enabled); });
 
-    m_initialized = true;
+    m_rc_receiver = receiver->weak_from_this();
 }
 
 
 void Control::cleanup() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
-
+    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
     
-    m_timer.cancel();
+    m_rc_connection.disconnect();
+    m_rc_receiver.reset();
+
+    m_motor_power_con.disconnect();
+    m_servo_power_con.disconnect();
+    m_motor_timer.cancel();
+    m_servo_timer.cancel();
 
     setEnabled(false);
 
@@ -87,7 +97,7 @@ void Control::cleanup()
 
 void Control::brake() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     for (auto &motor : m_motors) {
        motor->brake();
     }
@@ -95,7 +105,7 @@ void Control::brake()
 
 void Control::freeSpin() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     for (auto &motor : m_motors) {
        motor->freeSpin();
     }
@@ -105,20 +115,20 @@ void Control::freeSpin()
 
 void Control::setEnabled(bool enabled) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     m_enabled = enabled;
 
     for (auto &motor : m_motors) {
         motor->setEnabled(m_enabled);
-        motor->gimbal()->setEnabled(false);
+        motor->servo()->setEnabled(false);
     }
 }
 
 
 void Control::resetOdometer() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     for (auto &motor : m_motors) {
         motor->resetOdometer();
@@ -127,26 +137,31 @@ void Control::resetOdometer()
 
 
 
-void Control::setPassthrough(bool passthrough, off_t servo_offset) 
+void Control::setPassthrough(bool passthrough) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (passthrough != m_passthrough) {
         m_passthrough = passthrough;
+
+        if (!m_passthrough) {
+            m_rc_connection.disconnect();
+        }
+
         for (auto &motor : m_motors) {
             motor->setPassthrough(passthrough);
-            motor->gimbal()->setPassthrough(passthrough);
+            motor->servo()->setPassthrough(passthrough);
         }
 
         // Set limits
         array<fbus_servo_limit_t, RC_SERVO_CH_MAX> limits;
         for (auto &limit : limits) {
-            limit.low = Robot::InputValue::PULSE_MIN;
-            limit.high = Robot::InputValue::PULSE_MAX;
+            limit.low = Value::PULSE_MIN;
+            limit.high = Value::PULSE_MAX;
         }
         for (const auto &motor : m_motors) {
-            auto &limit = limits[servo_offset+motor->gimbal()->getIndex()];
-            limit.low = motor->gimbal()->getLimitMin();
-            limit.high = motor->gimbal()->getLimitMax();
+            auto &limit = limits[SERVO_PASSTHROUGH_OFFSET+motor->servo()->getIndex()];
+            limit.low = motor->servo()->getLimitMin();
+            limit.high = motor->servo()->getLimitMax();
 
         }
         rc_ext_fbus_set_servo_limit(limits.data());
@@ -156,47 +171,122 @@ void Control::setPassthrough(bool passthrough, off_t servo_offset)
         map.fill(FBUS_SERVO_UNMAPPED);
         if (passthrough) {
             for (const auto &motor : m_motors) {
-                auto index = motor->gimbal()->getIndex();
-                map[servo_offset+index] = index;
+                auto index = motor->servo()->getIndex();
+                map[SERVO_PASSTHROUGH_OFFSET+index] = index;
             }
         }
         rc_ext_fbus_set_servo_map(map.data());
+
+        if (!m_passthrough) {
+            if (const auto receiver = m_rc_receiver.lock()) {
+                m_rc_connection = receiver->sigData.connect([&](auto flags, auto rssi, const auto &channels) { onRCData(flags, rssi, channels); });
+            }
+        }
+    }
+}
+
+void Control::onMotorPower(bool enabled) 
+{
+    const guard lock(m_mutex);
+    BOOST_LOG_TRIVIAL(trace) << "MotorControl::onMotorPower " << enabled;
+    if (!m_initialized)
+        return;
+
+    if (enabled) {
+        BOOST_LOG_TRIVIAL(info) << *this << " Starting motor timer";
+        m_motor_timer.expires_after(0s);
+        motorTimerSetup();
+    }
+    else {
+        m_motor_timer.cancel();
+    }
+}
+
+void Control::onServoPower(bool enabled)
+{
+    const guard lock(m_mutex);
+    BOOST_LOG_TRIVIAL(trace) << "MotorControl::onServoPower " << enabled;
+    if (!m_initialized)
+        return;
+
+    if (enabled) {
+        BOOST_LOG_TRIVIAL(info) << *this << " Starting servo timer";
+        m_servo_timer.expires_after(0ms);
+        servoTimerSetup();
+    }
+    else {
+        m_servo_timer.cancel();
     }
 }
 
 
-void Control::timer_setup() {
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(
-        [self_ptr=weak_from_this()] (auto &error) {
+void Control::motorTimerSetup() {
+    m_motor_timer.expires_at(m_motor_timer.expiry() + MOTOR_TIMER_INTERVAL);
+    m_motor_timer.async_wait(
+        [self_ptr=weak_from_this()] (boost::system::error_code error) {
+            if (error!=boost::system::errc::success) {
+                return;
+            }
             if (auto self = self_ptr.lock()) { 
-                self->timer(error); 
+                self->motorTimer(); 
             }
         }
     );
 }
 
 
-void Control::timer(boost::system::error_code error) 
+void Control::motorTimer() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
-    if (error!=boost::system::errc::success || !m_initialized) {
+    const guard lock(m_mutex);
+    if (!m_initialized) 
         return;
-    }
-
 
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
     // Update control scheme
 
-    // Set motor gimbal angle if fbus passthrough is enabled
+    // Set motor servo angle if fbus passthrough is enabled
 
     // Update motors
     for (auto &motor : m_motors) {
         motor->update();
     }
 
-    timer_setup();
+    motorTimerSetup();
+}
+
+
+void Control::servoTimerSetup() {
+    m_servo_timer.expires_at(m_servo_timer.expiry() + SERVO_TIMER_INTERVAL);
+    m_servo_timer.async_wait(
+        [self_ptr=weak_from_this()] (boost::system::error_code error) {
+            if (error!=boost::system::errc::success) {
+                return;
+            }
+            if (auto self = self_ptr.lock()) { 
+                self->servoTimer(); 
+            }
+        }
+    );
+}
+
+void Control::servoTimer() 
+{
+    const guard lock(m_mutex);
+    if (!m_initialized) 
+        return;
+
+    for (auto &motor : m_motors) {
+        motor->servo()->update();
+    }
+
+    servoTimerSetup();
+}
+
+
+void Control::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const ::Robot::RC::ChannelList &channels)
+{
+    const guard lock(m_mutex);
 }
 
 

@@ -40,7 +40,7 @@ Control::~Control()
 
 void Control::init() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     m_initialized = true;
     clear(Color::BLACK);
 
@@ -52,7 +52,7 @@ void Control::init()
 
 void Control::cleanup() 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -73,7 +73,7 @@ void Control::cleanup()
 
 void Control::clear(const Color &color) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     RawColorArray pixels;
     pixels.fill(color);
@@ -86,7 +86,7 @@ void Control::clear(const Color &color)
 
 void Control::setBackground(const Color &color) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     m_background = color;
 }
 
@@ -94,7 +94,7 @@ void Control::setBackground(const Color &color)
 
 void Control::setAnimation(AnimationMode mode) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(info) << "Animation: " << (int)mode;
     if (mode!=m_animation_mode) {
         if (m_animation) {
@@ -140,7 +140,7 @@ void Control::setAnimation(AnimationMode mode)
 
 void Control::setIndicators(IndicatorMode mode) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(info) << "Indicator: " << (int)mode;
     if (mode!=m_indicator_mode) {
         switch (mode) {
@@ -164,7 +164,9 @@ void Control::setIndicators(IndicatorMode mode)
 
 void Control::show()
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
+    if (!m_initialized)
+        return;
     
     BOOST_LOG_TRIVIAL(trace) << "Control::Show()";
 
@@ -175,8 +177,11 @@ void Control::show()
 
     RawColorArray pixels;
     pixels.fill(m_background);
-    for (const auto &layer : m_layers) {
-        pixels << *layer;
+
+    for (const auto &layer_ptr : m_layers) {
+        if (const auto &layer = layer_ptr.lock()) {
+            pixels << *layer;
+        }
     }
 
     #if 0
@@ -195,7 +200,7 @@ void Control::show()
 
 void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " depth=" << layer->depth();
 
@@ -213,30 +218,49 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
 
     for (auto ith=m_layers.begin(); ith!=m_layers.end(); ++ith) {
         const auto &elm = *ith;
-        if (elm->depth()>layer->depth()) {
-            m_layers.insert(ith, layer);
+        const auto &l = elm.lock();
+        if (!l) {
+            continue;
+        }
+        if (l->depth() > layer->depth()) {
+            m_layers.insert(ith, layer->weak_from_this());
             return;
         }
     }
-    m_layers.push_back(layer);
+    m_layers.push_back(layer->weak_from_this());
 }
 
 
 void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    BOOST_LOG_TRIVIAL(trace) << "Detach Layer " << *layer;
+    const guard lock(m_mutex);
     if (auto self = layer->control().lock()) {
         if (self==shared_from_this()) {
             layer->detach();
-            m_layers.remove(layer);
         }
     }
 }
 
 void Control::removeLayer(const std::shared_ptr<ColorLayer> &layer) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
-    m_layers.remove(layer);
+    const guard lock(m_mutex);
+    bool removed = false;
+    m_layers.remove_if([layer, &removed](const auto &elm) {
+        if (const auto &l = elm.lock()) {
+            removed |= (l==layer);
+            return l == layer;
+        }
+        else {
+            // Stale layer
+            removed = true;
+            return true;
+        }
+    });
+    if (removed) {
+        show();
+    }
 }
+
 
 };

@@ -2,6 +2,7 @@
 #define _LEDCOLORLAYER_H_
 
 #include <memory>
+#include <iostream>
 
 #include "ledcolor.h"
 #include <robotcontrolext.h>
@@ -10,8 +11,8 @@ namespace Robot::LED {
 
     constexpr uint PIXEL_COUNT { RC_EXT_NEOPIXEL_COUNT };
 
-    constexpr auto LAYER_DEPTH_ANIMATION { 10 };
-    constexpr auto LAYER_DEPTH_INDICATORS { LAYER_DEPTH_ANIMATION+1 };
+    constexpr auto LAYER_DEPTH_ANIMATION  { 10 };
+    constexpr auto LAYER_DEPTH_INDICATORS { 20 };
     constexpr auto LAYER_RC_INDICATORS { 100 };
 
     using ColorArray = std::array<Color, PIXEL_COUNT>;
@@ -48,6 +49,13 @@ namespace Robot::LED {
             std::weak_ptr<class Control> m_control;
 
             friend RawColorArray &operator<<(RawColorArray &dst, const ColorLayer &layer);
+
+
+            friend std::ostream &operator<<(std::ostream &os, const ColorLayer &self)
+            {
+                return os << "LED::ColorLayer<" << self.m_depth << ">";
+            }
+
     };
 
     class ColorLayerLock {

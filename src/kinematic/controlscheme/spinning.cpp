@@ -2,8 +2,9 @@
 
 #include <boost/log/trivial.hpp>
 
+#include "../kinematictypes.h"
 #include "../../motor/motor.h"
-#include "../../motor/motorgimbal.h"
+#include "../../motor/motorservo.h"
 #include "../../motor/motorcontrol.h"
 
 using namespace std;
@@ -32,8 +33,8 @@ void ControlSchemeSpinning::init()
         motor->setDuty(0.0);
         motor->freeSpin();
         motor->setEnabled(true);
-        motor->gimbal()->setAngle(0.0);
-        motor->gimbal()->setEnabled(true);
+        motor->servo()->setValue(Value::CENTER);
+        motor->servo()->setEnabled(true);
     }
 
     m_initialized = true;

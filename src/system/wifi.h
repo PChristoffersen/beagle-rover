@@ -3,15 +3,15 @@
 
 #include <memory>
 #include <mutex>
-#include "../robotcontext.h"
 
+#include "../robottypes.h"
 #include "../common/withmutex.h"
 
 namespace Robot::System {
 
     class WiFi : public std::enable_shared_from_this<WiFi>, public WithMutex<std::mutex> {
         public:
-            explicit WiFi(const std::shared_ptr<Robot::Context> &context);
+            explicit WiFi(const std::shared_ptr<::Robot::Context> &context);
             WiFi(const WiFi&) = delete; // No copy constructor
             WiFi(WiFi&&) = delete; // No move constructor
             virtual ~WiFi();

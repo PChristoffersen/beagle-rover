@@ -3,16 +3,17 @@
 #include <boost/log/trivial.hpp>
 #include <boost/system/error_code.hpp>
 
+#include "../kinematictypes.h"
 #include "../../robotcontext.h"
 #include "../../motor/motor.h"
-#include "../../motor/motorgimbal.h"
+#include "../../motor/motorservo.h"
 #include "../../motor/motorcontrol.h"
 
 using namespace std;
 
 namespace Robot::Kinematic {
 
-static constexpr auto IDLE_DELAY { 2s };
+static constexpr auto IDLE_DELAY { 1s };
 
 
 ControlSchemeIdle::ControlSchemeIdle(shared_ptr<Kinematic> kinematic) :
@@ -39,17 +40,20 @@ void ControlSchemeIdle::init()
     for (auto &motor : m_motor_control->getMotors()) {
         motor->setDuty(0.0);
         motor->freeSpin();
-        motor->setEnabled(true);
-        motor->gimbal()->setAngle(0.0);
-        motor->gimbal()->setEnabled(true);
+        motor->setEnabled(false);
+        motor->servo()->setValue(Value::CENTER);
+        motor->servo()->setEnabled(true);
     }
 
     // Start timer to turn off power to the motors
     m_timer.expires_after(IDLE_DELAY);
     m_timer.async_wait(
         [self_ptr=weak_from_this()] (auto &error) {
+            if (error!=boost::system::errc::success) {
+                return;
+            }
             if (auto self = self_ptr.lock()) { 
-                self->timer(error); 
+                self->timer(); 
             }
         }
     );
@@ -76,22 +80,17 @@ void ControlSchemeIdle::cleanup()
 
 
 
-void ControlSchemeIdle::timer(boost::system::error_code error) 
+void ControlSchemeIdle::timer() 
 {
-    BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__ << "  err="  << error;
-
     const lock_guard<mutex> lock(m_mutex);
-    if (error!=boost::system::errc::success || !m_initialized)
+    if (!m_initialized)
         return;
 
-    // Disable motor and gimbals
-    m_motor_control->setEnabled(false);
+    BOOST_LOG_TRIVIAL(info) << this << ": " << __FUNCTION__;
+
+    // Disable motor and servos
     for (auto &motor : m_motor_control->getMotors()) {
-        motor->setDuty(0.0);
-        motor->freeSpin();
-        motor->setEnabled(false);
-        motor->gimbal()->setAngle(0.0);
-        motor->gimbal()->setEnabled(false);
+        motor->servo()->setEnabled(false);
     }
 }
 

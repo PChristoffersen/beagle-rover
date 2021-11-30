@@ -10,7 +10,7 @@ namespace Robot::Telemetry {
 
     class Source {
         public:
-            virtual ~Source() {}
+            virtual ~Source() = default;
 
             virtual void init(const std::shared_ptr<Telemetry> &telemetry) 
             {

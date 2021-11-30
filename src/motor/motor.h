@@ -4,12 +4,12 @@
 #include <memory>
 #include <chrono>
 #include <mutex>
+#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 
-#include "motorcontrol.h"
-#include "motorgimbal.h"
 #include "../robottypes.h"
+#include "motortypes.h"
 
 namespace Robot::Motor {
 
@@ -21,7 +21,7 @@ namespace Robot::Motor {
                 BRAKE
             };
 
-            Motor(uint index, std::recursive_mutex &mutex, const std::shared_ptr<Robot::Context> &context);
+            Motor(uint index, std::recursive_mutex &mutex, const std::shared_ptr<::Robot::Context> &context);
             Motor(const Motor&) = delete; // No copy constructor
             Motor(Motor&&) = delete; // No move constructor
             virtual ~Motor();
@@ -37,7 +37,7 @@ namespace Robot::Motor {
             bool getPassthrough() const { return m_passthrough; }
 
 
-            void setValue(const Robot::InputValue value);
+            void setValue(const Value value);
             void setDuty(double duty);
             double getDuty() const { return m_duty; }
             void setTargetRPM(double rpm);
@@ -50,7 +50,7 @@ namespace Robot::Motor {
             double getOdometer() const;
 
 
-            Gimbal *gimbal() const { return m_gimbal.get(); }
+            class Servo *servo() const { return m_servo.get(); }
 
         protected:
             void init();
@@ -61,11 +61,11 @@ namespace Robot::Motor {
 
             friend class Control;
         private:
-            std::shared_ptr<Robot::Context> m_context;
+            std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
             uint m_index;
             std::recursive_mutex &m_mutex;
-            std::unique_ptr<Gimbal> m_gimbal;
+            std::unique_ptr<class Servo> m_servo;
 
             bool m_enabled;
             bool m_passthrough;
@@ -84,6 +84,10 @@ namespace Robot::Motor {
             inline uint encoderChannel() const;
             inline uint motorChannel() const;
 
+            friend std::ostream &operator<<(std::ostream &os, const Motor &self)
+            {
+                return os << "Motor::Motor[" << self.m_index << "]";
+            }
     };
 
 };

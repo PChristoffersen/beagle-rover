@@ -1,6 +1,8 @@
 #ifndef _CONTROLSCHEME_H_
 #define _CONTROLSCHEME_H_
 
+#include "kinematictypes.h"
+
 namespace Robot::Kinematic {
 
     class ControlScheme {
@@ -9,6 +11,11 @@ namespace Robot::Kinematic {
 
             virtual void init() = 0;
             virtual void cleanup() = 0;
+
+            virtual void updateSteeringMode(SteeringMode mode) = 0;
+            virtual void updateOrientation(Orientation orientation) = 0;
+
+            virtual void steer(double steering, double throttle, double aux_x, double aux_y) = 0;
     };
 
 };

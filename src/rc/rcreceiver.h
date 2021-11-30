@@ -10,7 +10,7 @@
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
-#include "../robotcontext.h"
+#include "../robottypes.h"
 #include "../common/withmutex.h"
 #include "../telemetry/telemetrytypes.h"
 #include "rctypes.h"
@@ -24,25 +24,25 @@ namespace Robot::RC {
             SignalRSSI sigRSSI;
             SignalData sigData;
 
-            explicit Receiver(const std::shared_ptr<Robot::Context> &context);
+            explicit Receiver(const std::shared_ptr<::Robot::Context> &context);
             Receiver(const Receiver&) = delete; // No copy constructor
             Receiver(Receiver&&) = delete; // No move constructor
             virtual ~Receiver();
 
-            void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
+            void init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
 
             void setEnabled(bool enabled);
             bool getEnabled() const { return m_enabled; }
 
-            bool isConnected() const { return m_flags.bits.frame_lost; }
+            bool isConnected() const { return m_flags.frameLost(); }
             std::uint8_t getRSSI() const { return m_rssi; }
             Flags getFlags() const { return m_flags; }
 
             const ChannelList &channels() const { return m_channels; }
 
         private:
-            std::shared_ptr<Robot::Context> m_context;
+            std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
             bool m_enabled;
             boost::asio::steady_timer m_timer;
@@ -58,7 +58,7 @@ namespace Robot::RC {
             void timerSetup();
             void timer(boost::system::error_code error);
 
-            void telemetryEvent(const Robot::Telemetry::Event &event);
+            void telemetryEvent(const ::Robot::Telemetry::Event &event);
             void sendTelemetry(std::uint16_t appId, std::uint32_t data);
    };
  

@@ -7,7 +7,7 @@
 
 #include "util.h"
 #include "../motor/motor.h"
-#include "../motor/motorgimbal.h"
+#include "../motor/motorservo.h"
 #include "../motor/motorcontrol.h"
 
 using namespace std;
@@ -24,7 +24,7 @@ void python_export_motor()
     py::class_<Motor, boost::noncopyable>("Motor", py::no_init)
         .add_property("index", &Motor::getIndex)
         .add_property("enabled", &Motor::getEnabled, &Motor::setEnabled)
-        .add_property("gimbal", py::make_function(&Motor::gimbal, py::return_internal_reference<>()))
+        .add_property("servo", py::make_function(&Motor::servo, py::return_internal_reference<>()))
         .add_property("duty", &Motor::getDuty, &Motor::setDuty)
         .add_property("target_rpm", &Motor::getTargetRPM, &Motor::setTargetRPM)
         .add_property("rpm", &Motor::getRPM)
@@ -35,16 +35,16 @@ void python_export_motor()
         .def("__str__", +[](const Motor &m) { return (boost::format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
 
-    py::class_<Gimbal, boost::noncopyable>("Gimbal", py::no_init)
-        .add_property("index", &Gimbal::getIndex)
-        .add_property("enabled", &Gimbal::getEnabled, &Gimbal::setEnabled)
-        .add_property("pulse_us", &Gimbal::getPulseUS, &Gimbal::setPulseUS)
-        .add_property("angle", &Gimbal::getAngle, &Gimbal::setAngle)
-        .add_property("angle_radians", &Gimbal::getAngleRadians, &Gimbal::setAngleRadians)
-        .add_property("limit_min", &Gimbal::getLimitMin, &Gimbal::setLimitMin)
-        .add_property("limit_max", &Gimbal::getLimitMax, &Gimbal::setLimitMax)
-        .def("set_limits", &Gimbal::setLimits)
-        .def("__str__", +[](const Gimbal &m) { return (boost::format("<Gimbal (%d)>") % m.getIndex()).str(); })
+    py::class_<Servo, boost::noncopyable>("Servo", py::no_init)
+        .add_property("index", &Servo::getIndex)
+        .add_property("enabled", &Servo::getEnabled, &Servo::setEnabled)
+        .add_property("pulse_us", +[](const Servo &servo) { return servo.getValue().asServoPulse(); }, +[](Servo &servo, uint32_t value) { servo.setValue(Value::fromMicroSeconds(value)); })
+        .add_property("angle", +[](const Servo &servo) { return servo.getValue().asAngle(); }, +[](Servo &servo, double value) { servo.setValue(Value::fromAngle(value)); })
+        .add_property("angle_radians", +[](const Servo &servo) { return servo.getValue().asAngleRadians(); }, +[](Servo &servo, double value) { servo.setValue(Value::fromAngleRadians(value)); })
+        .add_property("limit_min", &Servo::getLimitMin, &Servo::setLimitMin)
+        .add_property("limit_max", &Servo::getLimitMax, &Servo::setLimitMax)
+        .def("set_limits", &Servo::setLimits)
+        .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
 
     py::class_<Control::MotorList, boost::noncopyable>("MotorList", py::no_init)
@@ -70,6 +70,7 @@ void python_export_motor()
         .def("__exit__", +[](Control &ctl, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
             ctl.unlock();
         })
+        .def("__str__", +[](const Control &ctl) { return "<MotorControl>"; })
         ;
 
 

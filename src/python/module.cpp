@@ -9,6 +9,7 @@ void python_export_rcreceiver();
 void python_export_led();
 void python_export_kinematic();
 void python_export_robot();
+void python_export_input();
 
 
 BOOST_PYTHON_MODULE(robotcontrol) 
@@ -21,6 +22,7 @@ BOOST_PYTHON_MODULE(robotcontrol)
     python_export_rcreceiver();
     python_export_led();
     python_export_kinematic();
+    python_export_input();
     python_export_robot();
 
 }

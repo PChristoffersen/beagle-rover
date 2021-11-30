@@ -3,8 +3,9 @@
 #include <cmath>
 #include <boost/log/trivial.hpp>
 
+#include "../kinematictypes.h"
 #include "../../motor/motor.h"
-#include "../../motor/motorgimbal.h"
+#include "../../motor/motorservo.h"
 #include "../../motor/motorcontrol.h"
 
 using namespace std;
@@ -40,30 +41,30 @@ void ControlSchemeBalancing::init()
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
-        motor->gimbal()->setAngle(-M_PI_2);
-        motor->gimbal()->setEnabled(true);
+        motor->servo()->setValue(Value::fromAngleRadians(-M_PI_2));
+        motor->servo()->setEnabled(true);
     }
     {
         auto &motor = motors[Robot::Motor::Control::FRONT_RIGHT];
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
-        motor->gimbal()->setAngle(-M_PI_2);
-        motor->gimbal()->setEnabled(true);
+        motor->servo()->setValue(Value::fromAngleRadians(-M_PI_2));
+        motor->servo()->setEnabled(true);
     }
     {
         auto &motor = motors[Robot::Motor::Control::REAR_LEFT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
-        motor->gimbal()->setAngle(M_PI_2);
-        motor->gimbal()->setEnabled(true);
+        motor->servo()->setValue(Value::fromAngleRadians(M_PI_2));
+        motor->servo()->setEnabled(true);
     }
     {
         auto &motor = motors[Robot::Motor::Control::REAR_RIGHT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
-        motor->gimbal()->setAngle(M_PI_2);
-        motor->gimbal()->setEnabled(true);
+        motor->servo()->setValue(Value::fromAngleRadians(M_PI_2));
+        motor->servo()->setEnabled(true);
     }
 
     m_initialized = true;

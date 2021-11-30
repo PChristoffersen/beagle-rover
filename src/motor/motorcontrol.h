@@ -5,12 +5,14 @@
 #include <array>
 #include <mutex>
 #include <chrono>
+#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
 #include "../common/withmutex.h"
-#include "../robotcontext.h"
+#include "../rc/rctypes.h"
+#include "../robottypes.h"
 
 namespace Robot::Motor {
 
@@ -27,12 +29,12 @@ namespace Robot::Motor {
                 REAR_RIGHT = 3,
             };
 
-            explicit Control(const std::shared_ptr<Robot::Context> &context);
+            explicit Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();
 
-            void init();
+            void init(const std::shared_ptr<::Robot::RC::Receiver> &receiver);
             void cleanup();
 
             void start();
@@ -44,7 +46,7 @@ namespace Robot::Motor {
             void setEnabled(bool enabled);
             bool getEnabled() const { return m_enabled; }
 
-            void setPassthrough(bool passthrough, off_t servo_offset);
+            void setPassthrough(bool passthrough);
             bool getPassthrough() const { return m_passthrough; }
 
             void resetOdometer();
@@ -52,16 +54,36 @@ namespace Robot::Motor {
             const MotorList &getMotors() const { return m_motors; }
 
         private:
+            std::shared_ptr<::Robot::Context> m_context;
+            std::weak_ptr<::Robot::RC::Receiver> m_rc_receiver;
             bool m_initialized;
             bool m_enabled;
             bool m_passthrough;
-            boost::asio::high_resolution_timer m_timer;
-            
+            boost::asio::high_resolution_timer m_motor_timer;
+            boost::asio::high_resolution_timer m_servo_timer;
+            boost::signals2::connection m_motor_power_con;
+            boost::signals2::connection m_servo_power_con;
+
             std::vector<std::unique_ptr<class Motor>> m_motor_holder;
             MotorList m_motors;
 
-            void timer(boost::system::error_code error);
-            inline void timer_setup();
+
+            void onMotorPower(bool enabled);
+            void onServoPower(bool enabled);
+
+            void motorTimerSetup();
+            inline void motorTimer();
+
+            void servoTimerSetup();
+            inline void servoTimer();
+
+            boost::signals2::connection m_rc_connection;
+            void onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const ::Robot::RC::ChannelList &channels);
+
+            friend std::ostream &operator<<(std::ostream &os, const Control &control)
+            {
+                return os << "Motor::Control";
+            }
 
     };
 

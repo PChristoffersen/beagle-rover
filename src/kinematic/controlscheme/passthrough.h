@@ -22,12 +22,8 @@ namespace Robot::Kinematic {
             virtual void cleanup() override;
 
         private:
-            static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0u };
-            static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4u };
-
-            boost::signals2::connection m_rc_connection;
-
-            void onRCData(Robot::RC::Flags flags, Robot::RC::RSSI rssi, const Robot::RC::ChannelList &channels);
+            //boost::signals2::connection m_rc_connection;
+            //void onRCData(Robot::RC::Flags flags, Robot::RC::RSSI rssi, const Robot::RC::ChannelList &channels);
     };
 
 };

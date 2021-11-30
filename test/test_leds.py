@@ -2,7 +2,7 @@
 
 import sys
 import logging
-sys.path.append('build')
+sys.path.append('../build')
 
 from time import sleep
 from build.robotcontrol import Robot, LEDControl, LEDColorLayer, LEDAnimation, LEDIndicator
@@ -67,19 +67,39 @@ def main():
 
     led_control = robot.led_control
 
-    #led_control.background = ( 0x00, 0x00, 0x20 )
-    #led_control.animation = LEDAnimation.NONE
-    #led_control.animation = LEDAnimation.HEADLIGHTS
-    #led_control.animation = LEDAnimation.POLICE
-    #led_control.animation = LEDAnimation.AMBULANCE
-    #led_control.animation = LEDAnimation.CONSTRUCTION
-    #led_control.animation = LEDAnimation.KNIGHT_RIDER
-    led_control.animation = LEDAnimation.RAINBOW
-    #led_control.indicators = LEDIndicator.LEFT
-    led_control.indicators = LEDIndicator.RIGHT
+    sleep(6)
+
+    try:
+        while True:
+            #led_control.background = ( 0x00, 0x00, 0x20 )
+            led_control.animation = LEDAnimation.HEADLIGHTS
+            sleep(10)
+            led_control.animation = LEDAnimation.NONE
+            led_control.indicators = LEDIndicator.LEFT
+            sleep(10)
+            led_control.indicators = LEDIndicator.RIGHT
+            sleep(10)
+            led_control.indicators = LEDIndicator.HAZARD
+            sleep(10)
+            led_control.indicators = LEDIndicator.NONE
+            sleep(2)
+
+            led_control.animation = LEDAnimation.AMBULANCE
+            sleep(10)
+            led_control.animation = LEDAnimation.POLICE
+            sleep(10)
+            #led_control.animation = LEDAnimation.CONSTRUCTION
+            #sleep(10)
+            led_control.animation = LEDAnimation.KNIGHT_RIDER
+            sleep(30)
+            #led_control.animation = LEDAnimation.RAINBOW
+            #led_control.indicators = LEDIndicator.LEFT
+            #led_control.indicators = LEDIndicator.RIGHT
+    except KeyboardInterrupt:
+        log.info("Shutdown")
 
     #shift_loop(led_control)
-    keyboard_loop()
+    #keyboard_loop()
 
     led_control = None
 

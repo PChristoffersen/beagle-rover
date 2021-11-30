@@ -11,10 +11,9 @@
 #include <robotcontrolext.h>
 
 #include "../common/withmutex.h"
-#include "../robotcontext.h"
+#include "../robottypes.h"
 #include "ledcolor.h"
 #include "ledcolorlayer.h"
-#include "ledanimation.h"
 
 namespace Robot::LED {
 
@@ -38,9 +37,9 @@ namespace Robot::LED {
 
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
         public:
-            using LayerList = std::list<std::shared_ptr<ColorLayer>>;
+            using LayerList = std::list<std::weak_ptr<ColorLayer>>;
 
-            explicit Control(const std::shared_ptr<Robot::Context> &context);
+            explicit Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();
@@ -68,14 +67,14 @@ namespace Robot::LED {
             void removeLayer(const std::shared_ptr<ColorLayer> &layer);
 
         private:
-            std::shared_ptr<Robot::Context> m_context;
+            std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
 
             Color m_background;
             LayerList m_layers;
 
             AnimationMode m_animation_mode;
-            std::shared_ptr<Animation> m_animation;
+            std::shared_ptr<class Animation> m_animation;
 
             IndicatorMode m_indicator_mode;
             std::shared_ptr<class Indicator> m_indicator;

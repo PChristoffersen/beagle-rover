@@ -22,7 +22,7 @@ namespace Robot::Kinematic {
             boost::asio::steady_timer m_timer;
 
             void timer_setup();
-            void timer(boost::system::error_code error);
+            void timer();
     };
 
 };

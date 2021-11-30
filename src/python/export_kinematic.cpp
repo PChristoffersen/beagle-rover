@@ -21,7 +21,7 @@ void python_export_kinematic()
         ;
     py::enum_<DriveMode>("DriveMode")
         .value("NONE", DriveMode::NONE)
-        .value("NORMAL", DriveMode::NORMAL)
+        .value("STANDARD", DriveMode::STANDARD)
         .value("SPINNING", DriveMode::SPINNING)
         .value("BALANCING", DriveMode::BALANCING)
         .value("PASSTHROUGH", DriveMode::PASSTHROUGH)
@@ -36,6 +36,7 @@ void python_export_kinematic()
     py::class_<Kinematic, shared_ptr<Kinematic>, boost::noncopyable>("Kinematic", py::no_init)
         .add_property("steering_mode", &Kinematic::getSteeringMode, &Kinematic::setSteeringMode)
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
+        .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
         .def("__enter__", +[](Kinematic &kinematic) {
             kinematic.lock();
             return kinematic.shared_from_this();

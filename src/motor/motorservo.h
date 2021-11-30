@@ -1,21 +1,21 @@
-#ifndef _MOTORGIMBAL_H_
-#define _MOTORGIMBAL_H_
+#ifndef _MOTORSERVO_H_
+#define _MOTORSERVO_H_
 
 #include <cstdint>
 #include <memory>
-#include <chrono>
 #include <mutex>
+#include <iostream>
 #include "../robottypes.h"
-#include "../robotcontext.h"
+#include "motortypes.h"
 
 namespace Robot::Motor {
 
-    class Gimbal {
+    class Servo {
         public:
-            Gimbal(uint index, std::recursive_mutex &mutex, const std::shared_ptr<Robot::Context> &context);
-            Gimbal(const Gimbal&) = delete; // No copy constructor
-            Gimbal(Gimbal&&) = delete; // No move constructor
-            virtual ~Gimbal();
+            Servo(uint index, std::recursive_mutex &mutex, const std::shared_ptr<::Robot::Context> &context);
+            Servo(const Servo&) = delete; // No copy constructor
+            Servo(Servo&&) = delete; // No move constructor
+            virtual ~Servo();
 
             uint getIndex() const { return m_index; }
 
@@ -24,17 +24,8 @@ namespace Robot::Motor {
 
             bool getPassthrough() const { return m_passthrough; }
 
-            void setValue(const Robot::InputValue value);
-            Robot::InputValue getValue() const { return m_value; }
-
-            void setPulseUS(std::uint32_t us);
-            std::uint32_t getPulseUS() const { return m_value.asServoPulse(); }
-
-            void setAngle(double angle);
-            double getAngle() const;
-
-            void setAngleRadians(double angle);
-            double getAngleRadians() const;
+            void setValue(const Value value);
+            Value getValue() const { return m_value; }
 
             void setLimits(std::uint32_t lmin, std::uint32_t lmax);
             void setLimitMin(std::uint32_t limit);
@@ -54,20 +45,25 @@ namespace Robot::Motor {
             friend class Motor;
             friend class Control;
         private:
-            std::shared_ptr<Robot::Context> m_context;
+            std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
             uint m_index;
             std::recursive_mutex &m_mutex;
             bool m_enabled;
             bool m_passthrough;
-            InputValue m_value;
-            std::chrono::high_resolution_clock::time_point m_last_pulse;
+            Value m_value;
 
             std::uint32_t m_limit_min;
             std::uint32_t m_limit_max;
             std::int32_t  m_trim;
 
             inline uint servoChannel() const;
+
+            friend std::ostream &operator<<(std::ostream &os, const Servo &self)
+            {
+                return os << "Motor::Servo[" << self.m_index << "]";
+            }
+
     };
 
 };

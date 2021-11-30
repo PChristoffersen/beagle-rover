@@ -8,7 +8,7 @@ using namespace std;
 namespace Robot::LED {
 
 
-static constexpr auto TIMER_INTERVAL { 500ms };
+static constexpr auto TIMER_INTERVAL { 250ms };
 static constexpr Color LED_COLOR { 0xEE, 0xBE, 0x00 };
 
 Construction::Construction(const std::shared_ptr<Robot::Context> &context) :

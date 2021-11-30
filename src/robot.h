@@ -5,19 +5,10 @@
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 
-#include "robotcontext.h"
-#include "rc/rcreceiver.h"
-#include "motor/motorcontrol.h"
-#include "led/ledcontrol.h"
-#include "telemetry/telemetry.h"
-#include "kinematic/kinematic.h"
-#include "debug/prudebug.h"
-#include "system/wifi.h"
-
+#include "robottypes.h"
 
 namespace Robot {
-
-    class Robot {
+    class Robot : public std::enable_shared_from_this<Robot> {
         public:
             Robot();
             Robot(const Robot&) = delete; // No copy constructor
@@ -29,31 +20,36 @@ namespace Robot {
             void init();
             void cleanup();
 
-            void setArmed(bool enable);
-            bool getArmed() const { return m_armed; }
+            const std::shared_ptr<class Context> &context() const { return m_context; }
+            const std::shared_ptr<class RC::Receiver> &rcReceiver() const { return m_rc_receiver; }
+            const std::shared_ptr<class Motor::Control> &motorControl() const { return m_motor_control; }
+            const std::shared_ptr<class LED::Control> &ledControl() const { return m_led_control; }
+            const std::shared_ptr<class Telemetry::Telemetry> &telemetry() const { return m_telemetry; }
+            const std::shared_ptr<class Kinematic::Kinematic> &kinematic() const { return m_kinematic; }
+            const std::shared_ptr<class Input::Control> &input() const { return m_input; }
+            const std::shared_ptr<class System::WiFi> &wifi() const { return m_wifi; }
 
-            const std::shared_ptr<Context> &context() const { return m_context; }
-            const std::shared_ptr<RC::Receiver> &rcReceiver() const { return m_rc_receiver; }
-            const std::shared_ptr<Motor::Control> &motorControl() const { return m_motor_control; }
-            const std::shared_ptr<LED::Control> &ledControl() const { return m_led_control; }
-            const std::shared_ptr<Telemetry::Telemetry> &telemetry() const { return m_telemetry; }
-            const std::shared_ptr<Kinematic::Kinematic> &kinematic() const { return m_kinematic; }
-            const std::shared_ptr<System::WiFi> &wifi() const { return m_wifi; }
+            uint heartbeat() const { return m_heartbeat; }
 
         private:
             static class Robot *m_instance;
             bool m_initialized;
-            bool m_armed;
             std::shared_ptr<Context> m_context;
+            boost::asio::high_resolution_timer m_timer;
 
-            std::shared_ptr<RC::Receiver> m_rc_receiver;
-            std::shared_ptr<Motor::Control> m_motor_control;
-            std::shared_ptr<LED::Control> m_led_control;
-            std::shared_ptr<Telemetry::Telemetry> m_telemetry;
-            std::shared_ptr<Kinematic::Kinematic> m_kinematic;
-            std::shared_ptr<PRU::Debug> m_pru_debug;
-            std::shared_ptr<System::WiFi> m_wifi;
+            uint m_heartbeat;
 
+            std::shared_ptr<class RC::Receiver> m_rc_receiver;
+            std::shared_ptr<class Motor::Control> m_motor_control;
+            std::shared_ptr<class LED::Control> m_led_control;
+            std::shared_ptr<class Telemetry::Telemetry> m_telemetry;
+            std::shared_ptr<class Kinematic::Kinematic> m_kinematic;
+            std::shared_ptr<class Input::Control> m_input;
+            std::shared_ptr<class System::PRUDebug> m_pru_debug;
+            std::shared_ptr<class System::WiFi> m_wifi;
+
+            void timerSetup();
+            void timer();
     };
 
 };
