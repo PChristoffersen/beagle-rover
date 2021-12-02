@@ -1,5 +1,5 @@
-#ifndef _INPUT_GAMEPADSOURCE_H_
-#define _INPUT_GAMEPADSOURCE_H_
+#ifndef _ROBOT_INPUT_INPUT_GAMEPADSOURCE_H_
+#define _ROBOT_INPUT_INPUT_GAMEPADSOURCE_H_
 
 #include <memory>
 #include <mutex>
@@ -8,7 +8,7 @@
 
 namespace Robot::Input {
 
-    class GamepadSource : public AbstractSource<GamepadSource> {
+    class GamepadSource : public AbstractSource {
         public:
             explicit GamepadSource(const std::shared_ptr<::Robot::Context> &context, const Signals &signals);
             GamepadSource(const GamepadSource&) = delete; // No copy constructor

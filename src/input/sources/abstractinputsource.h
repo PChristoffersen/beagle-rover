@@ -1,15 +1,14 @@
-#ifndef _ABSTRACTINPUTSOURCE_H_
-#define _ABSTRACTINPUTSOURCE_H_
+#ifndef _ROBOT_INPUT_ABSTRACTINPUTSOURCE_H_
+#define _ROBOT_INPUT_ABSTRACTINPUTSOURCE_H_
 
 #include <memory>
+#include <robotcontext.h>
+#include <common/withmutex.h>
 #include "../inputsource.h"
-#include "../inputvalue.h"
-#include "../../robotcontext.h"
-#include "../../common/withmutex.h"
+#include "../value.h"
 
 namespace Robot::Input {
 
-    template<typename T>
     class AbstractSource : public Source, public WithMutex<std::recursive_mutex> {
         public:
             AbstractSource(const Signals &signals) :

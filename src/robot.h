@@ -1,5 +1,5 @@
-#ifndef _ROBOT_H_
-#define _ROBOT_H_
+#ifndef _ROBOT_ROBOT_H_
+#define _ROBOT_ROBOT_H_
 
 #include <memory>
 #include <boost/asio.hpp>
@@ -8,6 +8,8 @@
 #include "robottypes.h"
 
 namespace Robot {
+
+
     class Robot : public std::enable_shared_from_this<Robot> {
         public:
             Robot();

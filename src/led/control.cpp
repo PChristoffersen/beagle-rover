@@ -1,4 +1,4 @@
-#include "ledcontrol.h"
+#include "control.h"
 
 #include <algorithm>
 #include <thread>
@@ -6,7 +6,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
 
-#include "../robotcontext.h"
+#include <robotcontext.h>
 #include "animation/headlights.h"
 #include "animation/indicator.h"
 #include "animation/construction.h"

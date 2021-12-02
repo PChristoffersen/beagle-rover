@@ -3,10 +3,10 @@
 #include <cmath>
 #include <boost/log/trivial.hpp>
 
-#include "../../robotcontext.h"
-#include "../../motor/motor.h"
-#include "../../motor/motorservo.h"
-#include "../../motor/motorcontrol.h"
+#include <robotcontext.h>
+#include <motor/motor.h>
+#include <motor/servo.h>
+#include <motor/control.h>
 
 using namespace std;
 
@@ -28,7 +28,7 @@ ControlSchemePassthrough::~ControlSchemePassthrough()
 
 void ControlSchemePassthrough::init() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     
@@ -50,7 +50,7 @@ void ControlSchemePassthrough::init()
 
 void ControlSchemePassthrough::cleanup() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     if (!m_initialized) 
         return;
@@ -65,22 +65,5 @@ void ControlSchemePassthrough::cleanup()
     m_motor_control->setPassthrough(false);
 }
 
-/*
-void ControlSchemePassthrough::onRCData(Robot::RC::Flags flags, uint8_t rssi, const Robot::RC::ChannelList &channels) {
-    const lock_guard<mutex> lock(m_mutex);
-    if (!m_initialized) 
-        return;
-
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
-
-    for (auto &motor : m_motor_control->getMotors()) {
-        auto servo_val = channels[SERVO_PASSTHROUGH_OFFSET+motor->servo()->getIndex()];
-        auto motor_val = channels[MOTOR_PASSTHROUGH_OFFSET+motor->getIndex()];
-
-        motor->servo()->setValue(servo_val);
-        motor->setValue(motor_val);
-    }
-}
-*/
 
 };

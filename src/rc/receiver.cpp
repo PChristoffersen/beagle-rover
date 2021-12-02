@@ -1,4 +1,4 @@
-#include "rcreceiver.h"
+#include "receiver.h"
 
 #include <algorithm>
 #include <boost/assert.hpp>
@@ -8,9 +8,8 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "../robotcontext.h"
-#include "../motor/motorcontrol.h"
-#include "../telemetry/telemetry.h"
+#include <robotcontext.h>
+#include <telemetry/telemetry.h>
 
 
 using namespace std;
@@ -63,8 +62,6 @@ void Receiver::init(const shared_ptr<Robot::Telemetry::Telemetry> &telemetry)
     switch (rc_model_category()) {
 	case CATEGORY_BEAGLEBONE:
         m_fbus = rc_ext_fbus_get_shm();
-        m_timer.expires_after(TIMER_INTERVAL);
-        timerSetup();
         break;
     default:
         break;
@@ -129,7 +126,7 @@ void Receiver::timer(boost::system::error_code error)
     if (error!=boost::system::errc::success || !m_initialized || !m_fbus) {
         return;
     }
-        
+
     uint32_t counter = m_fbus->counter;
     
     if (counter != m_last_counter) {
@@ -148,6 +145,9 @@ void Receiver::timer(boost::system::error_code error)
         }
 
         auto chsize = m_fbus->n_channels;
+        if (chsize>MAX_CHANNELS) {
+            chsize = MAX_CHANNELS;
+        }
         for (auto i=0; i<chsize; i++) {
             m_channels[i] = m_fbus->channels[i];
         }
@@ -166,7 +166,7 @@ void Receiver::timer(boost::system::error_code error)
         static chrono::high_resolution_clock::time_point last_update;
         auto time { chrono::high_resolution_clock::now() };
         
-        if ((time-last_update) > 100ms) {
+        if ((time-last_update) > 200ms) {
             BOOST_LOG_TRIVIAL(info) << boost::format("%+08d f=%+02x r=%+02x ch=%d ") % (uint32_t)counter % (uint32_t)m_flags % (uint32_t)m_rssi % (uint32_t)m_channels.count()
                 << " | " << m_channels[0]
                 << " | " << m_channels[1]

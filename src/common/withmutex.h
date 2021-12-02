@@ -1,5 +1,5 @@
-#ifndef _WITHMUTEX_H_
-#define _WITHMUTEX_H_
+#ifndef _ROBOT_WITHMUTEX_H_
+#define _ROBOT_WITHMUTEX_H_
 
 #include <mutex>
 

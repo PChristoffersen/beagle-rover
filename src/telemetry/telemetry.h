@@ -1,13 +1,13 @@
-#ifndef _TELEMETRY_H_
-#define _TELEMETRY_H_
+#ifndef _ROBOT_TELEMETRY_TELEMETRY_H_
+#define _ROBOT_TELEMETRY_TELEMETRY_H_
 
 #include <cstdint>
 #include <memory>
 #include <boost/asio.hpp>
 
-#include "telemetrytypes.h"
-#include "../robottypes.h"
-#include "../rc/rcreceiver.h"
+#include <robottypes.h>
+#include <rc/receiver.h>
+#include "types.h"
 
 
 namespace Robot::Telemetry {

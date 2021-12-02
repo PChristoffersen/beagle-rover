@@ -1,5 +1,5 @@
-#ifndef _RCTYPES_H_
-#define _RCTYPES_H_
+#ifndef _ROBOT_RC_TYPES_H_
+#define _ROBOT_RC_TYPES_H_
 
 #include <cstdint>
 #include <memory>
@@ -8,8 +8,8 @@
 #include <iostream>
 #include <boost/signals2.hpp>
 
-#include "../robottypes.h"
-#include "../input/inputvalue.h"
+#include <robottypes.h>
+#include <input/value.h>
 
 namespace Robot::RC {
 
@@ -65,8 +65,8 @@ namespace Robot::RC {
     };
 
 
-    using ChannelValue = ::Robot::Input::Value;
-    using _ChannelArray = std::array<ChannelValue, MAX_CHANNELS>;
+    using Value = ::Robot::Input::Value;
+    using _ChannelArray = std::array<Value, MAX_CHANNELS>;
 
     class ChannelList : public _ChannelArray {
         public:
@@ -80,7 +80,7 @@ namespace Robot::RC {
             void setCount(std::size_t count) 
             {
                 if (m_count!=count) {
-                    std::fill(begin()+count, end(), ChannelValue::UNSET_VALUE);
+                    std::fill(begin()+count, end(), Value::UNSET_VALUE);
                     m_count = count;
                 }
             }

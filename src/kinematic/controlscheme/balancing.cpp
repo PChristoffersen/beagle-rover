@@ -3,10 +3,10 @@
 #include <cmath>
 #include <boost/log/trivial.hpp>
 
-#include "../kinematictypes.h"
-#include "../../motor/motor.h"
-#include "../../motor/motorservo.h"
-#include "../../motor/motorcontrol.h"
+#include <motor/motor.h>
+#include <motor/servo.h>
+#include <motor/control.h>
+#include "../types.h"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ ControlSchemeBalancing::~ControlSchemeBalancing()
 
 void ControlSchemeBalancing::init() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 
@@ -37,7 +37,7 @@ void ControlSchemeBalancing::init()
 
     // Set all motor angles to 0 degrees and throttle to 0
     {
-        auto &motor = motors[Robot::Motor::Control::FRONT_LEFT];
+        auto &motor = motors[MotorPosition::FRONT_LEFT];
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
@@ -45,7 +45,7 @@ void ControlSchemeBalancing::init()
         motor->servo()->setEnabled(true);
     }
     {
-        auto &motor = motors[Robot::Motor::Control::FRONT_RIGHT];
+        auto &motor = motors[MotorPosition::FRONT_RIGHT];
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(true);
@@ -53,14 +53,14 @@ void ControlSchemeBalancing::init()
         motor->servo()->setEnabled(true);
     }
     {
-        auto &motor = motors[Robot::Motor::Control::REAR_LEFT];
+        auto &motor = motors[MotorPosition::REAR_LEFT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
         motor->servo()->setValue(Value::fromAngleRadians(M_PI_2));
         motor->servo()->setEnabled(true);
     }
     {
-        auto &motor = motors[Robot::Motor::Control::REAR_RIGHT];
+        auto &motor = motors[MotorPosition::REAR_RIGHT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
         motor->servo()->setValue(Value::fromAngleRadians(M_PI_2));
@@ -73,7 +73,7 @@ void ControlSchemeBalancing::init()
 
 void ControlSchemeBalancing::cleanup() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
 
     if (!m_initialized) 
         return;

@@ -1,41 +1,54 @@
-#ifndef _ABSTRACTCONTROLSCHEME_H_
-#define _ABSTRACTCONTROLSCHEME_H_
+#ifndef _ROBOT_KINEMATIC_ABSTRACTCONTROLSCHEME_H_
+#define _ROBOT_KINEMATIC_ABSTRACTCONTROLSCHEME_H_
 
 #include <memory>
 #include <mutex>
+
+#include <common/withmutex.h>
+#include <telemetry/telemetry.h>
+#include <motor/control.h>
+#include <motor/motor.h>
+#include <motor/servo.h>
+#include <rc/receiver.h>
 #include "../controlscheme.h"
 #include "../kinematic.h"
-#include "../../telemetry/telemetry.h"
-#include "../../motor/motorcontrol.h"
-#include "../../rc/rcreceiver.h"
 
 namespace Robot::Kinematic {
 
-    template<typename T>
-    class AbstractControlScheme : public ControlScheme, public std::enable_shared_from_this<T> {
+    class AbstractControlScheme : public ControlScheme, public WithMutex<std::recursive_mutex> {
         public:
             virtual ~AbstractControlScheme() { }
 
-            virtual void updateSteeringMode(SteeringMode mode) {}
-            virtual void updateDriveMode(DriveMode mode) {}
-            virtual void updateOrientation(Orientation orientation) {}
+            virtual void updateOrientation(Orientation orientation) override;
 
-            virtual void steer(double steering, double throttle, double aux_x, double aux_y) {}
+            virtual void steer(double steering, double throttle, double aux_x, double aux_y) override {}
 
         protected:
-            AbstractControlScheme(std::shared_ptr<Kinematic> kinematic) :
-                m_initialized { false },
-                m_kinematic { kinematic },
-                m_context { kinematic->context() },
-                m_motor_control { kinematic->motorControl() }
-            {
-            }
+            AbstractControlScheme(std::shared_ptr<Kinematic> kinematic);
 
             bool m_initialized;
-            std::mutex m_mutex;
+            MotorMap m_motor_map;
             std::shared_ptr<Robot::Context> m_context;
-            std::weak_ptr<Kinematic> m_kinematic;
             std::shared_ptr<Robot::Motor::Control> m_motor_control;
+
+            inline auto &motor(MotorPosition position) const 
+            {
+                return m_motor_control->getMotors()[m_motor_map[position].index];
+            }
+            inline void motorServo(MotorPosition position, Value value) {
+                auto &entry = m_motor_map[position];
+                m_motor_control->getMotors()[entry.index]->servo()->setValue(entry.invert ? -value : value);
+            }
+            inline void motorDuty(MotorPosition position, double value) {
+                auto &entry = m_motor_map[position];
+                m_motor_control->getMotors()[entry.index]->setDuty(entry.invert ? -value : value);
+            }
+            inline void motorSet(MotorPosition position, Value servo, double throttle) {
+                auto &entry = m_motor_map[position];
+                auto &motor = m_motor_control->getMotors()[entry.index];
+                motor->servo()->setValue(entry.invert ? -servo : servo);
+                motor->setDuty(entry.invert ? -throttle : throttle);
+            }
     };
 
 };

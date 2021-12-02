@@ -1,15 +1,13 @@
 #include <memory>
 #include <boost/python.hpp>
 
-#include "../rc/rcreceiver.h"
-#include "../telemetry/telemetry.h"
-#include "../motor/motor.h"
-#include "../motor/motorcontrol.h"
-#include "../led/ledcontrol.h"
-#include "../led/ledcolor.h"
-#include "../kinematic/kinematic.h"
-#include "../input/inputcontrol.h"
-#include "../robot.h"
+#include <robot.h>
+#include <rc/receiver.h>
+#include <telemetry/telemetry.h>
+#include <motor/control.h>
+#include <led/control.h>
+#include <kinematic/kinematic.h>
+#include <input/control.h>
 
 
 using namespace std;

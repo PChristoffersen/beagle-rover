@@ -1,11 +1,11 @@
-#ifndef _BATTERY_H_
-#define _BATTERY_H_
+#ifndef _ROBOT_TELEMETRY_BATTERY_H_
+#define _ROBOT_TELEMETRY_BATTERY_H_
 
 #include <memory>
 #include <boost/asio.hpp>
 
 #include "abstracttelemetrysource.h"
-#include "../telemetrytypes.h"
+#include "../types.h"
 
 namespace Robot::Telemetry {
 

@@ -3,17 +3,17 @@
 #include <boost/log/trivial.hpp>
 #include <boost/system/error_code.hpp>
 
-#include "../kinematictypes.h"
-#include "../../robotcontext.h"
-#include "../../motor/motor.h"
-#include "../../motor/motorservo.h"
-#include "../../motor/motorcontrol.h"
+#include <robotcontext.h>
+#include <motor/motor.h>
+#include <motor/servo.h>
+#include <motor/control.h>
+#include "../types.h"
 
 using namespace std;
 
 namespace Robot::Kinematic {
 
-static constexpr auto IDLE_DELAY { 1s };
+static constexpr auto IDLE_DELAY { 250ms };
 
 
 ControlSchemeIdle::ControlSchemeIdle(shared_ptr<Kinematic> kinematic) :
@@ -33,7 +33,7 @@ ControlSchemeIdle::~ControlSchemeIdle()
 
 void ControlSchemeIdle::init() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 
     // Set all motor angles to 0 degrees and throttle to 0
@@ -65,8 +65,7 @@ void ControlSchemeIdle::init()
 
 void ControlSchemeIdle::cleanup() 
 {
-    const lock_guard<mutex> lock(m_mutex);
-
+    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -75,14 +74,14 @@ void ControlSchemeIdle::cleanup()
 
     m_timer.cancel();
 
-    BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__ << "  <<<<";
+    BOOST_LOG_TRIVIAL(info) << this << ": " << __FUNCTION__ << "  <<<<";
 }
 
 
 
 void ControlSchemeIdle::timer() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (!m_initialized)
         return;
 

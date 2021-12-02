@@ -1,4 +1,4 @@
-#include "motorservo.h"
+#include "servo.h"
 
 #include <cmath>
 #include <algorithm>
@@ -9,8 +9,8 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "../robotcontext.h"
-#include "motorcontrol.h"
+#include <robotcontext.h>
+#include "control.h"
 
 using namespace std;
 
@@ -67,7 +67,7 @@ void Servo::setEnabled(bool enabled)
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (enabled!=m_enabled) {
         m_enabled = enabled;
-        BOOST_LOG_TRIVIAL(info) << *this << " Enable " << enabled;
+        BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
         m_context->servoPower(m_enabled);
     }
 }

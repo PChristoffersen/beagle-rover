@@ -1,9 +1,9 @@
-#ifndef _ANIMATION_KNIGHTRIDER_H_
-#define _ANIMATION_KNIGHTRIDER_H_
+#ifndef _ROBOT_LED_ANIMATION_KNIGHTRIDER_H_
+#define _ROBOT_LED_ANIMATION_KNIGHTRIDER_H_
 
 #include <memory>
 
-#include "../../robotcontext.h"
+#include <robotcontext.h>
 #include "abstractanimation.h"
 
 namespace Robot::LED {

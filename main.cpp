@@ -7,9 +7,9 @@
 #include <boost/exception/all.hpp>
 #include <boost/bind.hpp>
 
-#include "led/ledcontrol.h"
-#include "rc/rcreceiver.h"
-#include "robot.h"
+#include <robot.h>
+#include <led/control.h>
+#include <rc/receiver.h>
 
 using namespace std;
 

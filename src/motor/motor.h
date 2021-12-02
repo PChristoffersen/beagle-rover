@@ -1,5 +1,5 @@
-#ifndef _MOTOR_H_
-#define _MOTOR_H_
+#ifndef _ROBOT_MOTOR_H_
+#define _ROBOT_MOTOR_H_
 
 #include <memory>
 #include <chrono>
@@ -8,13 +8,15 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 
-#include "../robottypes.h"
-#include "motortypes.h"
+#include <robottypes.h>
+#include "types.h"
 
 namespace Robot::Motor {
 
     class Motor {
         public:
+            using clock = std::chrono::high_resolution_clock;
+
             enum State {
                 RUNNING,
                 FREE_SPIN,
@@ -48,7 +50,7 @@ namespace Robot::Motor {
 
             void resetOdometer();
             double getOdometer() const;
-
+            int32_t getEncoderValue() const { return m_last_enc_value-m_odometer_base; }
 
             class Servo *servo() const { return m_servo.get(); }
 
@@ -73,11 +75,12 @@ namespace Robot::Motor {
 
 
             std::int32_t m_last_enc_value;
-            std::chrono::high_resolution_clock::time_point m_last_update;
+            clock::time_point m_last_update;
 
             std::int32_t m_odometer_base;
 
             double m_duty;
+            double m_duty_set;
             double m_target_rpm;
             double m_rpm;
 

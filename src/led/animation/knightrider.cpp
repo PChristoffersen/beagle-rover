@@ -9,8 +9,8 @@ namespace Robot::LED {
 
 
 static constexpr auto TIMER_INTERVAL { 100ms };
-static constexpr Color LED_COLOR1 { 0xFF, 0x00, 0x00, 0x40 };
-static constexpr Color LED_COLOR2 { 0xFF, 0x00, 0x00, 0x08 };
+static constexpr Color LED_COLOR1 { 0x40, 0x00, 0x00, 0xFF };
+static constexpr Color LED_COLOR2 { 0x40, 0x00, 0x00, 0x40 };
 
 
 KnightRider::KnightRider(const std::shared_ptr<Robot::Context> &context) :
@@ -41,11 +41,11 @@ void KnightRider::update(ColorLayer &layer)
 {
     layer.fill(Color::TRANSPARENT);
 
-    if (m_pos==0) {
+    if (m_pos<=0) {
         layer[m_pos] = LED_COLOR1;
         m_dir = 1;
     }
-    else if (m_pos==7) {
+    else if (m_pos>=7) {
         layer[m_pos] = LED_COLOR1;
         m_dir = -1;
     }

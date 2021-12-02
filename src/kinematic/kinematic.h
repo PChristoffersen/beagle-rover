@@ -1,15 +1,15 @@
-#ifndef _KINEMATIC_H_
-#define _KINEMATIC_H_
+#ifndef _ROBOT_KINEMATIC_KINEMATIC_H_
+#define _ROBOT_KINEMATIC_KINEMATIC_H_
 
 #include <memory>
 #include <mutex>
 
-#include "kinematictypes.h"
-#include "../common/withmutex.h"
-#include "../robottypes.h"
-#include "../motor/motorcontrol.h"
-#include "../telemetry/telemetry.h"
-#include "../rc/rcreceiver.h"
+#include <robottypes.h>
+#include <common/withmutex.h>
+#include <motor/control.h>
+#include <telemetry/telemetry.h>
+#include <rc/receiver.h>
+#include "types.h"
 
 namespace Robot::Kinematic {
 
@@ -26,9 +26,6 @@ namespace Robot::Kinematic {
                 const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry, 
                 const std::shared_ptr<::Robot::Input::Control> &input_control);
             void cleanup();
-
-            void setSteeringMode(SteeringMode mode);
-            SteeringMode getSteeringMode() const { return m_steering_mode; }
 
             void setDriveMode(DriveMode mode);
             DriveMode getDriveMode() const { return m_drive_mode; }
@@ -48,7 +45,6 @@ namespace Robot::Kinematic {
 
             boost::signals2::connection m_axis_connection;
 
-            SteeringMode m_steering_mode;
             DriveMode    m_drive_mode;
             Orientation  m_orientation;
 

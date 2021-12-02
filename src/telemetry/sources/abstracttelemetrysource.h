@@ -3,8 +3,8 @@
 
 #include <memory>
 #include "../telemetrysource.h"
-#include "../telemetrytypes.h"
-#include "../../robotcontext.h"
+#include "../types.h"
+#include <robotcontext.h>
 
 namespace Robot::Telemetry {
 

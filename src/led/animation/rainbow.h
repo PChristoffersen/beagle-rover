@@ -1,9 +1,9 @@
-#ifndef _ANIMATION_RAINBOW_H_
-#define _ANIMATION_RAINBOW_H_
+#ifndef _ROBOT_LED_ANIMATION_RAINBOW_H_
+#define _ROBOT_LED_ANIMATION_RAINBOW_H_
 
 #include <memory>
 
-#include "../../robotcontext.h"
+#include <robotcontext.h>
 #include "abstractanimation.h"
 
 namespace Robot::LED {

@@ -1,20 +1,20 @@
-#ifndef _INPUT_SOFTWARESOURCE_H_
-#define _INPUT_SOFTWARESOURCE_H_
+#ifndef _ROBOT_INPUT_SOFTWARESOURCE_H_
+#define _ROBOT_INPUT_SOFTWARESOURCE_H_
 
 #include <memory>
 #include <mutex>
 #include <boost/asio.hpp>
 
 #include "abstractinputsource.h"
-#include "../inputvalue.h"
-#include "../inputinterface.h"
+#include "../value.h"
+#include "../softwareinterface.h"
 
 
 namespace Robot::Input {
 
-    class SoftwareSource : public AbstractSource<SoftwareSource>, public InputInterface {
+    class SoftwareSource : public AbstractSource, public SoftwareInterface {
         public:
-            explicit SoftwareSource(const Signals &signals);
+            explicit SoftwareSource(std::string m_name, const Signals &signals);
             SoftwareSource(const SoftwareSource&) = delete; // No copy constructor
             SoftwareSource(SoftwareSource&&) = delete; // No move constructor
             virtual ~SoftwareSource();
@@ -29,6 +29,12 @@ namespace Robot::Input {
         private:
             bool m_initialized;
             bool m_enabled;
+            std::string m_name;
+
+            friend std::ostream &operator<<(std::ostream &os, const SoftwareSource &self)
+            {
+                return os << "Input::" << self.m_name;
+            }
 
     };
 

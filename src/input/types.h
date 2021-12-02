@@ -1,5 +1,5 @@
-#ifndef _INPUTTYPES_H_
-#define _INPUTTYPES_H_
+#ifndef _ROBOT_INPUT_TYPES_H_
+#define _ROBOT_INPUT_TYPES_H_
 
 #include <iostream>
 #include <boost/signals2.hpp>

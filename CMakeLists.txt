@@ -31,13 +31,13 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
 set(SRC 
     src/robot.cpp
     src/robotcontext.cpp
-    src/rc/rcreceiver.cpp
+    src/rc/receiver.cpp
     src/motor/motor.cpp
-    src/motor/motorservo.cpp
-    src/motor/motorcontrol.cpp
-    src/led/ledcontrol.cpp
-    src/led/ledcolor.cpp
-    src/led/ledcolorlayer.cpp
+    src/motor/servo.cpp
+    src/motor/control.cpp
+    src/led/control.cpp
+    src/led/color.cpp
+    src/led/colorlayer.cpp
     src/led/animation/indicator.cpp
     src/led/animation/headlights.cpp
     src/led/animation/construction.cpp
@@ -49,19 +49,24 @@ set(SRC
     src/telemetry/sources/adcbattery.cpp
     src/telemetry/sources/rcmpu.cpp
     src/kinematic/kinematic.cpp
+    src/kinematic/controlscheme/abstractcontrolscheme.cpp
+    src/kinematic/controlscheme/abstractwheelsteering.cpp
     src/kinematic/controlscheme/idle.cpp
-    src/kinematic/controlscheme/standard.cpp
+    src/kinematic/controlscheme/allwheel.cpp
+    src/kinematic/controlscheme/frontwheel.cpp
+    src/kinematic/controlscheme/rearwheel.cpp
+    src/kinematic/controlscheme/skid.cpp
     src/kinematic/controlscheme/spinning.cpp
     src/kinematic/controlscheme/balancing.cpp
     src/kinematic/controlscheme/passthrough.cpp
-    src/input/inputcontrol.cpp
+    src/input/control.cpp
     src/input/sources/software.cpp
     src/input/sources/rc.cpp
     src/input/sources/gamepad.cpp
     src/system/prudebug.cpp
     src/system/wifi.cpp
 )
-#target_link_directories(robot PRIVATE robotcontrol-ext)
+include_directories(BEFORE SYSTEM src)
 
 
 # -----------------------------------------------

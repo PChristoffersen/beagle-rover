@@ -1,5 +1,5 @@
-#ifndef _LED_CONTROL_H_
-#define _LED_CONTROL_H_
+#ifndef _ROBOT_LED_CONTROL_H_
+#define _ROBOT_LED_CONTROL_H_
 
 #include <cstdint>
 #include <memory>
@@ -10,10 +10,9 @@
 
 #include <robotcontrolext.h>
 
-#include "../common/withmutex.h"
-#include "../robottypes.h"
-#include "ledcolor.h"
-#include "ledcolorlayer.h"
+#include <common/withmutex.h>
+#include <robottypes.h>
+#include "color.h"
 
 namespace Robot::LED {
 

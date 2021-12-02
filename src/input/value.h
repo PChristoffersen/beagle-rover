@@ -1,5 +1,5 @@
-#ifndef _ROBOTINPUT_H_
-#define _ROBOTINPUT_H_
+#ifndef _ROBOT_INPUT_VALUE_H_
+#define _ROBOT_INPUT_VALUE_H_
 
 #include <iostream>
 #include <cinttypes>
@@ -75,7 +75,7 @@ namespace Robot::Input {
             }
             inline constexpr double asPercent() const 
             {
-                return (double)((std::int32_t)m_value-PULSE_CENTER)/PULSE_RANGE;
+                return (double)(2*((std::int32_t)m_value-PULSE_CENTER))/PULSE_RANGE;
             }
             inline constexpr double asAngleRadians() const 
             { 
@@ -85,7 +85,13 @@ namespace Robot::Input {
             { 
                 return asAngleRadians() * 180.0 / M_PI;
             }
-
+            inline constexpr uint asButton(uint divisions) const 
+            {
+                if (m_value==UNSET_VALUE)
+                    return 0;
+                auto range = PULSE_RANGE/(divisions-1);
+                return (m_value-PULSE_MIN+range/2) / range;
+            }
 
             inline constexpr operator bool() const 
             {

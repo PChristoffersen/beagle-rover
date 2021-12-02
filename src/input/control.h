@@ -1,15 +1,15 @@
-#ifndef _INPUTCONTROL_H_
-#define _INPUTCONTROL_H_
+#ifndef _ROBOT_INPUT_CONTROL_H_
+#define _ROBOT_INPUT_CONTROL_H_
 
 #include <memory>
 #include <mutex>
 #include <iostream>
 
-#include "../common/withmutex.h"
-#include "../robottypes.h"
-#include "../rc/rcreceiver.h"
-#include "inputinterface.h"
-#include "inputtypes.h"
+#include <robottypes.h>
+#include <common/withmutex.h>
+#include <rc/receiver.h>
+#include "types.h"
+#include "softwareinterface.h"
 
 namespace Robot::Input {
 
@@ -33,8 +33,8 @@ namespace Robot::Input {
             void setInputSource(InputSource input);
             InputSource getInputSource() const { return m_input_source; }
 
-            InputInterface *manual() const;
-            InputInterface *web() const;
+            SoftwareInterface *manual() const;
+            SoftwareInterface *web() const;
 
             Signals signals;
 

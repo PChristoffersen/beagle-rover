@@ -1,12 +1,12 @@
-#ifndef _PRU_DEBUG_H_
-#define _PRU_DEBUG_H_
+#ifndef _ROBOT_SYSTEM_PRUDEBUG_H_
+#define _ROBOT_SYSTEM_PRUDEBUG_H_
 
 #include <memory>
 #include <chrono>
 #include <mutex>
 #include <boost/asio.hpp>
 
-#include "../robottypes.h"
+#include <robottypes.h>
 
 namespace Robot::System {
 

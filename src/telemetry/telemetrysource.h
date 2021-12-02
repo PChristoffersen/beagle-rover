@@ -1,9 +1,9 @@
-#ifndef _TELEMETRYSOURCE_H_
-#define _TELEMETRYSOURCE_H_
+#ifndef _ROBOT_TELEMETRY_SOURCE_H_
+#define _ROBOT_TELEMETRY_SOURCE_H_
 
 #include <memory>
 
-#include "telemetrytypes.h"
+#include "types.h"
 #include "telemetry.h"
 
 namespace Robot::Telemetry {

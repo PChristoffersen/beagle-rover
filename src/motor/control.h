@@ -1,5 +1,5 @@
-#ifndef _MOTOR_CONTROL_H_
-#define _MOTOR_CONTROL_H_
+#ifndef _ROBOT_MOTOR_CONTROL_H_
+#define _ROBOT_MOTOR_CONTROL_H_
 
 #include <memory>
 #include <array>
@@ -10,25 +10,15 @@
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
-#include "../common/withmutex.h"
-#include "../rc/rctypes.h"
-#include "../robottypes.h"
+#include <robottypes.h>
+#include <common/withmutex.h>
+#include <rc/types.h>
+#include "types.h"
 
 namespace Robot::Motor {
 
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
         public:
-            static constexpr auto MOTOR_COUNT { 4 };
-
-            using MotorList = std::array<std::unique_ptr<class Motor>, MOTOR_COUNT>;
-
-            enum MotorPosition {
-                FRONT_LEFT = 0,
-                FRONT_RIGHT = 1,
-                REAR_LEFT = 2,
-                REAR_RIGHT = 3,
-            };
-
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
             Control(Control&&) = delete; // No move constructor
@@ -50,6 +40,7 @@ namespace Robot::Motor {
             bool getPassthrough() const { return m_passthrough; }
 
             void resetOdometer();
+            double getOdometer() const;
 
             const MotorList &getMotors() const { return m_motors; }
 
@@ -64,7 +55,7 @@ namespace Robot::Motor {
             boost::signals2::connection m_motor_power_con;
             boost::signals2::connection m_servo_power_con;
 
-            std::vector<std::unique_ptr<class Motor>> m_motor_holder;
+   
             MotorList m_motors;
 
 

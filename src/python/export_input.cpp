@@ -2,9 +2,9 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
+#include <input/control.h>
+#include <input/softwareinterface.h>
 #include "util.h"
-#include "../input/inputcontrol.h"
-#include "../input/inputinterface.h"
 
 using namespace std;
 using namespace Robot::Input;
@@ -21,9 +21,9 @@ void python_export_input()
         .value("CONTROLLER", InputSource::CONTROLLER)
         ;
 
-    py::class_<InputInterface, boost::noncopyable>("InputInterface", py::no_init)
-        .def("steer", +[](InputInterface &iface, double s, double t) { iface.steer(s,t); })
-        .def("steer", &InputInterface::steer)
+    py::class_<SoftwareInterface, boost::noncopyable>("InputInterface", py::no_init)
+        .def("steer", +[](SoftwareInterface &iface, double s, double t) { iface.steer(s,t); })
+        .def("steer", &SoftwareInterface::steer)
         ;
 
     py::class_<Control, shared_ptr<Control>, boost::noncopyable>("InputControl", py::no_init)

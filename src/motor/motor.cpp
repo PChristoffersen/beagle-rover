@@ -8,17 +8,20 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "../robotcontext.h"
-#include "motorservo.h"
+#include <robotcontext.h>
+#include "servo.h"
 
 using namespace std;
 
 namespace Robot::Motor {
 
+static constexpr auto MOTOR_DEADZONE { 0.1 };
+
 static constexpr auto PID_P { 1.0 };
 static constexpr auto PID_I { 0.1 };
 static constexpr auto PID_D { 0.0 };
 
+static constexpr auto MINUTE { chrono::duration_cast<chrono::microseconds>(1min) };
 static constexpr auto ENCODER_CPR { 20 };
 static constexpr auto GEARING { 100 };
 static constexpr auto WHEEL_CIRC_MM { 300.0 };
@@ -37,7 +40,9 @@ Motor::Motor(uint index, recursive_mutex &mutex, const std::shared_ptr<Robot::Co
     m_passthrough { false },
     m_state { FREE_SPIN },
     m_last_enc_value { 0 },
-    m_odometer_base { 0 }
+    m_odometer_base { 0 },
+    m_duty { 0.0 },
+    m_duty_set { 0.0 }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
@@ -101,14 +106,14 @@ void Motor::freeSpin()
 
 
 void Motor::setValue(const Value value) {
-    setDuty(value.asPercent()*2.0-1.0);
+    setDuty(value.asPercent());
 }
 
 
 void Motor::setDuty(double duty) 
 {
     const lock_guard<recursive_mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << *this << " setDuty(" << duty << ")";
+    BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
     m_state = RUNNING;
     if (m_enabled) {
         // TODO Set duty in update function
@@ -131,16 +136,18 @@ void Motor::setEnabled(bool enabled)
     const lock_guard<recursive_mutex> lock(m_mutex);
     if (enabled!=m_enabled) {
         m_enabled = enabled;
-        BOOST_LOG_TRIVIAL(info) << *this << " Enable " << enabled;
+        BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
         if (m_enabled) {
             m_context->motorPower(true);
+            m_duty_set = m_duty;
             #ifdef REAL_ROBOT
-            rc_motor_set(motorChannel(), m_duty);
+            rc_motor_set(motorChannel(), m_duty_set);
             #endif
         }
         else {
+            m_duty_set = 0.0;
             #ifdef REAL_ROBOT
-            rc_motor_set(motorChannel(), 0);
+            rc_motor_set(motorChannel(), m_duty_set);
             #endif
             m_context->motorPower(false);
         }
@@ -169,29 +176,44 @@ double Motor::getOdometer() const
 
 void Motor::update() 
 {
-    #if 0
-    static const auto MINUTE = chrono::duration_cast<chrono::nanoseconds>(chrono::minutes(1)).count();
+    if (!m_enabled)
+        return;
 
-    auto time = chrono::high_resolution_clock::now();
-    auto diff = (time-m_last_update);
+    auto now = clock::now();
+    auto diff = chrono::duration_cast<chrono::microseconds>(now-m_last_update);
 
-    if (diff > PID_UPDATE_INTERVAL) {
-        //BOOST_LOG_TRIVIAL(info) << "RPM Update";
-        int32_t value = 0;
-        //int32_t value = rc_ext_encoder_read(encoderChannel());
 
-        auto dur = chrono::duration_cast<chrono::nanoseconds>(diff).count();
-
-        m_rpm = (double)((value-m_last_enc_value)*MINUTE)/((double)(ENCODER_CPR*GEARING)*dur);
-
-        if (m_state==RUNNING) {
-            // UPDATE Pid
-        }
-
-        m_last_enc_value = value;
-        m_last_update = time;
-    }
+    // Calculate RPM
+    #ifdef REAL_ROBOT
+    int32_t value = rc_ext_encoder_read(encoderChannel());
+    #else
+    int32_t value = m_last_enc_value+ENCODER_CPR;
     #endif
+
+    double rpm = (double)((value-m_last_enc_value)*MINUTE.count())/((double)(ENCODER_CPR*GEARING)*diff.count());
+    m_rpm = (rpm+m_rpm)/2.0;
+
+    m_last_enc_value = value;
+
+
+    // Update PID
+
+
+    // Update motor duty cycle
+    if (fabs(m_duty-m_duty_set)>0.01) {
+        //BOOST_LOG_TRIVIAL(info) << *this << " Duty " << m_duty_set << " -> " << m_duty;
+        #ifdef REAL_ROBOT
+        if (fabs(m_duty)<MOTOR_DEADZONE) {
+            rc_motor_set(motorChannel(), 0.0);
+        }
+        else {
+            rc_motor_set(motorChannel(), m_duty);
+        }
+        #endif
+        m_duty_set = m_duty;
+    }
+
+    m_last_update = now;
 }
 
 

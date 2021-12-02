@@ -8,16 +8,16 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "robottypes.h"
-#include "robotcontext.h"
-#include "rc/rcreceiver.h"
-#include "input/inputcontrol.h"
-#include "motor/motorcontrol.h"
-#include "led/ledcontrol.h"
-#include "telemetry/telemetry.h"
-#include "kinematic/kinematic.h"
-#include "system/prudebug.h"
-#include "system/wifi.h"
+#include <robottypes.h>
+#include <robotcontext.h>
+#include <rc/receiver.h>
+#include <input/control.h>
+#include <motor/control.h>
+#include <led/control.h>
+#include <telemetry/telemetry.h>
+#include <kinematic/kinematic.h>
+#include <system/prudebug.h>
+#include <system/wifi.h>
 
 using namespace std;
 

@@ -3,8 +3,8 @@
 #include <boost/python.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "../telemetry/telemetry.h"
 #include "util.h"
+#include <telemetry/telemetry.h>
 
 using namespace std;
 using namespace Robot::Telemetry;

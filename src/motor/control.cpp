@@ -1,4 +1,4 @@
-#include "motorcontrol.h"
+#include "control.h"
 
 #include <iostream>
 #include <algorithm>
@@ -8,11 +8,11 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "motortypes.h"
+#include <robotcontext.h>
+#include <rc/receiver.h>
+#include "types.h"
 #include "motor.h"
-#include "motorservo.h"
-#include "../robotcontext.h"
-#include "../rc/rcreceiver.h"
+#include "servo.h"
 
 using namespace std;
 
@@ -22,7 +22,7 @@ namespace Robot::Motor {
 static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0u };
 static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4u };
 
-static constexpr auto MOTOR_TIMER_INTERVAL { 20ms };
+static constexpr auto MOTOR_TIMER_INTERVAL { 50ms };
 static constexpr auto SERVO_TIMER_INTERVAL { 20ms };
 
 
@@ -136,6 +136,15 @@ void Control::resetOdometer()
 }
 
 
+double Control::getOdometer() const
+{
+    double sum = 0.0;
+    for (auto &motor : m_motors) {
+        sum += motor->getOdometer();
+    }
+    return sum/m_motors.size();
+}
+
 
 void Control::setPassthrough(bool passthrough) 
 {
@@ -184,6 +193,8 @@ void Control::setPassthrough(bool passthrough)
         }
     }
 }
+
+
 
 void Control::onMotorPower(bool enabled) 
 {
@@ -243,14 +254,32 @@ void Control::motorTimer()
 
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
-    // Update control scheme
-
-    // Set motor servo angle if fbus passthrough is enabled
-
     // Update motors
     for (auto &motor : m_motors) {
         motor->update();
     }
+
+    static chrono::high_resolution_clock::time_point last_print;
+    auto now = chrono::high_resolution_clock::now();
+
+    if ( (now-last_print) > 200ms ) {
+        BOOST_LOG_TRIVIAL(info) << 
+            boost::format("  Motors | %4d | %4d | %4d | %4d || %.2f | %.2f | %.2f | %.2f |")
+            % m_motors[0]->getEncoderValue()
+            % m_motors[1]->getEncoderValue()
+            % m_motors[2]->getEncoderValue()
+            % m_motors[3]->getEncoderValue()
+            % m_motors[0]->getRPM()
+            % m_motors[1]->getRPM()
+            % m_motors[2]->getRPM()
+            % m_motors[3]->getRPM()
+            ;
+
+        resetOdometer();
+
+        last_print = now;
+    }
+
 
     motorTimerSetup();
 }

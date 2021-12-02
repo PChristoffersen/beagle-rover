@@ -1,5 +1,5 @@
-#ifndef _TELEMETRYTYPES_H_
-#define _TELEMETRYTYPES_H_
+#ifndef _ROBOT_TELEMETRY_TYPES_H_
+#define _ROBOT_TELEMETRY_TYPES_H_
 
 #include <cstdint>
 #include <vector>

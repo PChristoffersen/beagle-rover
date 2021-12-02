@@ -1,18 +1,18 @@
-#ifndef _INPUT_RCSOURCE_H_
-#define _INPUT_RCSOURCE_H_
+#ifndef _ROBOT_INPUT_INPUT_RCSOURCE_H_
+#define _ROBOT_INPUT_INPUT_RCSOURCE_H_
 
 #include <memory>
 #include <mutex>
 #include <boost/asio.hpp>
 
+#include <rc/types.h>
 #include "abstractinputsource.h"
-#include "../inputvalue.h"
-#include "../../rc/rctypes.h"
+#include "../value.h"
 
 
 namespace Robot::Input {
 
-    class RCSource : public AbstractSource<RCSource> {
+    class RCSource : public AbstractSource {
         public:
             explicit RCSource(const Signals &signals);
             RCSource(const RCSource&) = delete; // No copy constructor

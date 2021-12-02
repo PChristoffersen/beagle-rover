@@ -1,11 +1,11 @@
-#ifndef _ABSTRACTANIMATION_H_
-#define _ABSTRACTANIMATION_H_
+#ifndef _ROBOT_LED_ABSTRACTANIMATION_H_
+#define _ROBOT_LED_ABSTRACTANIMATION_H_
 
 #include <memory>
 #include <chrono>
 #include <boost/asio.hpp>
-#include "../ledanimation.h"
-#include "../../robotcontext.h"
+#include <robotcontext.h>
+#include "../animation.h"
 
 namespace Robot::LED {
 

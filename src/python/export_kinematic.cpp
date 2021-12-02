@@ -2,8 +2,8 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
+#include <kinematic/kinematic.h>
 #include "util.h"
-#include "../kinematic/kinematic.h"
 
 using namespace std;
 using namespace Robot::Kinematic;
@@ -12,16 +12,12 @@ namespace py = boost::python;
 
 void python_export_kinematic() 
 {
-    py::enum_<SteeringMode>("SteeringMode")
-        .value("NONE", SteeringMode::NONE)
-        .value("FRONT", SteeringMode::FRONT)
-        .value("REAR", SteeringMode::REAR)
-        .value("ALL", SteeringMode::ALL)
-        .value("SKID", SteeringMode::SKID)
-        ;
     py::enum_<DriveMode>("DriveMode")
         .value("NONE", DriveMode::NONE)
-        .value("STANDARD", DriveMode::STANDARD)
+        .value("ALL", DriveMode::ALL_WHEEL)
+        .value("FRONT", DriveMode::FRONT_WHEEL)
+        .value("REAR", DriveMode::REAR_WHEEL)
+        .value("SKID", DriveMode::SKID)
         .value("SPINNING", DriveMode::SPINNING)
         .value("BALANCING", DriveMode::BALANCING)
         .value("PASSTHROUGH", DriveMode::PASSTHROUGH)
@@ -34,7 +30,6 @@ void python_export_kinematic()
         ;
 
     py::class_<Kinematic, shared_ptr<Kinematic>, boost::noncopyable>("Kinematic", py::no_init)
-        .add_property("steering_mode", &Kinematic::getSteeringMode, &Kinematic::setSteeringMode)
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
         .def("__enter__", +[](Kinematic &kinematic) {

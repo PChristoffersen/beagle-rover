@@ -2,8 +2,8 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
+#include <rc/receiver.h>
 #include "util.h"
-#include "../rc/rcreceiver.h"
 
 using namespace std;
 using namespace Robot::RC;

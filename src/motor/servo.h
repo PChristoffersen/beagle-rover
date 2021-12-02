@@ -1,12 +1,12 @@
-#ifndef _MOTORSERVO_H_
-#define _MOTORSERVO_H_
+#ifndef _ROBOT_SERVO_H_
+#define _ROBOT_SERVO_H_
 
 #include <cstdint>
 #include <memory>
 #include <mutex>
 #include <iostream>
-#include "../robottypes.h"
-#include "motortypes.h"
+#include <robottypes.h>
+#include "types.h"
 
 namespace Robot::Motor {
 

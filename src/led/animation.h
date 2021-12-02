@@ -1,8 +1,8 @@
-#ifndef _LED_ANIMATION_H_
-#define _LED_ANIMATION_H_
+#ifndef _ROBOT_LED_ANIMATION_H_
+#define _ROBOT_LED_ANIMATION_H_
 
 #include <memory>
-#include "ledcolorlayer.h"
+#include "colorlayer.h"
 
 namespace Robot::LED {
 

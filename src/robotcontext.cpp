@@ -13,6 +13,7 @@ using namespace std;
 
 namespace Robot {
 
+
 Context::Context() : 
     m_initialized { false },
     m_started { false },

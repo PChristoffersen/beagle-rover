@@ -1,9 +1,9 @@
-#include "ledcolorlayer.h"
+#include "colorlayer.h"
 
 #include <algorithm>
 #include <boost/log/trivial.hpp>
 
-#include "ledcontrol.h"
+#include "control.h"
 
 using namespace std;
 

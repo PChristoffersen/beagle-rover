@@ -1,11 +1,11 @@
-#ifndef _LEDCOLORLAYER_H_
-#define _LEDCOLORLAYER_H_
+#ifndef _ROBOT_LED_COLORLAYER_H_
+#define _ROBOT_LED_COLORLAYER_H_
 
 #include <memory>
 #include <iostream>
 
-#include "ledcolor.h"
 #include <robotcontrolext.h>
+#include "color.h"
 
 namespace Robot::LED {
 

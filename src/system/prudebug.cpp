@@ -6,7 +6,7 @@
 
 #include <robotcontrolext.h>
 
-#include "../robotcontext.h"
+#include <robotcontext.h>
 
 using namespace std;
 

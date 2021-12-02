@@ -1,5 +1,5 @@
-#ifndef _RCRECEIVER_H_
-#define _RCRECEIVER_H_
+#ifndef _ROBOT_RC_RECEIVER_H_
+#define _ROBOT_RC_RECEIVER_H_
 
 #include <cstdint>
 #include <memory>
@@ -10,10 +10,10 @@
 #include <boost/signals2.hpp>
 #include <robotcontrolext.h>
 
-#include "../robottypes.h"
-#include "../common/withmutex.h"
-#include "../telemetry/telemetrytypes.h"
-#include "rctypes.h"
+#include <robottypes.h>
+#include <common/withmutex.h>
+#include <telemetry/types.h>
+#include "types.h"
 
 
 namespace Robot::RC {

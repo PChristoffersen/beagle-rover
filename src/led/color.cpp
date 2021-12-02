@@ -1,4 +1,4 @@
-#include "ledcolor.h"
+#include "color.h"
 
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
@@ -34,7 +34,7 @@ Color::raw_type &operator<<(Color::raw_type &dst, const Color &src_color) {
     //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("RedS  %+08x -> %+08x") % (uint32_t)(src & Color::RED_MASK) % ((src & Color::RED_MASK)*src_a/0xFF);
     //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("  %+08x + %+08x = %+08x   red=%+08x green=%+08x blue=%+08x") % dst % (uint32_t)src % (alpha | red | green | blue) % red % green % blue;
 
-    dst = alpha | red;// | green | blue;
+    dst = alpha | red | green | blue;
 
     return dst;
 }

@@ -2,18 +2,19 @@
 
 #include <boost/log/trivial.hpp>
 
-#include "../../rc/rcreceiver.h"
+#include <rc/receiver.h>
 
 
 using namespace std;
 
 namespace Robot::Input {
 
-
-static constexpr size_t CHANNEL_THROTTLE { 0 };
-static constexpr size_t CHANNEL_RUDDER { 1 };
-static constexpr size_t CHANNEL_ELEVATOR { 2 };
-static constexpr size_t CHANNEL_AILERON { 3 };
+enum Channel : size_t {
+    THROTTLE,
+    AILERON,
+    ELEVATOR,
+    RUDDER,
+};
 
 
 RCSource::RCSource(const Signals &signals) :
@@ -84,16 +85,16 @@ void RCSource::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const 
 
     }
     else {
-        const auto &vthrotle = channels[CHANNEL_THROTTLE];
-        const auto &vrudder = channels[CHANNEL_RUDDER];
-        const auto &velevator = channels[CHANNEL_ELEVATOR];
-        const auto &vaileron = channels[CHANNEL_AILERON];
+        const auto &vthrotle = channels[Channel::THROTTLE];
+        const auto &vaileron = channels[Channel::AILERON];
+        const auto &vrudder = channels[Channel::RUDDER];
+        const auto &velevator = channels[Channel::ELEVATOR];
 
         throttle = vthrotle.asPercent();
         steering = vaileron.asPercent();
     }
 
-    #if 1
+    #if 0
     static chrono::high_resolution_clock::time_point last_update;
     auto time { chrono::high_resolution_clock::now() };
     if ((time-last_update) > 100ms) {

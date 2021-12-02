@@ -31,6 +31,7 @@ void Headlights::init()
     layer[15] = REAR_COLOR;
 
     layer.setVisible(true);
+    layer.show();
 }
 
 

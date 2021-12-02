@@ -1,5 +1,5 @@
-#ifndef _ROBOTCONTEXT_H_
-#define _ROBOTCONTEXT_H_
+#ifndef _ROBOT_CONTEXT_H_
+#define _ROBOT_CONTEXT_H_
 
 #include <mutex>
 #include <memory>
@@ -7,7 +7,7 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 
-#include "common/withmutex.h"
+#include <common/withmutex.h>
 
 namespace Robot {
 

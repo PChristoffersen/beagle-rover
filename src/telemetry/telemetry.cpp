@@ -6,10 +6,10 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include "telemetrytypes.h"
+#include <robotcontext.h>
+#include "types.h"
 #include "sources/adcbattery.h"
 #include "sources/rcmpu.h"
-#include "../robotcontext.h"
 
 
 using namespace std;

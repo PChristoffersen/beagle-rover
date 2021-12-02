@@ -1,7 +1,7 @@
-#ifndef _INPUTSOURCE_H_
-#define _INPUTSOURCE_H_
+#ifndef _ROBOT_INPUT_SOURCE_H_
+#define _ROBOT_INPUT_SOURCE_H_
 
-#include "inputtypes.h"
+#include "types.h"
 
 namespace Robot::Input {
 

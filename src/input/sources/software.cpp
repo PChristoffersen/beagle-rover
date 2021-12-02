@@ -2,7 +2,7 @@
 
 #include <boost/log/trivial.hpp>
 
-#include "../inputtypes.h"
+#include "../types.h"
 
 
 using namespace std;
@@ -10,10 +10,11 @@ using namespace std;
 namespace Robot::Input {
 
 
-SoftwareSource::SoftwareSource(const Signals &signals) :
+SoftwareSource::SoftwareSource(string name, const Signals &signals) :
     AbstractSource { signals },
     m_initialized { false },
-    m_enabled { false }
+    m_enabled { false },
+    m_name { name }
 {
 
 }
@@ -59,7 +60,7 @@ void SoftwareSource::steer(double steer, double throttle, double aux_x, double a
     throttle = clamp(throttle, THROTTLE_MIN, THROTTLE_MAX);
     aux_x = clamp(aux_x, STEER_MIN, STEER_MAX);
     aux_y = clamp(aux_y, STEER_MIN, STEER_MAX);
-    BOOST_LOG_TRIVIAL(info) << "Steer: " << steer << " Throttle: " << throttle;
+    BOOST_LOG_TRIVIAL(trace) << *this << "  Steer: " << steer << " Throttle: " << throttle;
 
     m_signals.steer(steer, throttle, aux_x, aux_y);
 }

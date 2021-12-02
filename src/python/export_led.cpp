@@ -6,8 +6,9 @@
 #include <boost/python/object.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "../led/ledcontrol.h"
-#include "../led/ledcolor.h"
+#include <led/control.h>
+#include <led/color.h>
+#include <led/colorlayer.h>
 #include "util.h"
 
 using namespace std;

@@ -3,9 +3,9 @@
 #include <iostream>
 #include <boost/log/trivial.hpp>
 
+#include <robotcontext.h>
+#include "../types.h"
 #include "../telemetry.h"
-#include "../telemetrytypes.h"
-#include "../../robotcontext.h"
 
 using namespace std;
 

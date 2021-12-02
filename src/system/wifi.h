@@ -1,11 +1,11 @@
-#ifndef _SYSTEMWIFI_H_
-#define _SYSTEMWIFI_H_
+#ifndef _ROBOT_SYSTEM_WIFI_H_
+#define _ROBOT_SYSTEM_WIFI_H_
 
 #include <memory>
 #include <mutex>
 
-#include "../robottypes.h"
-#include "../common/withmutex.h"
+#include <robottypes.h>
+#include <common/withmutex.h>
 
 namespace Robot::System {
 

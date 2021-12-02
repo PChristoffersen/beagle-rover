@@ -1,5 +1,5 @@
-#ifndef _LED_COLOR_H_
-#define _LED_COLOR_H_
+#ifndef _ROBOT_LED_COLOR_H_
+#define _ROBOT_LED_COLOR_H_
 
 #include <cstdint>
 #include <array>

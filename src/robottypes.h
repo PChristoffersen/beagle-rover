@@ -1,5 +1,5 @@
-#ifndef _ROBOTTYPES_H_
-#define _ROBOTTYPES_H_
+#ifndef _ROBOT_TYPES_H_
+#define _ROBOT_TYPES_H_
 
 #include <iostream>
 #include <cinttypes>
@@ -28,6 +28,8 @@ namespace Robot {
     };
     namespace LED {
         class Control;
+        class ColorLayer;
+        class Color;
     };
     namespace System {
         class WiFi;
