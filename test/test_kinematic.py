@@ -5,7 +5,7 @@ import logging
 sys.path.append('../build')
 
 from time import sleep
-from robotcontrol import Robot, TelemetryListener, DriveMode
+from robotsystem import Robot, TelemetryListener, DriveMode
 
 FORMAT = '[%(asctime)s.%(msecs)03dxxx] [%(threadName)-18s] [%(levelname)s] >  %(message)s'
 logging.basicConfig(format=FORMAT, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)

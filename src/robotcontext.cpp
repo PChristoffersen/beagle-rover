@@ -185,7 +185,7 @@ void Context::motorPower(bool enable)
         m_motor_power_rail_cnt++;
         if (m_motor_power_rail_cnt==1) {
             BOOST_LOG_TRIVIAL(info) << "Enabling motor power";
-            #ifdef REAL_ROBOT
+            #ifdef USE_ROBOTCONTROL
             rc_motor_standby(0);
             #endif
             sig_motor_power(true);
@@ -196,7 +196,7 @@ void Context::motorPower(bool enable)
         if (m_motor_power_rail_cnt==0) {
             BOOST_LOG_TRIVIAL(info) << "Disabling motor power";
             sig_motor_power(false);
-            #ifdef REAL_ROBOT
+            #ifdef USE_ROBOTCONTROL
             rc_motor_standby(1);
             #endif
         }
@@ -214,7 +214,7 @@ void Context::servoPower(bool enable)
         m_servo_power_rail_cnt++;
         if (m_servo_power_rail_cnt==1) {
             BOOST_LOG_TRIVIAL(info) << "Enabling servo power";
-            #ifdef REAL_ROBOT
+            #ifdef USE_ROBOTCONTROL
             rc_servo_power_rail_en(1);
             #endif
             sig_servo_power(true);
@@ -228,7 +228,7 @@ void Context::servoPower(bool enable)
             BOOST_LOG_TRIVIAL(info) << "Disabling servo power";
             sig_rc_power(false);
             sig_servo_power(false);
-            #ifdef REAL_ROBOT
+            #ifdef USE_ROBOTCONTROL
             rc_servo_power_rail_en(0);
             #endif
         }

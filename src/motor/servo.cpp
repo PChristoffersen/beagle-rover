@@ -120,7 +120,7 @@ void Servo::update()
 {
     if (m_enabled && !m_passthrough && m_value) {
         //BOOST_LOG_TRIVIAL(info) << "Pulse";
-        #ifdef REAL_ROBOT
+        #ifdef USE_ROBOTCONTROL
         rc_servo_send_pulse_us(servoChannel(), m_value.asServoPulse()+m_trim);
         #endif
     }

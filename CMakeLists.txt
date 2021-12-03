@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 
-project(robot-control VERSION 1.0)
+project(robotsystem VERSION 1.0)
 
 set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
@@ -74,7 +74,7 @@ include_directories(BEFORE SYSTEM src)
 # -----------------------------------------------
 # Without this, any build libraries automatically have names "lib{x}.so"
 set(CMAKE_SHARED_MODULE_PREFIX "")
-add_library(robotcontrol MODULE 
+add_library(robotsystem MODULE 
     ${SRC}
     src/python/module.cpp
     src/python/util.cpp
@@ -87,9 +87,9 @@ add_library(robotcontrol MODULE
     src/python/export_input.cpp
     src/python/export_robot.cpp
 )
-target_include_directories(robotcontrol PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(robotcontrol PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-target_link_libraries(robotcontrol PRIVATE robotcontrolext)
+target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(robotsystem PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+target_link_libraries(robotsystem PRIVATE robotcontrolext)
 
 # -----------------------------------------------
 # Standalone executable

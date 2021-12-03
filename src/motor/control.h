@@ -58,7 +58,6 @@ namespace Robot::Motor {
    
             MotorList m_motors;
 
-
             void onMotorPower(bool enabled);
             void onServoPower(bool enabled);
 

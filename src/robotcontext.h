@@ -7,13 +7,10 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 
+#include <robotconfig.h>
 #include <common/withmutex.h>
 
 namespace Robot {
-
-    #ifdef __arm__
-    #define REAL_ROBOT
-    #endif
 
     class Context : public std::enable_shared_from_this<Context>, public WithMutex<std::recursive_mutex> {
         public:
