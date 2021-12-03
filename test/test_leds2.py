@@ -19,23 +19,20 @@ def main():
 
     led_control = robot.led_control
 
-    layer2 = LEDColorLayer(15)
-    led_control.attach_layer(layer2)
-    print("Plonk1_", flush=True)
-
+    layer = LEDColorLayer(15)
+    led_control.attach_layer(layer)
     layer.visible = True
 
     with layer:
-        layer[0] = (0xFF, 0x00, 0x00)
-        layer[1] = (0x00, 0xFF, 0x00)
-        layer[2] = (0x00, 0x00, 0xFF)
+        layer.front[0] = (0xFF, 0x00, 0x00)
+        layer.front[1] = (0x00, 0xFF, 0x00)
+        layer.front[2] = (0x00, 0x00, 0xFF)
+        layer.back[0] = (0xFF, 0x00, 0x00)
+        layer.back[1] = (0x00, 0xFF, 0x00)
+        layer.back[2] = (0x00, 0x00, 0xFF)
         layer.show()
 
-    sleep(4)
-
-    print("Plonk2", flush=True)
     led_control.detach_layer(layer)
-    print("Plonk3", flush=True)
 
 
     layer = None

@@ -12,7 +12,7 @@ void python_export_robot();
 void python_export_input();
 
 
-BOOST_PYTHON_MODULE(robotcontrol) 
+BOOST_PYTHON_MODULE(robotsystem) 
 {
     PyEval_InitThreads();
 

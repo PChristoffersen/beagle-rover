@@ -11,7 +11,9 @@ namespace Robot::LED {
 
 ColorLayer::ColorLayer(int depth) :
     m_depth { depth },
-    m_visible { false }
+    m_visible { false },
+    front { this, 0, PIXEL_COUNT/2 },
+    back { this, PIXEL_COUNT/2, PIXEL_COUNT/2 }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }

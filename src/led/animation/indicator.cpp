@@ -48,10 +48,10 @@ void Indicator::left()
 {
     const ColorLayerLock lock { m_layer };
     m_layer->fill(Color::TRANSPARENT);
-    (*m_layer)[6] = INDICATOR_COLOR;
-    (*m_layer)[7] = INDICATOR_COLOR;
-    (*m_layer)[8] = INDICATOR_COLOR;
-    (*m_layer)[9] = INDICATOR_COLOR;
+    m_layer->front[6] = INDICATOR_COLOR;
+    m_layer->front[7] = INDICATOR_COLOR;
+    m_layer->back[0] = INDICATOR_COLOR;
+    m_layer->back[1] = INDICATOR_COLOR;
     startTimer();
 }
 
@@ -59,24 +59,24 @@ void Indicator::right()
 {
     const ColorLayerLock lock { m_layer };
     m_layer->fill(Color::TRANSPARENT);
-    (*m_layer)[0] = INDICATOR_COLOR;
-    (*m_layer)[1] = INDICATOR_COLOR;
-    (*m_layer)[14] = INDICATOR_COLOR;
-    (*m_layer)[15] = INDICATOR_COLOR;
+    m_layer->front[0] = INDICATOR_COLOR;
+    m_layer->front[1] = INDICATOR_COLOR;
+    m_layer->back[6] = INDICATOR_COLOR;
+    m_layer->back[7] = INDICATOR_COLOR;
     startTimer();
 }
 
 void Indicator::hazard()
 {
     const ColorLayerLock lock { m_layer };
-    (*m_layer)[0] = INDICATOR_COLOR;
-    (*m_layer)[1] = INDICATOR_COLOR;
-    (*m_layer)[6] = INDICATOR_COLOR;
-    (*m_layer)[7] = INDICATOR_COLOR;
-    (*m_layer)[8] = INDICATOR_COLOR;
-    (*m_layer)[9] = INDICATOR_COLOR;
-    (*m_layer)[14] = INDICATOR_COLOR;
-    (*m_layer)[15] = INDICATOR_COLOR;
+    m_layer->front[0] = INDICATOR_COLOR;
+    m_layer->front[1] = INDICATOR_COLOR;
+    m_layer->front[6] = INDICATOR_COLOR;
+    m_layer->front[7] = INDICATOR_COLOR;
+    m_layer->back[0] = INDICATOR_COLOR;
+    m_layer->back[1] = INDICATOR_COLOR;
+    m_layer->back[6] = INDICATOR_COLOR;
+    m_layer->back[7] = INDICATOR_COLOR;
     startTimer();
 }
 

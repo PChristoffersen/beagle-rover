@@ -41,7 +41,15 @@ static Color tuple2color(const py::tuple & value)
 }
 
 
-void checkLayerIndex(const ColorLayer &l, uint index) 
+void checkIndex(const ColorLayer &l, uint index) 
+{
+    if (index >= l.size()) {
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        py::throw_error_already_set();
+    }
+}
+
+void checkIndex(const ColorLayer::Segment &l, uint index) 
 {
     if (index >= l.size()) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
@@ -76,9 +84,29 @@ void python_export_led()
         .value("HAZARD", IndicatorMode::HAZARD)
         ;
 
+
+   py::class_<ColorLayer::Segment, boost::noncopyable>("LEDColorLayerSegment", py::no_init)
+        .def("__getitem__", +[](const ColorLayer::Segment &l, uint index){
+            checkIndex(l, index);
+            const auto &color = l[index];
+            return py::make_tuple(color.red(), color.green(), color.blue(), color.alpha());
+        })
+        .def("__setitem__", +[](ColorLayer::Segment &l, uint index, std::uint32_t value) {
+            checkIndex(l, index);
+            l[index] = value;
+        })
+        .def("__setitem__", +[](ColorLayer::Segment &l, uint index, const py::tuple &value) {
+            checkIndex(l, index);
+            l[index] = tuple2color(value);
+        })
+        .def("__len__", &ColorLayer::Segment::size)
+        ;;
+
    py::class_<ColorLayer, shared_ptr<ColorLayer>, boost::noncopyable>("LEDColorLayer", py::init<int>())
         .add_property("depth", &ColorLayer::depth)
         .add_property("visible", &ColorLayer::visible, &ColorLayer::setVisible)
+        .add_property("front", py::make_function(+[](const ColorLayer &l){ return &l.front; }, py::return_internal_reference<>()))
+        .add_property("back", py::make_function(+[](const ColorLayer &l){ return &l.back; }, py::return_internal_reference<>()))
         .def("detach", &ColorLayer::detach)
         .def("show", &ColorLayer::show)
         .def("fill", +[](ColorLayer &l, std::uint32_t value) { 
@@ -88,16 +116,16 @@ void python_export_led()
             l.fill(tuple2color(value)); 
         })
         .def("__getitem__", +[](const ColorLayer &l, uint index){
-            checkLayerIndex(l, index);
+            checkIndex(l, index);
             const auto &color = l[index];
             return py::make_tuple(color.red(), color.green(), color.blue(), color.alpha());
         })
         .def("__setitem__", +[](ColorLayer &l, uint index, std::uint32_t value) {
-            checkLayerIndex(l, index);
+            checkIndex(l, index);
             l[index] = value;
         })
         .def("__setitem__", +[](ColorLayer &l, uint index, const py::tuple &value) {
-            checkLayerIndex(l, index);
+            checkIndex(l, index);
             l[index] = tuple2color(value);
         })
         .def("__len__", &ColorLayer::size)

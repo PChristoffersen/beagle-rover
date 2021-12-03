@@ -20,6 +20,22 @@ namespace Robot::LED {
 
     class ColorLayer : public ColorArray, public std::enable_shared_from_this<ColorLayer> {
         public:
+            class Segment {
+                public:
+                    Segment(ColorLayer *parent, size_type offset, size_type size) : m_offset { offset }, m_size { size }, m_parent { parent } { }
+                    Color &operator[](size_type pos) {
+                        return (*m_parent)[m_offset+pos];
+                    }
+                    const Color &operator[](size_type pos) const {
+                        return (*m_parent)[m_offset+pos];
+                    }
+                    size_type size() const { return m_size; }
+                private:
+                    const size_type m_offset;
+                    const size_type m_size;
+                    ColorLayer *m_parent;
+            };
+
             explicit ColorLayer(int depth);
             virtual ~ColorLayer();
 
@@ -36,6 +52,9 @@ namespace Robot::LED {
             void unlock();
 
             const std::weak_ptr<class Control> &control() const { return m_control; }
+
+            Segment front;
+            Segment back;
 
         protected:
             friend class Control;
