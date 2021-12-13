@@ -7,12 +7,15 @@
 #include <boost/asio.hpp>
 
 #include <robottypes.h>
+#include <common/withmutex.h>
 
 namespace Robot::System {
 
-    class PRUDebug : public std::enable_shared_from_this<PRUDebug> {
+    class PRUDebug : public std::enable_shared_from_this<PRUDebug>, public WithMutex<std::mutex> {
         public:
-            explicit PRUDebug(std::shared_ptr<::Robot::Context> context);
+            using timer_type = boost::asio::steady_timer;
+
+            explicit PRUDebug(const std::shared_ptr<::Robot::Context> &context);
             PRUDebug(const PRUDebug&) = delete; // No copy constructor
             PRUDebug(PRUDebug&&) = delete; // No move constructor
             virtual ~PRUDebug();
@@ -22,8 +25,7 @@ namespace Robot::System {
 
         private:
             bool m_initialized;
-            std::mutex m_mutex;
-            boost::asio::steady_timer m_timer;
+            timer_type m_timer;
 
             void timer_setup();
             void timer(boost::system::error_code error);

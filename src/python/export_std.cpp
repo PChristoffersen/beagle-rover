@@ -6,12 +6,11 @@
 
 #include "util.h"
 
-using namespace std;
 namespace py = boost::python;
 
-using FloatVector = vector<float>;
-using IntVector = vector<int>;
-using StringVector = vector<string>;
+using FloatVector = std::vector<float>;
+using IntVector = std::vector<int>;
+using StringVector = std::vector<std::string>;
 
 
 void python_export_std() 

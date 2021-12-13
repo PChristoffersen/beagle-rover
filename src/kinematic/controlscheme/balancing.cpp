@@ -8,12 +8,11 @@
 #include <motor/control.h>
 #include "../types.h"
 
-using namespace std;
 
 namespace Robot::Kinematic {
 
 
-ControlSchemeBalancing::ControlSchemeBalancing(shared_ptr<Kinematic> kinematic) :
+ControlSchemeBalancing::ControlSchemeBalancing(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;

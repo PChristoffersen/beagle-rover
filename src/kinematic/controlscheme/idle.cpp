@@ -9,14 +9,14 @@
 #include <motor/control.h>
 #include "../types.h"
 
-using namespace std;
+using namespace std::literals;
 
 namespace Robot::Kinematic {
 
 static constexpr auto IDLE_DELAY { 250ms };
 
 
-ControlSchemeIdle::ControlSchemeIdle(shared_ptr<Kinematic> kinematic) :
+ControlSchemeIdle::ControlSchemeIdle(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }, 
     m_timer { m_context->io() }
 {

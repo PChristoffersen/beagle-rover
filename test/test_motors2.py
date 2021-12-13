@@ -21,15 +21,24 @@ def main():
 
     robot.init()
 
+    control = robot.motor_control
+    motors = control.motors
+
     for motor in robot.motor_control.motors:
         log.info("Enabling "+str(motor))
         motor.enabled = True
 
+
+    motors[0].target_rpm = 100.0
+
     try:
         while True:
-            sleep(1)
+            sleep(5)
     except KeyboardInterrupt:
         log.info("Shutdown")
+
+    control = None
+    motors = None
 
     robot.cleanup()
     robot = None

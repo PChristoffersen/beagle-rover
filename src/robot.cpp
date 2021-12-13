@@ -19,7 +19,7 @@
 #include <system/prudebug.h>
 #include <system/wifi.h>
 
-using namespace std;
+using namespace std::literals;
 
 namespace Robot {
 
@@ -30,15 +30,15 @@ Robot *Robot::m_instance { nullptr };
 
 Robot::Robot() : 
     m_initialized { false },
-    m_context { make_shared<Context>() },
-    m_rc_receiver { make_shared<RC::Receiver>(m_context) },
-    m_motor_control { make_shared<Motor::Control>(m_context) },
-    m_led_control { make_shared<LED::Control>(m_context) },
-    m_telemetry { make_shared<Telemetry::Telemetry>(m_context) },
-    m_kinematic { make_shared<Kinematic::Kinematic>(m_context) },
-    m_input { make_shared<Input::Control>(m_context) },
-    m_pru_debug { make_shared<System::PRUDebug>(m_context) },
-    m_wifi { make_shared<System::WiFi>(m_context) },
+    m_context { std::make_shared<Context>() },
+    m_rc_receiver { std::make_shared<RC::Receiver>(m_context) },
+    m_motor_control { std::make_shared<Motor::Control>(m_context) },
+    m_led_control { std::make_shared<LED::Control>(m_context) },
+    m_telemetry { std::make_shared<Telemetry::Telemetry>(m_context) },
+    m_kinematic { std::make_shared<Kinematic::Kinematic>(m_context) },
+    m_input { std::make_shared<Input::Control>(m_context) },
+    m_pru_debug { std::make_shared<System::PRUDebug>(m_context) },
+    m_wifi { std::make_shared<System::WiFi>(m_context) },
     m_timer { m_context->io() },
     m_heartbeat { 0u }
 {
@@ -56,7 +56,7 @@ void Robot::init()
 {
     BOOST_LOG_TRIVIAL(info) << "Initializing robot";
     if (m_instance) {
-        throw domain_error("Another instance of robot have already been initialized");
+        BOOST_THROW_EXCEPTION(std::domain_error("Another instance of robot have already been initialized"));
     }
     m_instance = this;
 

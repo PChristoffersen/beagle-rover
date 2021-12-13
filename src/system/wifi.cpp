@@ -7,7 +7,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp> 
 
-using namespace std;
+
 namespace Robot::System {
 
 static constexpr auto IFNAME { "wlan0" };
@@ -36,7 +36,7 @@ void WiFi::init()
 
     m_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (m_sockfd<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing WiFi"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing WiFi"));
     }
 
     m_mac = calculateMAC();
@@ -86,7 +86,7 @@ void WiFi::update()
         BOOST_LOG_TRIVIAL(warning) << "Invalid interface (2)";
     }
     else{
-        string ssid { buffer, req.u.essid.length };
+        std::string ssid { buffer, req.u.essid.length };
         BOOST_LOG_TRIVIAL(info) << "SSID: " << ssid;
     }
 
@@ -102,7 +102,7 @@ void WiFi::update()
 
 }
 
-string WiFi::calculateMAC() const {
+std::string WiFi::calculateMAC() const {
     //SIOCGIFHWADDR for mac addr
     ifreq req2;
     strcpy(req2.ifr_name, IFNAME);
@@ -112,7 +112,7 @@ string WiFi::calculateMAC() const {
         return "";
     }
     else{
-        string mac = (boost::format("%+02x:%+02x:%+02x:%+02x:%+02x:%+02x")
+        std::string mac = (boost::format("%+02x:%+02x:%+02x:%+02x:%+02x:%+02x")
             % (uint)(uint8_t)req2.ifr_hwaddr.sa_data[0]
             % (uint)(uint8_t)req2.ifr_hwaddr.sa_data[1]
             % (uint)(uint8_t)req2.ifr_hwaddr.sa_data[2]

@@ -9,7 +9,6 @@
 #include <motor/control.h>
 #include "../types.h"
 
-using namespace std;
 
 namespace Robot::Kinematic {
 

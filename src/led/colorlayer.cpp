@@ -5,7 +5,6 @@
 
 #include "control.h"
 
-using namespace std;
 
 namespace Robot::LED {
 
@@ -78,7 +77,7 @@ void ColorLayer::setControl(const std::shared_ptr<Control> &control)
 RawColorArray &operator<<(RawColorArray &dst, const ColorLayer &layer) {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " <<  layer=" << layer.depth();
     if (layer.visible()) {
-        transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), [](auto &&dst, auto &&src){ return dst<<src; });
+        std::transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), [](auto &&dst, auto &&src){ return dst<<src; });
     }
     return dst;
 }

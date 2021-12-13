@@ -8,12 +8,11 @@
 #include <motor/servo.h>
 #include <motor/control.h>
 
-using namespace std;
 
 namespace Robot::Kinematic {
 
 
-ControlSchemePassthrough::ControlSchemePassthrough(shared_ptr<Kinematic> kinematic) :
+ControlSchemePassthrough::ControlSchemePassthrough(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;

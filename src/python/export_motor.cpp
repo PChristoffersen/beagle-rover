@@ -10,13 +10,12 @@
 #include <motor/control.h>
 #include "util.h"
 
-using namespace std;
-using namespace Robot::Motor;
 namespace py = boost::python;
 
 
 void python_export_motor() 
 {
+    using Robot::Motor::Control, Robot::Motor::MotorList, Robot::Motor::Motor, Robot::Motor::Servo, Robot::Motor::Value;
     //py::register_ptr_to_python<shared_ptr<MotorControl>>();
 
     py::enum_<Motor::State>("MotorState");
@@ -58,7 +57,7 @@ void python_export_motor()
         .def("__len__", &MotorList::size)
         ;
 
-    py::class_<Control, shared_ptr<Control>, boost::noncopyable>("MotorControl", py::no_init)
+    py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("MotorControl", py::no_init)
         .add_property("motors", py::make_function(&Control::getMotors, py::return_internal_reference<>() ))
         .add_property("odometer", &Control::getOdometer)
         .def("brake", &Control::brake)

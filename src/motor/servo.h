@@ -12,7 +12,10 @@ namespace Robot::Motor {
 
     class Servo {
         public:
-            Servo(uint index, std::recursive_mutex &mutex, const std::shared_ptr<::Robot::Context> &context);
+            using mutex_type = std::recursive_mutex;
+            using guard = std::lock_guard<mutex_type>;
+
+            Servo(uint index, mutex_type &mutex, const std::shared_ptr<::Robot::Context> &context);
             Servo(const Servo&) = delete; // No copy constructor
             Servo(Servo&&) = delete; // No move constructor
             virtual ~Servo();
@@ -48,7 +51,7 @@ namespace Robot::Motor {
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
             uint m_index;
-            std::recursive_mutex &m_mutex;
+            mutex_type &m_mutex;
             bool m_enabled;
             bool m_passthrough;
             Value m_value;

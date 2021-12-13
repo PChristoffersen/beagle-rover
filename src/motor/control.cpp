@@ -14,20 +14,17 @@
 #include "motor.h"
 #include "servo.h"
 
-using namespace std;
-
+using namespace std::literals;
 
 namespace Robot::Motor {
 
 static constexpr auto MOTOR_PASSTHROUGH_OFFSET { 0u };
 static constexpr auto SERVO_PASSTHROUGH_OFFSET { 4u };
 
-static constexpr auto MOTOR_TIMER_INTERVAL { 50ms };
-static constexpr auto SERVO_TIMER_INTERVAL { 20ms };
 
 
 
-Control::Control(const shared_ptr<Robot::Context> &context) : 
+Control::Control(const std::shared_ptr<Robot::Context> &context) : 
     m_context { context },
     m_initialized { false },
     m_enabled { false },
@@ -37,7 +34,7 @@ Control::Control(const shared_ptr<Robot::Context> &context) :
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     for (uint i=0; i<MOTOR_COUNT; i++) {
-        m_motors[i] = make_unique<Motor>(i, m_mutex, context);
+        m_motors[i] = std::make_unique<Motor>(i, m_mutex, context);
     }
 }
 
@@ -162,7 +159,7 @@ void Control::setPassthrough(bool passthrough)
         }
 
         // Set limits
-        array<fbus_servo_limit_t, RC_SERVO_CH_MAX> limits;
+        std::array<fbus_servo_limit_t, RC_SERVO_CH_MAX> limits;
         for (auto &limit : limits) {
             limit.low = Value::PULSE_MIN;
             limit.high = Value::PULSE_MAX;
@@ -176,7 +173,7 @@ void Control::setPassthrough(bool passthrough)
         rc_ext_fbus_set_servo_limit(limits.data());
 
         // Set servo map
-        array<uint8_t, FBUS_CHANNELS> map;
+        std::array<uint8_t, FBUS_CHANNELS> map;
         map.fill(FBUS_SERVO_UNMAPPED);
         if (passthrough) {
             for (const auto &motor : m_motors) {
@@ -259,10 +256,11 @@ void Control::motorTimer()
         motor->update();
     }
 
-    static chrono::high_resolution_clock::time_point last_print;
-    auto now = chrono::high_resolution_clock::now();
+    static clock_type::time_point last_print;
+    auto now = clock_type::now();
 
     if ( (now-last_print) > 200ms ) {
+#if 0
         BOOST_LOG_TRIVIAL(info) << 
             boost::format("  Motors | %4d | %4d | %4d | %4d || %.2f | %.2f | %.2f | %.2f |")
             % m_motors[0]->getEncoderValue()
@@ -274,8 +272,17 @@ void Control::motorTimer()
             % m_motors[2]->getRPM()
             % m_motors[3]->getRPM()
             ;
-
-        resetOdometer();
+#else
+        BOOST_LOG_TRIVIAL(info) << 
+            boost::format("  Motor[] | %4d || %.2f | %.2f | %.2f | %.2f |")
+            % m_motors[0]->getEncoderValue()
+            % m_motors[0]->getOdometer()
+            % m_motors[0]->getRPM()
+            % m_motors[0]->getTargetRPM()
+            % m_motors[0]->getDuty()
+            ;
+#endif
+        //resetOdometer();
 
         last_print = now;
     }

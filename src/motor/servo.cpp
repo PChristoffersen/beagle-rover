@@ -12,7 +12,7 @@
 #include <robotcontext.h>
 #include "control.h"
 
-using namespace std;
+using namespace std::literals;
 
 namespace Robot::Motor {
 
@@ -24,7 +24,7 @@ static constexpr int32_t SERVO_TRIM[] {
 };
 
 
-Servo::Servo(uint index, recursive_mutex &mutex, const std::shared_ptr<Robot::Context> &context) :
+Servo::Servo(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
     m_initialized { false },
     m_index { index },
@@ -64,7 +64,7 @@ void Servo::cleanup()
 
 void Servo::setEnabled(bool enabled) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (enabled!=m_enabled) {
         m_enabled = enabled;
         BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
@@ -75,7 +75,7 @@ void Servo::setEnabled(bool enabled)
 
 void Servo::setPassthrough(bool passthrough) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     //BOOST_LOG_TRIVIAL(info) << "Enable " << enable;
     m_passthrough = passthrough;
 }
@@ -83,7 +83,7 @@ void Servo::setPassthrough(bool passthrough)
 
 void Servo::setValue(const Value value)
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     //BOOST_LOG_TRIVIAL(info) << *this << " Value " << value << " ( angle=" << value.asAngle() << " )";
     m_value = value.clamp(m_limit_min, m_limit_max);
 }
@@ -92,21 +92,21 @@ void Servo::setValue(const Value value)
 
 void Servo::setLimits(uint32_t lmin, uint32_t lmax) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     setLimitMin(lmin);
     setLimitMax(lmax);
 }
 
 void Servo::setLimitMin(uint32_t limit) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
-    m_limit_min = clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
+    const guard lock(m_mutex);
+    m_limit_min = std::clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
 }
 
 void Servo::setLimitMax(uint32_t limit) 
 {
-    const lock_guard<recursive_mutex> lock(m_mutex);
-    m_limit_max = clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
+    const guard lock(m_mutex);
+    m_limit_max = std::clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
 }
 
 

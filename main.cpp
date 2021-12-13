@@ -11,10 +11,9 @@
 #include <led/control.h>
 #include <rc/receiver.h>
 
-using namespace std;
 
 int main() {
-    using namespace boost::asio;
+    using boost::asio::io_context, boost::asio::signal_set;
 
     io_context io;
 

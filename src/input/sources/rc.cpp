@@ -5,7 +5,6 @@
 #include <rc/receiver.h>
 
 
-using namespace std;
 
 namespace Robot::Input {
 

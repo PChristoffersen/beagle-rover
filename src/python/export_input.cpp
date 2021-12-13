@@ -6,13 +6,12 @@
 #include <input/softwareinterface.h>
 #include "util.h"
 
-using namespace std;
-using namespace Robot::Input;
 namespace py = boost::python;
 
 
 void python_export_input() 
 {
+    using Robot::Input::Control, Robot::Input::InputSource, Robot::Input::SoftwareInterface;
 
     py::enum_<InputSource>("InputSource")
         .value("MANUAL", InputSource::MANUAL)
@@ -26,7 +25,7 @@ void python_export_input()
         .def("steer", &SoftwareInterface::steer)
         ;
 
-    py::class_<Control, shared_ptr<Control>, boost::noncopyable>("InputControl", py::no_init)
+    py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("InputControl", py::no_init)
         .add_property("source", &Control::getInputSource, &Control::setInputSource)
         .add_property("manual", py::make_function(&Control::manual, py::return_internal_reference<>() ))
         .add_property("web", py::make_function(&Control::web, py::return_internal_reference<>() ))

@@ -9,13 +9,12 @@
 #include <motor/control.h>
 #include "../types.h"
 
-using namespace std;
 
 namespace Robot::Kinematic {
 
 
 
-ControlSchemeAllWheel::ControlSchemeAllWheel(shared_ptr<Kinematic> kinematic) :
+ControlSchemeAllWheel::ControlSchemeAllWheel(std::shared_ptr<Kinematic> kinematic) :
     AbstractWheelSteering { kinematic, WHEEL_BASE }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;

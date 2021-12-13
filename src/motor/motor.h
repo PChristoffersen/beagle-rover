@@ -7,6 +7,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
+#include <robotcontrol.h>
 
 #include <robottypes.h>
 #include "types.h"
@@ -16,6 +17,8 @@ namespace Robot::Motor {
     class Motor {
         public:
             using clock = std::chrono::high_resolution_clock;
+            using mutex_type = std::recursive_mutex;
+            using guard = std::lock_guard<mutex_type>;
 
             enum State {
                 RUNNING,
@@ -23,7 +26,7 @@ namespace Robot::Motor {
                 BRAKE
             };
 
-            Motor(uint index, std::recursive_mutex &mutex, const std::shared_ptr<::Robot::Context> &context);
+            Motor(uint index, mutex_type &mutex, const std::shared_ptr<::Robot::Context> &context);
             Motor(const Motor&) = delete; // No copy constructor
             Motor(Motor&&) = delete; // No move constructor
             virtual ~Motor();
@@ -66,13 +69,12 @@ namespace Robot::Motor {
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
             uint m_index;
-            std::recursive_mutex &m_mutex;
+            mutex_type &m_mutex;
             std::unique_ptr<class Servo> m_servo;
 
             bool m_enabled;
             bool m_passthrough;
             State m_state;
-
 
             std::int32_t m_last_enc_value;
             clock::time_point m_last_update;
@@ -83,6 +85,9 @@ namespace Robot::Motor {
             double m_duty_set;
             double m_target_rpm;
             double m_rpm;
+
+            rc_filter_t m_rpm_filter;
+            rc_filter_t m_pid;
 
             inline uint encoderChannel() const;
             inline uint motorChannel() const;

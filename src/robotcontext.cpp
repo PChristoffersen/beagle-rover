@@ -9,7 +9,7 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-using namespace std;
+using namespace std::literals;
 
 namespace Robot {
 
@@ -64,7 +64,7 @@ void Context::init()
         initPC();
         break;
     default:
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing Unsupported model"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
     }
     m_initialized = true;
 }
@@ -86,13 +86,13 @@ void Context::cleanup()
         cleanupPC();
         break;
     default:
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing Unsupported model"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Unsupported model"));
 
     }
 
     // Drain the io_context and execute any remaining tasks
     m_io.restart();
-    m_io.run_for(chrono::seconds(10));
+    m_io.run_for(10s);
     m_io.stop();
 }
 
@@ -101,25 +101,25 @@ void Context::cleanup()
 void Context::initBeagleBone() 
 {
     if (rc_adc_init()<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing ADC"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing ADC"));
     }
     if (rc_servo_init()<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing SERVO"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing SERVO"));
     }
     if (rc_motor_init()<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing MOTOR"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing MOTOR"));
     }
     if (rc_ext_pru_init()<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing EXT-PRU"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing EXT-PRU"));
     }
     if (rc_ext_neopixel_init()<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing NEOPIXEL"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing NEOPIXEL"));
     }
     if (rc_ext_encoder_init()<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing EXT-ENCODER"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing EXT-ENCODER"));
     }
     if (rc_ext_fbus_init()<0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing FBUS"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing FBUS"));
     }
 
     rc_motor_standby(1);
@@ -153,7 +153,7 @@ void Context::start()
     const guard lock(m_mutex);
 
     BOOST_LOG_TRIVIAL(info) << "Starting thread";
-    m_thread = make_shared<thread>( [&]{ m_io.run(); } );
+    m_thread = std::make_shared<std::thread>( [&]{ m_io.run(); } );
     m_started = true;
 }
 

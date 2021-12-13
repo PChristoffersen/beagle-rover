@@ -7,16 +7,14 @@
 #include "sources/gamepad.h"
 
 
-using namespace std;
-
 namespace Robot::Input {
 
-Control::Control(const shared_ptr<Robot::Context> &context) :
+Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_input_source { InputSource::MANUAL },
-    m_manual_source { make_unique<SoftwareSource>("Manual", signals) },
-    m_web_source { make_unique<SoftwareSource>("WEB", signals) },
-    m_rc_source { make_unique<RCSource>(signals) },
-    m_gamepad_source { make_unique<GamepadSource>(context, signals) },
+    m_manual_source { std::make_unique<SoftwareSource>("Manual", signals) },
+    m_web_source { std::make_unique<SoftwareSource>("WEB", signals) },
+    m_rc_source { std::make_unique<RCSource>(signals) },
+    m_gamepad_source { std::make_unique<GamepadSource>(context, signals) },
     m_active_source { m_manual_source.get() }
 {
 }

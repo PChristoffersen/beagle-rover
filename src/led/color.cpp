@@ -4,8 +4,6 @@
 #include <boost/log/trivial.hpp>
 
 
-using namespace std;
-
 
 namespace Robot::LED {
 

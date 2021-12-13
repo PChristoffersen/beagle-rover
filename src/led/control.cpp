@@ -15,13 +15,12 @@
 #include "animation/knightrider.h"
 #include "animation/rainbow.h"
 
-
-using namespace std;
+using namespace std::literals;
 
 namespace Robot::LED {
 
 
-Control::Control(const shared_ptr<Robot::Context> &context) :
+Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
     m_initialized { false },
     m_background { Color::BLACK },
@@ -44,7 +43,7 @@ void Control::init()
     m_initialized = true;
     clear(Color::BLACK);
 
-    m_indicator = make_shared<Indicator>(m_context);
+    m_indicator = std::make_shared<Indicator>(m_context);
     m_indicator->init();
     attachLayer(m_indicator->layer());
 }
@@ -79,7 +78,7 @@ void Control::clear(const Color &color)
     pixels.fill(color);
 
     if (rc_ext_neopixel_set(pixels.data())!=0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error updating pixels"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error updating pixels"));
     }
 }
 
@@ -107,22 +106,22 @@ void Control::setAnimation(AnimationMode mode)
         case AnimationMode::NONE:
             break;
         case AnimationMode::HEADLIGHTS:
-            m_animation = make_shared<Headlights>(m_context);
+            m_animation = std::make_shared<Headlights>(m_context);
             break;
         case AnimationMode::CONSTRUCTION:
-            m_animation = make_shared<Construction>(m_context);
+            m_animation = std::make_shared<Construction>(m_context);
             break;
         case AnimationMode::POLICE:
-            m_animation = make_shared<Police>(m_context);
+            m_animation = std::make_shared<Police>(m_context);
             break;
         case AnimationMode::AMBULANCE:
-            m_animation = make_shared<Ambulance>(m_context);
+            m_animation = std::make_shared<Ambulance>(m_context);
             break;
         case AnimationMode::KNIGHT_RIDER:
-            m_animation = make_shared<KnightRider>(m_context);
+            m_animation = std::make_shared<KnightRider>(m_context);
             break;
         case AnimationMode::RAINBOW:
-            m_animation = make_shared<Rainbow>(m_context);
+            m_animation = std::make_shared<Rainbow>(m_context);
             break;
         }
 
@@ -171,8 +170,8 @@ void Control::show()
     BOOST_LOG_TRIVIAL(trace) << "Control::Show()";
 
     // If interval between show() is too low insert a very short delay
-    if ( (chrono::high_resolution_clock::now()-m_last_show) < 50us ) {
-        this_thread::sleep_for(50us);
+    if ( (clock_type::now()-m_last_show) < 50us ) {
+        std::this_thread::sleep_for(50us);
     }
 
     RawColorArray pixels;
@@ -191,10 +190,10 @@ void Control::show()
     #endif
 
     if (rc_ext_neopixel_set(pixels.data())!=0) {
-        BOOST_THROW_EXCEPTION(runtime_error("Error updating pixels"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error updating pixels"));
     }
 
-    m_last_show = chrono::high_resolution_clock::now();
+    m_last_show = clock_type::now();
 }
 
 
@@ -211,7 +210,7 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
             BOOST_LOG_TRIVIAL(warning) << "Layer " << layer->depth() << " already attached";
             return;
         }
-        BOOST_THROW_EXCEPTION(invalid_argument("Layer already attached"));
+        BOOST_THROW_EXCEPTION(std::invalid_argument("Layer already attached"));
     }
 
     layer->setControl(self);

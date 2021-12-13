@@ -12,16 +12,15 @@
 #include "sources/rcmpu.h"
 
 
-using namespace std;
 
 namespace Robot::Telemetry {
 
-Telemetry::Telemetry(const shared_ptr<Robot::Context> &context) :
+Telemetry::Telemetry(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false }
 {
     switch (rc_model()) {
     case MODEL_BB_BLUE:
-        m_sources.push_back(make_shared<ADCBattery>(context));
+        m_sources.push_back(std::make_shared<ADCBattery>(context));
         break;
     default:
         break;

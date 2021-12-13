@@ -20,6 +20,8 @@ namespace Robot::RC {
 
     class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex> {
         public:
+            using timer_type = boost::asio::steady_timer;
+
             SignalFlags sigFlags;
             SignalRSSI sigRSSI;
             SignalData sigData;
@@ -45,7 +47,7 @@ namespace Robot::RC {
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
             bool m_enabled;
-            boost::asio::steady_timer m_timer;
+            timer_type m_timer;
             std::uint32_t m_last_counter;
             volatile shm_fbus_t *m_fbus;
 

@@ -8,7 +8,7 @@
 
 #include <robotcontext.h>
 
-using namespace std;
+using namespace std::literals;
 
 namespace Robot::System {
 //#define DEBUG_ENABLED
@@ -17,7 +17,7 @@ static constexpr auto TIMER_INTERVAL { 100ms };
 
 
 
-PRUDebug::PRUDebug(shared_ptr<Robot::Context> context) :
+PRUDebug::PRUDebug(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_timer { context->io() }
 {
@@ -46,7 +46,7 @@ void PRUDebug::init()
 
 void PRUDebug::cleanup() 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -68,7 +68,7 @@ void PRUDebug::timer_setup() {
 
 void PRUDebug::timer(boost::system::error_code error) 
 {
-    const lock_guard<mutex> lock(m_mutex);
+    const guard lock(m_mutex);
     if (error!=boost::system::errc::success || !m_initialized) {
         return;
     }

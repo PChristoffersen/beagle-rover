@@ -7,7 +7,7 @@
 #include "../types.h"
 #include "../telemetry.h"
 
-using namespace std;
+using namespace std::literals;
 
 namespace Robot::Telemetry {
 
@@ -22,7 +22,7 @@ static constexpr auto GPIO_INT_PIN_PIN { 21 };
 static constexpr auto TIMER_INTERVAL { 1000ms };
 
 
-RCMPU::RCMPU(const shared_ptr<Robot::Context> &context):
+RCMPU::RCMPU(const std::shared_ptr<Robot::Context> &context):
     AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() }
@@ -47,11 +47,11 @@ void RCMPU::init(const std::shared_ptr<Telemetry> &telemetry)
 
     #if 0
 	if(rc_mpu_initialize_dmp(&m_data, conf)){
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing RCMPU"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing RCMPU"));
 	}
     #endif
 	if(rc_mpu_initialize(&m_data, conf)){
-        BOOST_THROW_EXCEPTION(runtime_error("Error initializing RCMPU"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing RCMPU"));
 	}
 
     m_timer.expires_after(TIMER_INTERVAL);

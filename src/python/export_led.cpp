@@ -11,10 +11,9 @@
 #include <led/colorlayer.h>
 #include "util.h"
 
-using namespace std;
-using namespace Robot::LED;
 namespace py = boost::python;
 
+using Robot::LED::Color, Robot::LED::ColorLayer;
 
 
 static Color tuple2color(const py::tuple & value) 
@@ -61,6 +60,8 @@ void checkIndex(const ColorLayer::Segment &l, uint index)
 
 void python_export_led() 
 {
+    using Robot::LED::Control;
+    using Robot::LED::AnimationMode, Robot::LED::IndicatorMode;
     /*
     iterable_converter()
         .from_python<ColorList>()
@@ -102,7 +103,7 @@ void python_export_led()
         .def("__len__", &ColorLayer::Segment::size)
         ;;
 
-   py::class_<ColorLayer, shared_ptr<ColorLayer>, boost::noncopyable>("LEDColorLayer", py::init<int>())
+   py::class_<ColorLayer, std::shared_ptr<ColorLayer>, boost::noncopyable>("LEDColorLayer", py::init<int>())
         .add_property("depth", &ColorLayer::depth)
         .add_property("visible", &ColorLayer::visible, &ColorLayer::setVisible)
         .add_property("front", py::make_function(+[](const ColorLayer &l){ return &l.front; }, py::return_internal_reference<>()))
@@ -138,7 +139,7 @@ void python_export_led()
         })
         ;
 
-    py::class_<Control, shared_ptr<Control>, boost::noncopyable>("LEDControl", py::no_init)
+    py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("LEDControl", py::no_init)
         .add_property("background", 
             +[](const Control &ctl) {
                 const auto color = ctl.getBackground();

@@ -5,13 +5,14 @@
 #include <kinematic/kinematic.h>
 #include "util.h"
 
-using namespace std;
-using namespace Robot::Kinematic;
 namespace py = boost::python;
 
 
 void python_export_kinematic() 
 {
+    using Robot::Kinematic::Kinematic;
+    using Robot::Kinematic::DriveMode, Robot::Kinematic::Orientation;
+
     py::enum_<DriveMode>("DriveMode")
         .value("NONE", DriveMode::NONE)
         .value("ALL", DriveMode::ALL_WHEEL)
@@ -29,7 +30,7 @@ void python_export_kinematic()
         .value("WEST", Orientation::WEST)
         ;
 
-    py::class_<Kinematic, shared_ptr<Kinematic>, boost::noncopyable>("Kinematic", py::no_init)
+    py::class_<Kinematic, std::shared_ptr<Kinematic>, boost::noncopyable>("Kinematic", py::no_init)
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
         .def("__enter__", +[](Kinematic &kinematic) {

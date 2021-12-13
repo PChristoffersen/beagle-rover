@@ -7,12 +7,11 @@
 #include <motor/control.h>
 #include "../types.h"
 
-using namespace std;
 
 namespace Robot::Kinematic {
 
 
-AbstractControlScheme::AbstractControlScheme(shared_ptr<Kinematic> kinematic) :
+AbstractControlScheme::AbstractControlScheme(std::shared_ptr<Kinematic> kinematic) :
     m_initialized { false },
     m_motor_map { MOTOR_MAP_NORTH },
     m_context { kinematic->context() },

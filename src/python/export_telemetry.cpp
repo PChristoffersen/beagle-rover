@@ -6,11 +6,9 @@
 #include "util.h"
 #include <telemetry/telemetry.h>
 
-using namespace std;
-using namespace Robot::Telemetry;
 namespace py = boost::python;
 
-
+#if 0
 class TelemetryListener {
     public:
         virtual ~TelemetryListener() {
@@ -45,7 +43,6 @@ class TelemetryListener {
         boost::signals2::connection m_connection;
 };
 
-
 class TelemetryListenerWrap : public TelemetryListener, public boost::python::wrapper<TelemetryListener> {
     public:
         virtual void on_event(const Event &event) override {
@@ -59,13 +56,19 @@ class TelemetryListenerWrap : public TelemetryListener, public boost::python::wr
             }
         }
 };
+#endif
+
 
 
 void python_export_telemetry() 
 {
-    py::class_<Telemetry, shared_ptr<Telemetry>, boost::noncopyable>("Telemetry", py::no_init)
+    using Robot::Telemetry::Telemetry;
+
+  
+    py::class_<Telemetry, std::shared_ptr<Telemetry>, boost::noncopyable>("Telemetry", py::no_init)
         ;
-        
+
+    #if 0        
     py::class_<TelemetryListenerWrap, boost::noncopyable>("TelemetryListener")
         .def("connect", &TelemetryListenerWrap::connect)
         .def("disconnect", &TelemetryListenerWrap::disconnect)
@@ -79,5 +82,6 @@ void python_export_telemetry()
         .def_readonly("battery_id", &EventBattery::battery_id)
         .def_readonly("cell_voltages", &EventBattery::cell_voltage)
         ;
+    #endif
 
 }

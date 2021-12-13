@@ -6,6 +6,7 @@
 #include <array>
 #include <mutex>
 #include <list>
+#include <chrono>
 #include <boost/asio.hpp>
 
 #include <robotcontrolext.h>
@@ -36,6 +37,7 @@ namespace Robot::LED {
 
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
         public:
+            using clock_type = std::chrono::high_resolution_clock;
             using LayerList = std::list<std::weak_ptr<ColorLayer>>;
 
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
@@ -78,7 +80,7 @@ namespace Robot::LED {
             IndicatorMode m_indicator_mode;
             std::shared_ptr<class Indicator> m_indicator;
 
-            std::chrono::high_resolution_clock::time_point m_last_show;
+            clock_type::time_point m_last_show;
 
             void clear(const Color &color);
     };

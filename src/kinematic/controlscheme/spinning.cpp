@@ -7,11 +7,10 @@
 #include <motor/control.h>
 #include "../types.h"
 
-using namespace std;
 
 namespace Robot::Kinematic {
 
-ControlSchemeSpinning::ControlSchemeSpinning(shared_ptr<Kinematic> kinematic) :
+ControlSchemeSpinning::ControlSchemeSpinning(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;

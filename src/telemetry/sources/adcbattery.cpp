@@ -9,14 +9,14 @@
 #include "../types.h"
 #include "../telemetry.h"
 
-using namespace std;
+using namespace std::literals;
 
 namespace Robot::Telemetry {
 
 static constexpr auto TIMER_INTERVAL { 2s };
 
 
-ADCBattery::ADCBattery(const shared_ptr<Robot::Context> &context):
+ADCBattery::ADCBattery(const std::shared_ptr<Robot::Context> &context):
     AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() }

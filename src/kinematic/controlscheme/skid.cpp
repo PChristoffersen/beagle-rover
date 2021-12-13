@@ -10,13 +10,12 @@
 #include <motor/control.h>
 #include "../types.h"
 
-using namespace std;
 
 namespace Robot::Kinematic {
 
 
 
-ControlSchemeSkid::ControlSchemeSkid(shared_ptr<Kinematic> kinematic) :
+ControlSchemeSkid::ControlSchemeSkid(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
@@ -90,8 +89,8 @@ void ControlSchemeSkid::steer(double steering, double throttle, double aux_x, do
     double left = throttle + steering/2.0;
     double right = throttle - steering/2.0;
 
-    left = clamp(left, -1.0, 1.0);
-    right = -clamp(right, -1.0, 1.0);
+    left = std::clamp(left, -1.0, 1.0);
+    right = -std::clamp(right, -1.0, 1.0);
 
     const auto &motors = m_motor_control->getMotors();
     motorDuty(FRONT_LEFT, left);

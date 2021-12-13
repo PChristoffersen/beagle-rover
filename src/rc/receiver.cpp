@@ -11,8 +11,7 @@
 #include <robotcontext.h>
 #include <telemetry/telemetry.h>
 
-
-using namespace std;
+using namespace std::literals;
 
 namespace Robot::RC {
 
@@ -36,14 +35,14 @@ bit0 = n/a
 static constexpr auto TIMER_INTERVAL { 10ms };
 
 
-Receiver::Receiver(const shared_ptr<Robot::Context> &context) :
+Receiver::Receiver(const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
     m_initialized { false },
     m_enabled { false },
     m_timer { context->io() },
     m_rssi { 0 },
     m_fbus { nullptr },
-    m_last_counter { numeric_limits<uint32_t>::max() }
+    m_last_counter { std::numeric_limits<uint32_t>::max() }
 {
 }
 
@@ -55,7 +54,7 @@ Receiver::~Receiver()
 }
 
 
-void Receiver::init(const shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
+void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
 {    
     const guard lock(m_mutex);
 
@@ -163,8 +162,8 @@ void Receiver::timer(boost::system::error_code error)
 
         // Print data
 #if 1
-        static chrono::high_resolution_clock::time_point last_update;
-        auto time { chrono::high_resolution_clock::now() };
+        static std::chrono::high_resolution_clock::time_point last_update;
+        auto time { std::chrono::high_resolution_clock::now() };
         
         if ((time-last_update) > 200ms) {
             BOOST_LOG_TRIVIAL(info) << boost::format("%+08d f=%+02x r=%+02x ch=%d ") % (uint32_t)counter % (uint32_t)m_flags % (uint32_t)m_rssi % (uint32_t)m_channels.count()

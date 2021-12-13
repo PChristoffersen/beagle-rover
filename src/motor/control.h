@@ -19,6 +19,8 @@ namespace Robot::Motor {
 
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
         public:
+            using timer_type = boost::asio::high_resolution_timer;
+
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
             Control(Control&&) = delete; // No move constructor
@@ -50,8 +52,8 @@ namespace Robot::Motor {
             bool m_initialized;
             bool m_enabled;
             bool m_passthrough;
-            boost::asio::high_resolution_timer m_motor_timer;
-            boost::asio::high_resolution_timer m_servo_timer;
+            timer_type m_motor_timer;
+            timer_type m_servo_timer;
             boost::signals2::connection m_motor_power_con;
             boost::signals2::connection m_servo_power_con;
 
