@@ -26,7 +26,7 @@ namespace Robot::Kinematic {
             AbstractWheelSteering(std::shared_ptr<Kinematic> kinematic, double wheel_base_factor);
 
             void resetMotors();
-            virtual void setMotors(Value left, Value right) = 0;
+            virtual void setMotors(double left, double right) = 0;
 
         private:
             const double m_wheel_base_factor;

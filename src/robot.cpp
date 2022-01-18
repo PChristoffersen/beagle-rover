@@ -66,7 +66,7 @@ void Robot::init()
     m_led_control->init();
     m_rc_receiver->init(m_telemetry);
     m_input->init(m_rc_receiver);
-    m_kinematic->init(m_motor_control, m_telemetry, m_input);
+    m_kinematic->init(m_motor_control, m_led_control, m_telemetry, m_input);
     m_pru_debug->init();
     //m_wifi->init();
 

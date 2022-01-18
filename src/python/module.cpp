@@ -1,4 +1,6 @@
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include "util.h"
 
@@ -14,8 +16,6 @@ void python_export_input();
 
 BOOST_PYTHON_MODULE(robotsystem) 
 {
-    PyEval_InitThreads();
-
     python_export_std();
     python_export_motor();
     python_export_telemetry();

@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
-
 
 project(robotsystem VERSION 1.0)
 
 set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+add_compile_definitions(BOOST_BIND_GLOBAL_PLACEHOLDERS)
 
 find_package(Python3 3.7 COMPONENTS Development)
 find_package(PythonLibs 3.7 REQUIRED)
@@ -46,6 +46,7 @@ set(SRC
     src/led/animation/knightrider.cpp
     src/led/animation/rainbow.cpp
     src/telemetry/telemetry.cpp
+    src/telemetry/events.cpp
     src/telemetry/sources/adcbattery.cpp
     src/telemetry/sources/rcmpu.cpp
     src/kinematic/kinematic.cpp
@@ -87,6 +88,7 @@ add_library(robotsystem MODULE
     src/python/export_input.cpp
     src/python/export_robot.cpp
 )
+set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(robotsystem PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 target_link_libraries(robotsystem PRIVATE robotcontrolext)
@@ -99,6 +101,6 @@ add_executable(test_robot
     main.cpp
 )
 target_include_directories(test_robot PRIVATE src)
-target_link_libraries(test_robot "${Boost_LIBRARIES}")
+target_link_libraries(test_robot ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 target_link_libraries(test_robot robotcontrolext)
-
+target_compile_options(test_robot PUBLIC "-pthread")

@@ -14,6 +14,9 @@ using namespace std::literals;
 namespace Robot {
 
 
+static constexpr auto CONTEXT_THREAD_NICE { -20 };
+
+
 Context::Context() : 
     m_initialized { false },
     m_started { false },
@@ -136,6 +139,7 @@ void Context::cleanupBeagleBone()
     rc_motor_cleanup();
     rc_servo_cleanup();
     rc_adc_cleanup();
+    rc_led_cleanup();
 }
 
 
@@ -153,7 +157,13 @@ void Context::start()
     const guard lock(m_mutex);
 
     BOOST_LOG_TRIVIAL(info) << "Starting thread";
-    m_thread = std::make_shared<std::thread>( [&]{ m_io.run(); } );
+    m_thread = std::make_shared<std::thread>([&]{ 
+        auto val = nice(CONTEXT_THREAD_NICE);
+        if (val != CONTEXT_THREAD_NICE) {
+            BOOST_LOG_TRIVIAL(warning) << "Failed to set context thread nice value (" << val << ")";
+        }
+        m_io.run(); 
+    });
     m_started = true;
 }
 

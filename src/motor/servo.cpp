@@ -9,10 +9,12 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
+#include <robotconfig.h>
 #include <robotcontext.h>
 #include "control.h"
 
 using namespace std::literals;
+using namespace Robot::Config;
 
 namespace Robot::Motor {
 
@@ -31,8 +33,8 @@ Servo::Servo(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_mutex { mutex },
     m_enabled { false },
     m_passthrough { false },
-    m_limit_min { SERVO_LIMIT_MIN },
-    m_limit_max { SERVO_LIMIT_MAX },
+    m_limit_min { WHEEL_SERVO_LIMIT_MIN },
+    m_limit_max { WHEEL_SERVO_LIMIT_MAX },
     m_trim { SERVO_TRIM[index] }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";

@@ -21,6 +21,7 @@ Telemetry::Telemetry(const std::shared_ptr<Robot::Context> &context) :
     switch (rc_model()) {
     case MODEL_BB_BLUE:
         m_sources.push_back(std::make_shared<ADCBattery>(context));
+        m_sources.push_back(std::make_shared<RCMPU>(context));
         break;
     default:
         break;
@@ -58,7 +59,17 @@ void Telemetry::cleanup()
 
 void Telemetry::process(const Event &event) 
 {
+    const guard lock(m_mutex);
+    event.update(m_values);
     sig_event(event);
 }
+
+void Telemetry::process(const MPUData &data)
+{
+    const guard lock(m_mutex);
+    sig_mpu(data);
+
+}
+
     
 };

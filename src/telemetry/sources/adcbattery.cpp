@@ -7,6 +7,7 @@
 
 #include <robotcontext.h>
 #include "../types.h"
+#include "../events.h"
 #include "../telemetry.h"
 
 using namespace std::literals;
@@ -14,6 +15,7 @@ using namespace std::literals;
 namespace Robot::Telemetry {
 
 static constexpr auto TIMER_INTERVAL { 2s };
+static const std::string SOURCE_NAME { "battery" };
 
 
 ADCBattery::ADCBattery(const std::shared_ptr<Robot::Context> &context):
@@ -60,7 +62,7 @@ void ADCBattery::cleanup()
 void ADCBattery::timer_setup() {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
-        [self_ptr=weak_from_this()] (auto &error) {
+        [self_ptr=weak_from_this()] (boost::system::error_code error) {
             if (auto self = self_ptr.lock()) { 
                 self->timer(error); 
             }
@@ -74,12 +76,12 @@ void ADCBattery::timer(boost::system::error_code error)
         return;
     }
 
-    float pack_voltage = rc_adc_batt();
+    double pack_voltage = rc_adc_batt();
     if (pack_voltage<0.0) {
         return;
     }
     
-    EventBattery event;
+    EventBattery event { SOURCE_NAME };
     event.battery_id = 0x00;
     event.voltage = pack_voltage;
     event.cell_voltage.push_back(pack_voltage/2.0f);

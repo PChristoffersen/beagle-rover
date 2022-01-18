@@ -1,8 +1,11 @@
 #include <string>
 #include <vector>
 #include <boost/log/trivial.hpp>
+
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include "util.h"
 

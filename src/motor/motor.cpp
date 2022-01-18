@@ -8,28 +8,26 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
+#include <robotconfig.h>
 #include <robotcontext.h>
 #include "servo.h"
 
+using namespace std::literals;
+using namespace Robot::Config;
 
 namespace Robot::Motor {
 
-using namespace std::literals;
+static constexpr auto MOTOR_DEADZONE { 0.15 };
+static constexpr auto DUTY_MIN_CHANGE { 0.05 };
 
-static constexpr auto MOTOR_DEADZONE { 0.1 };
-
-static constexpr auto PID_P { 1.0 };
-static constexpr auto PID_I { 0.3 };
-static constexpr auto PID_D { 0.05 };
+static constexpr auto PID_P { 0.0012 };
+static constexpr auto PID_I { 0.0004 };
+static constexpr auto PID_D { 0.0001 };
 
 static constexpr auto MINUTE { std::chrono::duration_cast<std::chrono::microseconds>(1min) };
-static constexpr auto ENCODER_CPR { 20 };
-static constexpr auto GEARING { 100 };
-static constexpr auto WHEEL_CIRC_MM { 300.0 };
 
-static constexpr auto PID_DUTY_SCALE { 100.0 };
-static constexpr auto PID_RPM_SCALE { 200.0 };
-static constexpr auto RPM_TIME_CONSTANT { 100ms };
+static constexpr auto SIMULATED_RPM_MAX { 180.0 };
+
 
 Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
@@ -51,12 +49,9 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
 
     auto updateInterval = duration_cast<duration<double>>(MOTOR_TIMER_INTERVAL).count();
 
-    m_rpm_filter = RC_FILTER_INITIALIZER;
-    rc_filter_first_order_lowpass(&m_rpm_filter, updateInterval, duration_cast<duration<double>>(RPM_TIME_CONSTANT).count());
-
     m_pid = RC_FILTER_INITIALIZER;
-    rc_filter_pid(&m_pid, PID_P, PID_I, PID_D, 4*updateInterval, updateInterval);
-    rc_filter_enable_saturation(&m_pid, -PID_DUTY_SCALE, PID_DUTY_SCALE);
+    rc_filter_pid(&m_pid, PID_P, PID_I, PID_D, 8*updateInterval, updateInterval);
+    rc_filter_enable_saturation(&m_pid, -1.0, 1.0);
 
     BOOST_LOG_TRIVIAL(trace) << *this << " " << __FUNCTION__;
 }
@@ -67,7 +62,6 @@ Motor::~Motor()
 {
     cleanup();
     rc_filter_free(&m_pid);
-    rc_filter_free(&m_rpm_filter);
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
@@ -130,19 +124,17 @@ void Motor::setDuty(double duty)
 {
     const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
-    m_state = RUNNING;
-    if (m_enabled) {
-        // TODO Set duty in update function
-        #ifdef USE_ROBOTCONTROL
-        rc_motor_set(motorChannel(), duty);
-        #endif
-    }
+    m_state = RUNNING_DUTY;
     m_duty = duty;
 }
 
 void Motor::setTargetRPM(double rpm) 
 {
     const guard lock(m_mutex);
+    if (m_state!=RUNNING_RPM) {
+        rc_filter_reset(&m_pid);
+    }
+    m_state = RUNNING_RPM;
     m_target_rpm = rpm;
 }
 
@@ -173,6 +165,7 @@ void Motor::setEnabled(bool enabled)
 void Motor::setPassthrough(bool passthrough) 
 {
     const guard lock(m_mutex);
+    m_state = RUNNING_PASSTHROUGH;
     m_passthrough = passthrough;
 }
 
@@ -204,26 +197,31 @@ void Motor::update()
     // Calculate RPM
     #ifdef USE_ROBOTCONTROL
     int32_t value = rc_ext_encoder_read(encoderChannel());
+    double rpm = (double)((value-m_last_enc_value)*MINUTE.count())/((double)(ENCODER_CPR*GEARING)*diff.count());
     #else
-    int32_t value = m_last_enc_value+ENCODER_CPR;
+    int32_t value = m_last_enc_value+1;
+    double rpm = m_duty_set*SIMULATED_RPM_MAX;
     #endif
 
-    double rpm = (double)((value-m_last_enc_value)*MINUTE.count())/((double)(ENCODER_CPR*GEARING)*diff.count());
-    m_rpm = rc_filter_march(&m_rpm_filter, rpm);
+    m_rpm = (rpm+m_rpm)/2.0;
     m_last_enc_value = value;
 
-
     // Update PID
-    m_duty = rc_filter_march(&m_pid, (m_target_rpm-m_rpm)/PID_RPM_SCALE)/PID_DUTY_SCALE;
-    if (m_target_rpm<0.0 && m_duty > 0.0) {
-        m_duty = 0.0;
-    }
-    else if (m_target_rpm>0.0 && m_duty < 0.0) {
-        m_duty = 0.0;
+    if (m_state == RUNNING_RPM) {
+        m_duty = std::clamp(m_duty + rc_filter_march(&m_pid, m_target_rpm-m_rpm), -1.0, 1.0);
+        if (m_target_rpm<0.0 && m_duty > 0.0) {
+            m_duty = 0.0;
+        }
+        else if (m_target_rpm>0.0 && m_duty < 0.0) {
+            m_duty = 0.0;
+        }
+        else if (m_target_rpm==0.0) {
+            m_duty = 0.0;
+        }
     }
 
     // Update motor duty cycle
-    if (fabs(m_duty-m_duty_set)>0.01) {
+    if (fabs(m_duty-m_duty_set)>DUTY_MIN_CHANGE) {
         //BOOST_LOG_TRIVIAL(info) << *this << " Duty " << m_duty_set << " -> " << m_duty;
         #ifdef USE_ROBOTCONTROL
         if (fabs(m_duty)<MOTOR_DEADZONE) {

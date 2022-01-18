@@ -1,5 +1,8 @@
 #include <memory>
+
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include <robot.h>
 #include <rc/receiver.h>

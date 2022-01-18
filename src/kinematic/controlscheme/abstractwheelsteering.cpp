@@ -4,11 +4,13 @@
 #include <algorithm>
 #include <boost/log/trivial.hpp>
 
+#include <robotconfig.h>
 #include <motor/motor.h>
 #include <motor/servo.h>
 #include <motor/control.h>
 #include "../types.h"
 
+using namespace Robot::Config;
 
 namespace Robot::Kinematic {
 
@@ -68,10 +70,10 @@ void AbstractWheelSteering::updateOrientation(Orientation orientation)
 void AbstractWheelSteering::resetMotors()
 {
     const auto &motors = m_motor_control->getMotors();
-    motorSet(FRONT_LEFT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(FRONT_LEFT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE), 0.0);
     motorSet(FRONT_RIGHT,Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE), 0.0);
     motorSet(REAR_LEFT,  Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(REAR_RIGHT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(REAR_RIGHT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE), 0.0);
 }
 
 
@@ -96,15 +98,13 @@ void AbstractWheelSteering::steer(double steering, double throttle, double aux_x
     double turning_circle_dist = tan(M_PI_2-inner_angle) * m_wheel_base_factor;
 
     // Calculate outer angle
-    double outer_angle = atan(m_wheel_base_factor/(turning_circle_dist+WHEEL_BASE));
+    double outer_angle = atan(m_wheel_base_factor/(turning_circle_dist+WHEEL_BASE_MM));
 
-    const Value inner { Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE + inner_angle) };
-    const Value outer { Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE - outer_angle) };
     if (steering > 0.0) {
-        setMotors(outer, inner);
+        setMotors(-outer_angle, inner_angle);
     }
     else {
-        setMotors(inner, outer);
+        setMotors(inner_angle, -outer_angle);
     }
 }
 

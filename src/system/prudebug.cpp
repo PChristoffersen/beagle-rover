@@ -58,7 +58,7 @@ void PRUDebug::cleanup()
 void PRUDebug::timer_setup() {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
-        [self_ptr=weak_from_this()] (auto &error) {
+        [self_ptr=weak_from_this()] (boost::system::error_code error) {
             if (auto self = self_ptr.lock()) { 
                 self->timer(error); 
             }

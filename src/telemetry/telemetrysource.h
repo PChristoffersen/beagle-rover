@@ -27,8 +27,16 @@ namespace Robot::Telemetry {
             void send(const Event &event)
             {
                 if (auto telemetry = m_telemetry.lock()) {
-                    telemetry->process(event);
+                    send(telemetry, event);
                 }
+            }
+            static void send(const std::shared_ptr<Telemetry> &telemetry, const Event &event)
+            {
+                telemetry->process(event);
+            }
+            static void send(const std::shared_ptr<Telemetry> &telemetry, const MPUData &data)
+            {
+                telemetry->process(data);
             }
 
     };

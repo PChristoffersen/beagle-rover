@@ -1,5 +1,3 @@
-#include <boost/python.hpp>
-
 #include "util.h"
 
 namespace py = boost::python;

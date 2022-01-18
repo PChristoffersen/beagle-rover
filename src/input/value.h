@@ -7,16 +7,18 @@
 #include <algorithm>
 #include <boost/format.hpp>
 
+#include <robotconfig.h>
+
 namespace Robot::Input {
 
     class Value {
         public:
             using value_t = std::uint32_t;
 
-            static constexpr std::uint32_t PULSE_MIN { 500u };
-            static constexpr std::uint32_t PULSE_MAX { 2500u };
-            static constexpr std::int32_t PULSE_CENTER { (PULSE_MAX+PULSE_MIN)/2 };
-            static constexpr std::int32_t PULSE_RANGE { (PULSE_MAX-PULSE_MIN) };
+            static constexpr std::uint32_t PULSE_MIN { ::Robot::Config::SERVO_LIMIT_MIN };
+            static constexpr std::uint32_t PULSE_MAX { ::Robot::Config::SERVO_LIMIT_MAX };
+            static constexpr std::int32_t PULSE_CENTER { ::Robot::Config::SERVO_CENTER };
+            static constexpr std::int32_t PULSE_RANGE { ::Robot::Config::SERVO_RANGE };
             static constexpr std::uint32_t UNSET_VALUE { 0 };
 
             static const Value UNSET;

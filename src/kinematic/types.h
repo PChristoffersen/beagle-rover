@@ -72,15 +72,6 @@ namespace Robot::Kinematic {
         { 1, false } 
     }};
 
-    constexpr double WHEEL_BASE { 178.0 };
-    constexpr double WHEEL_BASE_2 { WHEEL_BASE/2.0 };
-    constexpr double WHEEL_MIN_ANGLE { ::Robot::Motor::SERVO_LIMIT_MIN.asAngleRadians() };
-    constexpr double WHEEL_MAX_ANGLE { ::Robot::Motor::SERVO_LIMIT_MAX.asAngleRadians() };
-    constexpr double WHEEL_CENTER_ANGLE { Value::CENTER.asAngleRadians() };
-    constexpr double WHEEL_STRAIGHT_ANGLE { M_PI_4 };
-    constexpr double WHEEL_MAX_TURN_ANGLE { std::min(-(WHEEL_STRAIGHT_ANGLE+WHEEL_MIN_ANGLE), WHEEL_MAX_ANGLE-WHEEL_STRAIGHT_ANGLE) };
-
-
 };
 
 #endif

@@ -21,7 +21,9 @@ namespace Robot::Motor {
             using guard = std::lock_guard<mutex_type>;
 
             enum State {
-                RUNNING,
+                RUNNING_DUTY,
+                RUNNING_RPM,
+                RUNNING_PASSTHROUGH,
                 FREE_SPIN,
                 BRAKE
             };
@@ -86,7 +88,6 @@ namespace Robot::Motor {
             double m_target_rpm;
             double m_rpm;
 
-            rc_filter_t m_rpm_filter;
             rc_filter_t m_pid;
 
             inline uint encoderChannel() const;

@@ -5,11 +5,13 @@
 #include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
 
+#include <robotconfig.h>
 #include <motor/motor.h>
 #include <motor/servo.h>
 #include <motor/control.h>
 #include "../types.h"
 
+using namespace Robot::Config;
 
 namespace Robot::Kinematic {
 
@@ -86,17 +88,22 @@ void ControlSchemeSkid::steer(double steering, double throttle, double aux_x, do
 {
     const guard lock(m_mutex);
 
+    double skew = aux_x * WHEEL_MAX_TURN_ANGLE;
+
     double left = throttle + steering/2.0;
     double right = throttle - steering/2.0;
 
     left = std::clamp(left, -1.0, 1.0);
-    right = -std::clamp(right, -1.0, 1.0);
+    right = std::clamp(right, -1.0, 1.0);
+
+    BOOST_LOG_TRIVIAL(trace) << " steer " << boost::format("| %+.2f | %+.2f  ||  %+.2f | %+.2f |") % steering % throttle % left % right;
+
 
     const auto &motors = m_motor_control->getMotors();
-    motorDuty(FRONT_LEFT, left);
-    motorDuty(FRONT_RIGHT, right);
-    motorDuty(REAR_LEFT, left);
-    motorDuty(REAR_RIGHT, right);
+    motorSet(FRONT_LEFT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE + skew), left);
+    motorSet(FRONT_RIGHT,Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE - skew), right);
+    motorSet(REAR_LEFT,  Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE - skew), left);
+    motorSet(REAR_RIGHT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE + skew), right);
 }
 
 

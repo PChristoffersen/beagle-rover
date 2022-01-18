@@ -2,8 +2,11 @@
 #define _ROBOT_TELEMETRY_TYPES_H_
 
 #include <cstdint>
-#include <vector>
+#include <string>
+#include <variant>
+#include <map>
 #include <boost/signals2.hpp>
+#include <robotcontrol.h>
 
 namespace Robot::Telemetry {
 
@@ -11,20 +14,11 @@ namespace Robot::Telemetry {
 
     using Signal = boost::signals2::signal<void(const class Event &)>;
 
+    using MPUData = rc_mpu_data_t;
+    using MPUSignal = boost::signals2::signal<void(const MPUData &)>;
 
-    class Event {
-        public:
-            virtual ~Event() = default;
-    };
-
-
-    class EventBattery : public Event {
-        public:
-            EventBattery() {}
-            std::uint8_t battery_id;
-            float voltage;
-            std::vector<float> cell_voltage;
-    };
+    using Value = std::variant<std::string, double, std::uint32_t>;
+    using ValueMap = std::map<std::string, Value>;
 
 };
 

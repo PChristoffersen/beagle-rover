@@ -8,6 +8,7 @@
 #include <common/withmutex.h>
 #include <motor/control.h>
 #include <telemetry/telemetry.h>
+#include <led/control.h>
 #include <rc/receiver.h>
 #include "types.h"
 
@@ -23,6 +24,7 @@ namespace Robot::Kinematic {
 
             void init(
                 const std::shared_ptr<::Robot::Motor::Control> &motor_control, 
+                const std::shared_ptr<::Robot::LED::Control> &led_control, 
                 const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry, 
                 const std::shared_ptr<::Robot::Input::Control> &input_control);
             void cleanup();
@@ -35,12 +37,16 @@ namespace Robot::Kinematic {
 
             const std::shared_ptr<::Robot::Context> &context() const { return m_context; }
             const std::weak_ptr<::Robot::Motor::Control> &motorControl() { return m_motor_control; }
+            const std::weak_ptr<::Robot::LED::Control> &ledControl() { return m_led_control; }
+            const std::weak_ptr<::Robot::Telemetry::Telemetry> &telemetry() { return m_telemetry; }
 
         private:
             bool m_initialized;
 
             std::shared_ptr<::Robot::Context> m_context;
             std::weak_ptr<::Robot::Motor::Control> m_motor_control;
+            std::weak_ptr<::Robot::LED::Control> m_led_control;
+            std::weak_ptr<::Robot::Telemetry::Telemetry> m_telemetry;
             std::shared_ptr<class ControlScheme> m_control_scheme;
 
             boost::signals2::connection m_axis_connection;

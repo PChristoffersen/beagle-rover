@@ -2,8 +2,11 @@
 #define _PYTHON_UTIL_H_
 
 #include <string>
-#include <boost/python.hpp>
 #include <boost/log/trivial.hpp> 
+
+#define BOOST_ALLOW_DEPRECATED_HEADERS
+#include <boost/python.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 
 std::string parse_python_exception();

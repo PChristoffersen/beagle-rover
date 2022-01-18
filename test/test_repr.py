@@ -6,7 +6,7 @@ from math import pi as PI
 sys.path.append('../build')
 
 from time import sleep
-from robotsystem import Robot, TelemetryListener, DriveMode, LEDColorLayer, LEDAnimation, DriveMode, InputSource
+from robotsystem import Robot, DriveMode, LEDColorLayer, LEDAnimation, DriveMode, InputSource, Orientation
 
 from datetime import datetime
 
@@ -29,6 +29,21 @@ servo2 = motor2.servo
 motor3 = robot.motor_control.motors[3]
 servo3 = motor3.servo
 
-robot.kinematic.drive_mode = DriveMode.STANDARD
-
+kinematic = robot.kinematic
 input = robot.input
+
+input.source = InputSource.MANUAL
+
+
+kinematic.drive_mode = DriveMode.ALL
+#kinematic.drive_mode = DriveMode.FRONT
+#kinematic.drive_mode = DriveMode.REAR
+#kinematic.drive_mode = DriveMode.SKID
+#kinematic.drive_mode = DriveMode.SPINNING
+#kinematic.drive_mode = DriveMode.BALANCING
+#kinematic.drive_mode = DriveMode.PASSTHROUGH
+
+#kinematic.orientation = Orientation.NORTH
+#kinematic.orientation = Orientation.SOUTH
+#kinematic.orientation = Orientation.EAST
+kinematic.orientation = Orientation.WEST

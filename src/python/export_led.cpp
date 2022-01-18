@@ -1,10 +1,13 @@
 #include <memory>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
+
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/python/object.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include <led/control.h>
 #include <led/color.h>

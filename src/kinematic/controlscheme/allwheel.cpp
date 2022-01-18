@@ -4,18 +4,20 @@
 #include <algorithm>
 #include <boost/log/trivial.hpp>
 
+#include <robotconfig.h>
 #include <motor/motor.h>
 #include <motor/servo.h>
 #include <motor/control.h>
 #include "../types.h"
 
+using namespace Robot::Config;
 
 namespace Robot::Kinematic {
 
 
 
 ControlSchemeAllWheel::ControlSchemeAllWheel(std::shared_ptr<Kinematic> kinematic) :
-    AbstractWheelSteering { kinematic, WHEEL_BASE }
+    AbstractWheelSteering { kinematic, WHEEL_BASE_MM }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
@@ -27,13 +29,12 @@ ControlSchemeAllWheel::~ControlSchemeAllWheel()
 }
 
 
-void ControlSchemeAllWheel::setMotors(Value left, Value right) 
+void ControlSchemeAllWheel::setMotors(double left, double right) 
 {
-    const auto &motors = m_motor_control->getMotors();
-    motorServo(FRONT_LEFT, left);
-    motorServo(FRONT_RIGHT, right);
-    motorServo(REAR_LEFT, -left);
-    motorServo(REAR_RIGHT, -right);
+    motorServo(FRONT_LEFT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+left));
+    motorServo(FRONT_RIGHT, -Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+right));
+    motorServo(REAR_LEFT, -Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+left));
+    motorServo(REAR_RIGHT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+right));
 }
 
 

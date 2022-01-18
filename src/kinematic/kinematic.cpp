@@ -40,16 +40,18 @@ Kinematic::~Kinematic()
 
 
 
-void Kinematic::init(const std::shared_ptr<Robot::Motor::Control> &motor_control, const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry, const std::shared_ptr<::Robot::Input::Control> &input_control) 
+void Kinematic::init(const std::shared_ptr<Robot::Motor::Control> &motor_control, const std::shared_ptr<::Robot::LED::Control> &led_control, const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry, const std::shared_ptr<::Robot::Input::Control> &input_control) 
 {
     const guard lock(m_mutex);
     m_initialized = true;
     m_motor_control = motor_control;
+    m_led_control = led_control;
+    m_telemetry = telemetry;
 
     m_control_scheme = std::make_shared<ControlSchemeIdle>(shared_from_this());
     m_drive_mode = DriveMode::NONE;
 
-    m_axis_connection = input_control->signals.steer.connect(::Robot::Input::SignalSteer::slot_type(&Kinematic::onSteer, this, _1, _2, _3, _4).track_foreign(shared_from_this()));
+    m_axis_connection = input_control->signals.steer.connect(::Robot::Input::SignalSteer::slot_type(&Kinematic::onSteer, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4).track_foreign(shared_from_this()));
 }
 
 

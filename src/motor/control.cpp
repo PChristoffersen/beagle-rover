@@ -259,7 +259,7 @@ void Control::motorTimer()
     static clock_type::time_point last_print;
     auto now = clock_type::now();
 
-    if ( (now-last_print) > 200ms ) {
+    if ( true || (now-last_print) > 200ms ) {
 #if 0
         BOOST_LOG_TRIVIAL(info) << 
             boost::format("  Motors | %4d | %4d | %4d | %4d || %.2f | %.2f | %.2f | %.2f |")
@@ -272,17 +272,16 @@ void Control::motorTimer()
             % m_motors[2]->getRPM()
             % m_motors[3]->getRPM()
             ;
-#else
+#elif 0
         BOOST_LOG_TRIVIAL(info) << 
-            boost::format("  Motor[] | %4d || %.2f | %.2f | %.2f | %.2f |")
+            boost::format("  Motor[] | %4d | %3.2f | %3.2f | %3.2f |")
             % m_motors[0]->getEncoderValue()
-            % m_motors[0]->getOdometer()
             % m_motors[0]->getRPM()
             % m_motors[0]->getTargetRPM()
             % m_motors[0]->getDuty()
             ;
 #endif
-        //resetOdometer();
+        resetOdometer();
 
         last_print = now;
     }

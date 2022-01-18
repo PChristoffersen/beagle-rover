@@ -48,7 +48,7 @@ void ControlSchemeIdle::init()
     // Start timer to turn off power to the motors
     m_timer.expires_after(IDLE_DELAY);
     m_timer.async_wait(
-        [self_ptr=weak_from_this()] (auto &error) {
+        [self_ptr=weak_from_this()] (boost::system::error_code error) {
             if (error!=boost::system::errc::success) {
                 return;
             }

@@ -61,7 +61,7 @@ void RCSource::setEnabled(bool enabled)
 
     if (m_enabled) {
         if (auto receiver = m_receiver.lock()) {
-            m_connection = receiver->sigData.connect(::Robot::RC::SignalData::slot_type(&RCSource::onRCData, this, _1, _2, _3));
+            m_connection = receiver->sigData.connect(::Robot::RC::SignalData::slot_type(&RCSource::onRCData, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
         }
     }
     else {
@@ -77,21 +77,21 @@ void RCSource::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const 
     if (!m_initialized) 
         return;
 
-    double throttle = 0.0;
-    double steering = 0.0;
-
     if (flags.frameLost()) {
-
+        m_signals.steer(0.0, 0.0, 0.0, 0.0);
+        return;
     }
-    else {
-        const auto &vthrotle = channels[Channel::THROTTLE];
-        const auto &vaileron = channels[Channel::AILERON];
-        const auto &vrudder = channels[Channel::RUDDER];
-        const auto &velevator = channels[Channel::ELEVATOR];
 
-        throttle = vthrotle.asPercent();
-        steering = vaileron.asPercent();
-    }
+
+    const auto &vthrotle = channels[Channel::THROTTLE];
+    const auto &vaileron = channels[Channel::AILERON];
+    const auto &vrudder = channels[Channel::RUDDER];
+    const auto &velevator = channels[Channel::ELEVATOR];
+
+    auto throttle = vthrotle.asPercent();
+    auto steering = vaileron.asPercent();
+    auto aux_x = vrudder.asPercent();
+    auto aux_y = velevator.asPercent();
 
     #if 0
     static chrono::high_resolution_clock::time_point last_update;
@@ -102,7 +102,7 @@ void RCSource::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const 
         last_update = time;
     }
     #else
-    m_signals.steer(steering, throttle, 0.0, 0.0);
+    m_signals.steer(steering, throttle, aux_x, aux_y);
     #endif
 }
 

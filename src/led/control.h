@@ -9,6 +9,7 @@
 #include <chrono>
 #include <boost/asio.hpp>
 
+#include <robotcontrol.h>
 #include <robotcontrolext.h>
 
 #include <common/withmutex.h>
@@ -47,6 +48,8 @@ namespace Robot::LED {
 
             void init();
             void cleanup();
+
+            void setLED(rc_led_t led, bool state);
 
             Color getBackground() const { return m_background; }
             void setBackground(const Color &color);

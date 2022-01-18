@@ -1,9 +1,12 @@
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
+
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
 #include <boost/python/enum.hpp> 
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/log/trivial.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
+
 
 #include <motor/motor.h>
 #include <motor/servo.h>

@@ -70,6 +70,13 @@ void Control::cleanup()
 }
 
 
+void Control::setLED(rc_led_t led, bool state)
+{
+    const guard lock(m_mutex);
+    rc_led_set(led, state?1:0);
+}
+
+
 void Control::clear(const Color &color) 
 {
     const guard lock(m_mutex);

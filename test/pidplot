@@ -1,0 +1,8 @@
+#!/usr/bin/gnuplot
+
+#--persist
+
+set term x11
+plot "plot.dat" using 1:2 with lines linestyle 1, \
+    "" using 1:3 with lines linestyle 2
+pause -1

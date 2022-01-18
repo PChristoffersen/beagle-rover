@@ -5,7 +5,6 @@
 #include <cinttypes>
 #include <cmath>
 #include <algorithm>
-#include <boost/format.hpp>
 
 namespace Robot {
     class Context;

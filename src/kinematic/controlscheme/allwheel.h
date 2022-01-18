@@ -15,7 +15,7 @@ namespace Robot::Kinematic {
             virtual ~ControlSchemeAllWheel();
 
         protected:
-            virtual void setMotors(Value left, Value right) override;
+            virtual void setMotors(double left, double right) override;
     };
 
 };
