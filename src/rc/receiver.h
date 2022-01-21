@@ -8,13 +8,14 @@
 #include <array>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
-#include <robotcontrolext.h>
 
+#include <robotconfig.h>
 #include <robottypes.h>
 #include <common/withmutex.h>
 #include <telemetry/types.h>
 #include "types.h"
 
+#if ROBOT_HAVE_RC
 
 namespace Robot::RC {
 
@@ -49,7 +50,9 @@ namespace Robot::RC {
             bool m_enabled;
             timer_type m_timer;
             std::uint32_t m_last_counter;
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
             volatile shm_fbus_t *m_fbus;
+            #endif
 
             ChannelList m_channels;
             RSSI m_rssi;
@@ -58,7 +61,7 @@ namespace Robot::RC {
             boost::signals2::connection m_telemetry_connection;
 
             void timerSetup();
-            void timer(boost::system::error_code error);
+            void timer();
 
             void telemetryEvent(const ::Robot::Telemetry::Event &event);
             void sendTelemetry(std::uint16_t appId, std::uint32_t data);
@@ -67,4 +70,5 @@ namespace Robot::RC {
 };
 
 
+#endif 
 #endif 

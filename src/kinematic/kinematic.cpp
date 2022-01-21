@@ -101,7 +101,11 @@ void Kinematic::setDriveMode(DriveMode mode)
             m_control_scheme = std::make_shared<ControlSchemeSpinning>(shared_from_this());
             break;
         case DriveMode::BALANCING:
+            #if ROBOT_HAVE_BALANCING
             m_control_scheme = std::make_shared<ControlSchemeBalancing>(shared_from_this());
+            #else
+            m_control_scheme = std::make_shared<ControlSchemeIdle>(shared_from_this());
+            #endif
             break;
         case DriveMode::PASSTHROUGH:
             m_control_scheme = std::make_shared<ControlSchemePassthrough>(shared_from_this());
@@ -130,7 +134,7 @@ void Kinematic::setOrientation(Orientation orientation)
 }
 
 
-void Kinematic::onSteer(double steering, double throttle, double aux_x, double aux_y) 
+void Kinematic::onSteer(float steering, float throttle, float aux_x, float aux_y) 
 {
     BOOST_LOG_TRIVIAL(trace) << "Kinematic onSteer " << steering << " " << throttle;
     m_control_scheme->steer(steering, throttle, aux_x, aux_y);

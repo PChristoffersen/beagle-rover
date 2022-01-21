@@ -4,8 +4,11 @@
 #include <memory>
 #include <mutex>
 
+#include <robotconfig.h>
 #include <robottypes.h>
 #include <common/withmutex.h>
+
+#if ROBOT_HAVE_WIFI
 
 namespace Robot::System {
 
@@ -33,4 +36,5 @@ namespace Robot::System {
 };
 
 
+#endif
 #endif

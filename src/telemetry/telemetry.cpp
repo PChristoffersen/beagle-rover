@@ -3,9 +3,7 @@
 #include <typeinfo>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrol.h>
-#include <robotcontrolext.h>
-
+#include <robotconfig.h>
 #include <robotcontext.h>
 #include "types.h"
 #include "sources/adcbattery.h"
@@ -18,14 +16,11 @@ namespace Robot::Telemetry {
 Telemetry::Telemetry(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false }
 {
-    switch (rc_model()) {
-    case MODEL_BB_BLUE:
-        m_sources.push_back(std::make_shared<ADCBattery>(context));
-        m_sources.push_back(std::make_shared<RCMPU>(context));
-        break;
-    default:
-        break;
-    }
+
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    m_sources.push_back(std::make_shared<ADCBattery>(context));
+    m_sources.push_back(std::make_shared<RCMPU>(context));
+    #endif
 }
 
 

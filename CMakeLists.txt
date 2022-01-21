@@ -22,7 +22,19 @@ add_definitions(-DBOOST_LOG_DYN_LINK)
 # -----------------------------------------------
 # Helper libraries
 # -----------------------------------------------
-add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
+if(ROBOTCONTROL)
+    set(HAVE_ROBOTCONTROL 1)
+    add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
+endif()
+
+# -----------------------------------------------
+# Configuration
+# -----------------------------------------------
+configure_file (
+  "${PROJECT_SOURCE_DIR}/config.h.in"
+  "${PROJECT_BINARY_DIR}/config.h"
+)
+include_directories("${PROJECT_BINARY_DIR}")
 
 
 # -----------------------------------------------
@@ -66,6 +78,7 @@ set(SRC
     src/input/sources/gamepad.cpp
     src/system/prudebug.cpp
     src/system/wifi.cpp
+    src/math/pid.cpp
 )
 include_directories(BEFORE SYSTEM src)
 
@@ -91,7 +104,9 @@ add_library(robotsystem MODULE
 set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(robotsystem PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+if(ROBOTCONTROL)
 target_link_libraries(robotsystem PRIVATE robotcontrolext)
+endif()
 
 # -----------------------------------------------
 # Standalone executable
@@ -102,5 +117,6 @@ add_executable(test_robot
 )
 target_include_directories(test_robot PRIVATE src)
 target_link_libraries(test_robot ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+if(ROBOTCONTROL)
 target_link_libraries(test_robot robotcontrolext)
-target_compile_options(test_robot PUBLIC "-pthread")
+endif()

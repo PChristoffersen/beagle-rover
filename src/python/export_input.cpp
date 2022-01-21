@@ -25,7 +25,7 @@ void python_export_input()
         ;
 
     py::class_<SoftwareInterface, boost::noncopyable>("InputInterface", py::no_init)
-        .def("steer", +[](SoftwareInterface &iface, double s, double t) { iface.steer(s,t); })
+        .def("steer", +[](SoftwareInterface &iface, float s, float t) { iface.steer(s,t); })
         .def("steer", &SoftwareInterface::steer)
         ;
 

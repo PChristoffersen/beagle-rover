@@ -5,11 +5,7 @@
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrol.h>
-#include <robotcontrolext.h>
-
 #include <robotcontext.h>
-#include <rc/receiver.h>
 #include "types.h"
 #include "motor.h"
 #include "servo.h"
@@ -28,7 +24,6 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
     m_initialized { false },
     m_enabled { false },
-    m_passthrough { false },
     m_motor_timer { context->io() },
     m_servo_timer { context->io() }
 {
@@ -46,7 +41,7 @@ Control::~Control()
 }
 
 
-void Control::init(const std::shared_ptr<::Robot::RC::Receiver> &receiver) 
+void Control::init() 
 {
     const guard lock(m_mutex);
     BOOST_ASSERT_MSG(!m_initialized, "Already initialized");
@@ -60,8 +55,6 @@ void Control::init(const std::shared_ptr<::Robot::RC::Receiver> &receiver)
     m_motor_power_con = m_context->sig_motor_power.connect([&](bool enabled){ onMotorPower(enabled); });
     onServoPower(m_context->servoPower());
     m_servo_power_con = m_context->sig_servo_power.connect([&](bool enabled){ onServoPower(enabled); });
-
-    m_rc_receiver = receiver->weak_from_this();
 }
 
 
@@ -72,9 +65,6 @@ void Control::cleanup()
         return;
     m_initialized = false;
     
-    m_rc_connection.disconnect();
-    m_rc_receiver.reset();
-
     m_motor_power_con.disconnect();
     m_servo_power_con.disconnect();
     m_motor_timer.cancel();
@@ -140,55 +130,6 @@ double Control::getOdometer() const
         sum += motor->getOdometer();
     }
     return sum/m_motors.size();
-}
-
-
-void Control::setPassthrough(bool passthrough) 
-{
-    const guard lock(m_mutex);
-    if (passthrough != m_passthrough) {
-        m_passthrough = passthrough;
-
-        if (!m_passthrough) {
-            m_rc_connection.disconnect();
-        }
-
-        for (auto &motor : m_motors) {
-            motor->setPassthrough(passthrough);
-            motor->servo()->setPassthrough(passthrough);
-        }
-
-        // Set limits
-        std::array<fbus_servo_limit_t, RC_SERVO_CH_MAX> limits;
-        for (auto &limit : limits) {
-            limit.low = Value::PULSE_MIN;
-            limit.high = Value::PULSE_MAX;
-        }
-        for (const auto &motor : m_motors) {
-            auto &limit = limits[SERVO_PASSTHROUGH_OFFSET+motor->servo()->getIndex()];
-            limit.low = motor->servo()->getLimitMin();
-            limit.high = motor->servo()->getLimitMax();
-
-        }
-        rc_ext_fbus_set_servo_limit(limits.data());
-
-        // Set servo map
-        std::array<uint8_t, FBUS_CHANNELS> map;
-        map.fill(FBUS_SERVO_UNMAPPED);
-        if (passthrough) {
-            for (const auto &motor : m_motors) {
-                auto index = motor->servo()->getIndex();
-                map[SERVO_PASSTHROUGH_OFFSET+index] = index;
-            }
-        }
-        rc_ext_fbus_set_servo_map(map.data());
-
-        if (!m_passthrough) {
-            if (const auto receiver = m_rc_receiver.lock()) {
-                m_rc_connection = receiver->sigData.connect([&](auto flags, auto rssi, const auto &channels) { onRCData(flags, rssi, channels); });
-            }
-        }
-    }
 }
 
 
@@ -317,12 +258,5 @@ void Control::servoTimer()
 
     servoTimerSetup();
 }
-
-
-void Control::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const ::Robot::RC::ChannelList &channels)
-{
-    const guard lock(m_mutex);
-}
-
 
 };

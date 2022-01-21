@@ -29,7 +29,7 @@ ControlSchemeAllWheel::~ControlSchemeAllWheel()
 }
 
 
-void ControlSchemeAllWheel::setMotors(double left, double right) 
+void ControlSchemeAllWheel::setMotors(float left, float right) 
 {
     motorServo(FRONT_LEFT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+left));
     motorServo(FRONT_RIGHT, -Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+right));

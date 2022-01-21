@@ -9,9 +9,7 @@
 #include <chrono>
 #include <boost/asio.hpp>
 
-#include <robotcontrol.h>
-#include <robotcontrolext.h>
-
+#include <robotconfig.h>
 #include <common/withmutex.h>
 #include <robottypes.h>
 #include "color.h"
@@ -49,7 +47,9 @@ namespace Robot::LED {
             void init();
             void cleanup();
 
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
             void setLED(rc_led_t led, bool state);
+            #endif
 
             Color getBackground() const { return m_background; }
             void setBackground(const Color &color);

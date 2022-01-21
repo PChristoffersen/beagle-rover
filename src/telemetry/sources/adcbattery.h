@@ -4,6 +4,7 @@
 #include <memory>
 #include <boost/asio.hpp>
 
+#include <robotconfig.h>
 #include "abstracttelemetrysource.h"
 #include "../types.h"
 

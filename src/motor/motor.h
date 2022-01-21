@@ -7,9 +7,10 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
-#include <robotcontrol.h>
 
+#include <robotconfig.h>
 #include <robottypes.h>
+#include <math/pid.h>
 #include "types.h"
 
 namespace Robot::Motor {
@@ -45,13 +46,13 @@ namespace Robot::Motor {
 
 
             void setValue(const Value value);
-            void setDuty(double duty);
-            double getDuty() const { return m_duty; }
-            void setTargetRPM(double rpm);
-            double getTargetRPM() const { return m_target_rpm; }
+            void setDuty(float duty);
+            float getDuty() const { return m_duty; }
+            void setTargetRPM(float rpm);
+            float getTargetRPM() const { return m_target_rpm; }
 
             State getState() const { return m_state; }
-            double getRPM() const { return m_rpm; }
+            float getRPM() const { return m_rpm; }
 
             void resetOdometer();
             double getOdometer() const;
@@ -83,12 +84,15 @@ namespace Robot::Motor {
 
             std::int32_t m_odometer_base;
 
-            double m_duty;
-            double m_duty_set;
-            double m_target_rpm;
-            double m_rpm;
+            float m_duty;
+            float m_duty_set;
+            float m_target_rpm;
+            float m_rpm;
 
-            rc_filter_t m_pid;
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+            rc_filter_t m_rc_pid;
+            #endif
+            Robot::Math::PID m_pid;
 
             inline uint encoderChannel() const;
             inline uint motorChannel() const;

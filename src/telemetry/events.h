@@ -21,25 +21,25 @@ namespace Robot::Telemetry {
         public:
             EventBattery(const std::string &name) : Event { name } {}
             std::uint8_t battery_id;
-            double voltage;
-            std::vector<double> cell_voltage;
+            float voltage;
+            std::vector<float> cell_voltage;
             virtual void update(ValueMap &map) const;
     };
 
     class EventTemperature : public Event {
         public:
             EventTemperature(const std::string &name) : Event { name } {}
-            double temperature;
+            float temperature;
             virtual void update(ValueMap &map) const;
     };
 
     class EventMPU : public Event {
         public:
             EventMPU(const std::string &name) : Event { name } {}
-            double pitch;
-            double roll;
-            double yaw;
-            double temp;
+            float pitch;
+            float roll;
+            float yaw;
+            float temp;
             virtual void update(ValueMap &map) const;
     };
 

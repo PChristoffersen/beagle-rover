@@ -19,17 +19,17 @@ namespace Robot::Kinematic {
 
             virtual void updateOrientation(Orientation orientation) override;
 
-            virtual void steer(double steering, double throttle, double aux_x, double aux_y) override;
+            virtual void steer(float steering, float throttle, float aux_x, float aux_y) override;
 
 
         protected:
-            AbstractWheelSteering(std::shared_ptr<Kinematic> kinematic, double wheel_base_factor);
+            AbstractWheelSteering(std::shared_ptr<Kinematic> kinematic, float wheel_base_factor);
 
             void resetMotors();
-            virtual void setMotors(double left, double right) = 0;
+            virtual void setMotors(float left, float right) = 0;
 
         private:
-            const double m_wheel_base_factor;
+            const float m_wheel_base_factor;
     };
 
 };

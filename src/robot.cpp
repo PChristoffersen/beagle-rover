@@ -5,9 +5,6 @@
 #include <chrono>
 #include <boost/log/trivial.hpp> 
 
-#include <robotcontrol.h>
-#include <robotcontrolext.h>
-
 #include <robottypes.h>
 #include <robotcontext.h>
 #include <rc/receiver.h>
@@ -31,14 +28,20 @@ Robot *Robot::m_instance { nullptr };
 Robot::Robot() : 
     m_initialized { false },
     m_context { std::make_shared<Context>() },
+    #if ROBOT_HAVE_RC
     m_rc_receiver { std::make_shared<RC::Receiver>(m_context) },
+    #endif
     m_motor_control { std::make_shared<Motor::Control>(m_context) },
     m_led_control { std::make_shared<LED::Control>(m_context) },
     m_telemetry { std::make_shared<Telemetry::Telemetry>(m_context) },
     m_kinematic { std::make_shared<Kinematic::Kinematic>(m_context) },
     m_input { std::make_shared<Input::Control>(m_context) },
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug { std::make_shared<System::PRUDebug>(m_context) },
+    #endif
+    #if ROBOT_HAVE_WIFI
     m_wifi { std::make_shared<System::WiFi>(m_context) },
+    #endif
     m_timer { m_context->io() },
     m_heartbeat { 0u }
 {
@@ -62,12 +65,18 @@ void Robot::init()
 
     m_context->init();
     m_telemetry->init();
-    m_motor_control->init(m_rc_receiver);
+    m_motor_control->init();
     m_led_control->init();
+    #if ROBOT_HAVE_RC
     m_rc_receiver->init(m_telemetry);
     m_input->init(m_rc_receiver);
+    #else
+    m_input->init();
+    #endif
     m_kinematic->init(m_motor_control, m_led_control, m_telemetry, m_input);
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug->init();
+    #endif
     //m_wifi->init();
 
     m_heartbeat = 0u;
@@ -92,10 +101,14 @@ void Robot::cleanup()
     m_context->stop();
 
     //m_wifi->cleanup();
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug->cleanup();
+    #endif
     m_kinematic->cleanup();
     m_input->cleanup();
+    #if ROBOT_HAVE_RC
     m_rc_receiver->cleanup();
+    #endif
     m_led_control->cleanup();
     m_motor_control->cleanup();
     m_telemetry->cleanup();

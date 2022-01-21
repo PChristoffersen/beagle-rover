@@ -54,7 +54,7 @@ namespace Robot::Kinematic {
             DriveMode    m_drive_mode;
             Orientation  m_orientation;
 
-            void onSteer(double steering, double throttle, double aux_x, double aux_y);
+            void onSteer(float steering, float throttle, float aux_x, float aux_y);
     };
 
 

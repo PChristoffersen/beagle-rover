@@ -1,0 +1,7 @@
+
+
+#define robot_VERSION_MAJOR @robotsystem_VERSION_MAJOR@
+#define robot_VERSION_MINOR @robotsystem_VERSION_MINOR@
+
+#cmakedefine HAVE_ROBOTCONTROL
+#cmakedefine HAVE_STUFF

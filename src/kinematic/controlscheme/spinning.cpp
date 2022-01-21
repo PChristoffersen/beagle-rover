@@ -51,7 +51,7 @@ void ControlSchemeSpinning::cleanup()
 }
 
 
-void ControlSchemeSpinning::steer(double steering, double throttle, double aux_x, double aux_y)
+void ControlSchemeSpinning::steer(float steering, float throttle, float aux_x, float aux_y)
 {
     const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "  throttle="<<throttle;

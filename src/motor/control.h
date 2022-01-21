@@ -8,11 +8,10 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
-#include <robotcontrolext.h>
 
+#include <robotconfig.h>
 #include <robottypes.h>
 #include <common/withmutex.h>
-#include <rc/types.h>
 #include "types.h"
 
 namespace Robot::Motor {
@@ -26,7 +25,7 @@ namespace Robot::Motor {
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();
 
-            void init(const std::shared_ptr<::Robot::RC::Receiver> &receiver);
+            void init();
             void cleanup();
 
             void start();
@@ -38,9 +37,6 @@ namespace Robot::Motor {
             void setEnabled(bool enabled);
             bool getEnabled() const { return m_enabled; }
 
-            void setPassthrough(bool passthrough);
-            bool getPassthrough() const { return m_passthrough; }
-
             void resetOdometer();
             double getOdometer() const;
 
@@ -48,16 +44,13 @@ namespace Robot::Motor {
 
         private:
             std::shared_ptr<::Robot::Context> m_context;
-            std::weak_ptr<::Robot::RC::Receiver> m_rc_receiver;
             bool m_initialized;
             bool m_enabled;
-            bool m_passthrough;
             timer_type m_motor_timer;
             timer_type m_servo_timer;
             boost::signals2::connection m_motor_power_con;
             boost::signals2::connection m_servo_power_con;
 
-   
             MotorList m_motors;
 
             void onMotorPower(bool enabled);
@@ -68,9 +61,6 @@ namespace Robot::Motor {
 
             void servoTimerSetup();
             inline void servoTimer();
-
-            boost::signals2::connection m_rc_connection;
-            void onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const ::Robot::RC::ChannelList &channels);
 
             friend std::ostream &operator<<(std::ostream &os, const Control &control)
             {

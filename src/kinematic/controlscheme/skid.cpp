@@ -84,14 +84,14 @@ void ControlSchemeSkid::resetMotors()
 }
 
 
-void ControlSchemeSkid::steer(double steering, double throttle, double aux_x, double aux_y) 
+void ControlSchemeSkid::steer(float steering, float throttle, float aux_x, float aux_y) 
 {
     const guard lock(m_mutex);
 
-    double skew = aux_x * WHEEL_MAX_TURN_ANGLE;
+    auto skew = aux_x * WHEEL_MAX_TURN_ANGLE;
 
-    double left = throttle + steering/2.0;
-    double right = throttle - steering/2.0;
+    auto left = throttle + steering/2.0;
+    auto right = throttle - steering/2.0;
 
     left = std::clamp(left, -1.0, 1.0);
     right = std::clamp(right, -1.0, 1.0);

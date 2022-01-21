@@ -14,6 +14,8 @@
 #include <motor/control.h>
 #include "../types.h"
 
+#if ROBOT_HAVE_BALANCE
+
 using namespace std::literals;
 using namespace Robot::Config;
 
@@ -289,7 +291,7 @@ void ControlSchemeBalancing::onMPUData(const Robot::Telemetry::MPUData &mpu_data
     auto &left_motor = motors[MotorPosition::REAR_LEFT];
     auto &right_motor = motors[MotorPosition::REAR_RIGHT];
 
-	double dutyL, dutyR;
+	float dutyL, dutyR;
 	/******************************************************************
 	* STATE_ESTIMATION
 	* read sensors and compute the state when either ARMED or DISARMED
@@ -399,3 +401,5 @@ void ControlSchemeBalancing::onMPUData(const Robot::Telemetry::MPUData &mpu_data
 
 
 };
+
+#endif

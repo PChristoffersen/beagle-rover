@@ -21,7 +21,7 @@ namespace Robot::Kinematic {
 
             virtual void updateOrientation(Orientation orientation) override;
 
-            virtual void steer(double steering, double throttle, double aux_x, double aux_y) override {}
+            virtual void steer(float steering, float throttle, float aux_x, float aux_y) override {}
 
         protected:
             AbstractControlScheme(std::shared_ptr<Kinematic> kinematic);
@@ -39,11 +39,11 @@ namespace Robot::Kinematic {
                 auto &entry = m_motor_map[position];
                 m_motor_control->getMotors()[entry.index]->servo()->setValue(entry.invert ? -value : value);
             }
-            inline void motorDuty(MotorPosition position, double value) {
+            inline void motorDuty(MotorPosition position, float value) {
                 auto &entry = m_motor_map[position];
                 m_motor_control->getMotors()[entry.index]->setDuty(entry.invert ? -value : value);
             }
-            inline void motorSet(MotorPosition position, Value servo, double throttle) {
+            inline void motorSet(MotorPosition position, Value servo, float throttle) {
                 auto &entry = m_motor_map[position];
                 auto &motor = m_motor_control->getMotors()[entry.index];
                 motor->servo()->setValue(entry.invert ? -servo : servo);

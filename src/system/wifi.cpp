@@ -7,6 +7,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp> 
 
+#if ROBOT_HAVE_WIFI
 
 namespace Robot::System {
 
@@ -128,3 +129,5 @@ std::string WiFi::calculateMAC() const {
 
 
 };
+
+#endif

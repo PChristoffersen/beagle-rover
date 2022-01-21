@@ -2,11 +2,11 @@
 #define _ROBOT_MOTOR_TYPES_H_
 
 #include <chrono>
-#include <input/value.h>
+#include <common/value.h>
 
 namespace Robot::Motor {
 
-    using Value = ::Robot::Input::Value;
+    using Value = ::Robot::Value;
 
     inline constexpr auto MOTOR_COUNT { 4 };
     inline constexpr auto ENCODER_CPR { 20 };

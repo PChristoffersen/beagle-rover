@@ -4,12 +4,13 @@
 #include <memory>
 #include <chrono>
 #include <boost/asio.hpp>
-#include <robotcontrol.h>
 
+#include <robotconfig.h>
 #include <telemetry/telemetry.h>
 #include <led/control.h>
 #include "abstractcontrolscheme.h"
 
+#if ROBOT_HAVE_BALANCE
 
 namespace Robot::Kinematic {
 
@@ -77,4 +78,5 @@ namespace Robot::Kinematic {
 
 };
 
+#endif
 #endif

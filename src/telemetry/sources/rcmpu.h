@@ -5,11 +5,13 @@
 #include <mutex>
 #include <chrono>
 #include <boost/asio.hpp>
-#include <robotcontrol.h>
 
+#include <robotconfig.h>
 #include "../../common/withmutex.h"
 #include "../types.h"
 #include "abstracttelemetrysource.h"
+
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
 
 namespace Robot::Telemetry {
 
@@ -58,4 +60,5 @@ namespace Robot::Telemetry {
         
 };
 
+#endif
 #endif

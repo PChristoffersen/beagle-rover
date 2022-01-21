@@ -4,12 +4,12 @@
 #include <memory>
 #include <iostream>
 
-#include <robotcontrolext.h>
+#include <robotconfig.h>
 #include "color.h"
 
 namespace Robot::LED {
 
-    constexpr uint PIXEL_COUNT { RC_EXT_NEOPIXEL_COUNT };
+    constexpr uint PIXEL_COUNT { ROBOT_NEOPIXEL_COUNT };
 
     constexpr auto LAYER_DEPTH_ANIMATION  { 10 };
     constexpr auto LAYER_DEPTH_INDICATORS { 20 };

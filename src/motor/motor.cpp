@@ -5,9 +5,6 @@
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrol.h>
-#include <robotcontrolext.h>
-
 #include <robotconfig.h>
 #include <robotcontext.h>
 #include "servo.h"
@@ -20,9 +17,11 @@ namespace Robot::Motor {
 static constexpr auto MOTOR_DEADZONE { 0.15 };
 static constexpr auto DUTY_MIN_CHANGE { 0.05 };
 
-static constexpr auto PID_P { 0.0012 };
-static constexpr auto PID_I { 0.0004 };
-static constexpr auto PID_D { 0.0001 };
+static constexpr auto PID_P { 0.0012f };
+static constexpr auto PID_I { 0.0004f };
+static constexpr auto PID_D { 0.0001f };
+static constexpr auto PID_EMA_ALPHA { 0.9f };
+static constexpr auto PID_INTERVAL { std::chrono::duration_cast<std::chrono::duration<float>>(MOTOR_TIMER_INTERVAL).count() };
 
 static constexpr auto MINUTE { std::chrono::duration_cast<std::chrono::microseconds>(1min) };
 
@@ -40,20 +39,21 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_state { FREE_SPIN },
     m_last_enc_value { 0 },
     m_odometer_base { 0 },
-    m_duty { 0.0 },
-    m_duty_set { 0.0 },
-    m_target_rpm { 0.0 },
-    m_rpm { 0.0 }
+    m_duty { 0.0f },
+    m_duty_set { 0.0f },
+    m_target_rpm { 0.0f },
+    m_rpm { 0.0f },
+    m_pid { PID_P, PID_I, PID_D, PID_INTERVAL, PID_EMA_ALPHA }
 {
-    using std::chrono::duration, std::chrono::duration_cast;
-
-    auto updateInterval = duration_cast<duration<double>>(MOTOR_TIMER_INTERVAL).count();
-
-    m_pid = RC_FILTER_INITIALIZER;
-    rc_filter_pid(&m_pid, PID_P, PID_I, PID_D, 8*updateInterval, updateInterval);
-    rc_filter_enable_saturation(&m_pid, -1.0, 1.0);
-
     BOOST_LOG_TRIVIAL(trace) << *this << " " << __FUNCTION__;
+
+    m_pid.setLimits(-1.0f, 1.0f);
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    m_rc_pid = RC_FILTER_INITIALIZER;
+    rc_filter_pid(&m_rc_pid, PID_P, PID_I, PID_D, 8*PID_INTERVAL, PID_INTERVAL);
+    rc_filter_enable_saturation(&m_rc_pid, -1.0, 1.0);
+    #endif
+
 }
 
 
@@ -61,7 +61,9 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
 Motor::~Motor() 
 {
     cleanup();
-    rc_filter_free(&m_pid);
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    rc_filter_free(&m_rc_pid);
+    #endif
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
@@ -75,7 +77,7 @@ void Motor::init()
     m_duty = 0.0;
     m_target_rpm = 0.0;
 
-    #ifdef USE_ROBOTCONTROL
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_motor_free_spin(motorChannel());
     #endif
     m_state = FREE_SPIN;
@@ -100,7 +102,7 @@ void Motor::brake()
 {
     const guard lock(m_mutex);
     m_state = BRAKE;
-    #ifdef USE_ROBOTCONTROL
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_motor_brake(motorChannel());
     #endif
 }
@@ -109,7 +111,7 @@ void Motor::freeSpin()
 {
     const guard lock(m_mutex);
     m_state = FREE_SPIN;
-    #ifdef USE_ROBOTCONTROL
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_motor_free_spin(motorChannel());
     #endif
 }
@@ -120,7 +122,7 @@ void Motor::setValue(const Value value) {
 }
 
 
-void Motor::setDuty(double duty) 
+void Motor::setDuty(float duty) 
 {
     const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
@@ -128,14 +130,18 @@ void Motor::setDuty(double duty)
     m_duty = duty;
 }
 
-void Motor::setTargetRPM(double rpm) 
+void Motor::setTargetRPM(float rpm) 
 {
     const guard lock(m_mutex);
     if (m_state!=RUNNING_RPM) {
-        rc_filter_reset(&m_pid);
+        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+        rc_filter_reset(&m_rc_pid);
+        #endif
+        m_pid.reset();
     }
     m_state = RUNNING_RPM;
     m_target_rpm = rpm;
+    m_pid.setSetpoint(rpm);
 }
 
 
@@ -148,13 +154,13 @@ void Motor::setEnabled(bool enabled)
         if (m_enabled) {
             m_context->motorPower(true);
             m_duty_set = m_duty;
-            #ifdef USE_ROBOTCONTROL
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
             rc_motor_set(motorChannel(), m_duty_set);
             #endif
         }
         else {
             m_duty_set = 0.0;
-            #ifdef USE_ROBOTCONTROL
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
             rc_motor_set(motorChannel(), m_duty_set);
             #endif
             m_context->motorPower(false);
@@ -195,12 +201,13 @@ void Motor::update()
 
 
     // Calculate RPM
-    #ifdef USE_ROBOTCONTROL
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     int32_t value = rc_ext_encoder_read(encoderChannel());
-    double rpm = (double)((value-m_last_enc_value)*MINUTE.count())/((double)(ENCODER_CPR*GEARING)*diff.count());
+    auto value_diff = value-m_last_enc_value;
+    float rpm = (float)(value_diff*MINUTE.count())/((float)(ENCODER_CPR*GEARING)*diff.count());
     #else
     int32_t value = m_last_enc_value+1;
-    double rpm = m_duty_set*SIMULATED_RPM_MAX;
+    float rpm = m_duty_set*SIMULATED_RPM_MAX;
     #endif
 
     m_rpm = (rpm+m_rpm)/2.0;
@@ -208,7 +215,8 @@ void Motor::update()
 
     // Update PID
     if (m_state == RUNNING_RPM) {
-        m_duty = std::clamp(m_duty + rc_filter_march(&m_pid, m_target_rpm-m_rpm), -1.0, 1.0);
+        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+        m_duty = std::clamp(m_duty + rc_filter_march(&m_rc_pid, m_target_rpm-m_rpm), -1.0, 1.0);
         if (m_target_rpm<0.0 && m_duty > 0.0) {
             m_duty = 0.0;
         }
@@ -218,12 +226,14 @@ void Motor::update()
         else if (m_target_rpm==0.0) {
             m_duty = 0.0;
         }
+        #endif
+        
     }
 
     // Update motor duty cycle
     if (fabs(m_duty-m_duty_set)>DUTY_MIN_CHANGE) {
         //BOOST_LOG_TRIVIAL(info) << *this << " Duty " << m_duty_set << " -> " << m_duty;
-        #ifdef USE_ROBOTCONTROL
+        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         if (fabs(m_duty)<MOTOR_DEADZONE) {
             rc_motor_set(motorChannel(), 0.0);
         }

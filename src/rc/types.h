@@ -9,7 +9,7 @@
 #include <boost/signals2.hpp>
 
 #include <robottypes.h>
-#include <input/value.h>
+#include <common/value.h>
 
 namespace Robot::RC {
 
@@ -65,7 +65,7 @@ namespace Robot::RC {
     };
 
 
-    using Value = ::Robot::Input::Value;
+    using Value = ::Robot::Value;
     using _ChannelArray = std::array<Value, MAX_CHANNELS>;
 
     class ChannelList : public _ChannelArray {

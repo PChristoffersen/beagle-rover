@@ -1,11 +1,12 @@
 #include "prudebug.h"
 
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrolext.h>
-
+#include <robotconfig.h>
 #include <robotcontext.h>
 
 using namespace std::literals;
@@ -83,3 +84,5 @@ void PRUDebug::timer(boost::system::error_code error)
 
     
 };
+
+#endif

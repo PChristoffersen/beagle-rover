@@ -6,8 +6,11 @@
 #include <mutex>
 #include <boost/asio.hpp>
 
+#include <robotconfig.h>
 #include <robottypes.h>
 #include <common/withmutex.h>
+
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
 
 namespace Robot::System {
 
@@ -32,5 +35,7 @@ namespace Robot::System {
     };
 
 };
+
+#endif
 
 #endif

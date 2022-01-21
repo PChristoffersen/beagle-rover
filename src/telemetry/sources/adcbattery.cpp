@@ -3,8 +3,7 @@
 #include <iostream>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrol.h>
-
+#include <robotconfig.h>
 #include <robotcontext.h>
 #include "../types.h"
 #include "../events.h"
@@ -76,8 +75,13 @@ void ADCBattery::timer(boost::system::error_code error)
         return;
     }
 
-    double pack_voltage = rc_adc_batt();
-    if (pack_voltage<0.0) {
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    auto pack_voltage = rc_adc_batt();
+    #else
+    auto pack_voltage = 0.0;
+    #endif
+
+    if (pack_voltage<=0.0) {
         return;
     }
     

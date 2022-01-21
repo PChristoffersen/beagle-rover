@@ -8,12 +8,12 @@
 #include <array>
 #include <boost/signals2.hpp>
 
-#include <input/value.h>
+#include <common/value.h>
 #include <motor/types.h>
 
 namespace Robot::Kinematic {
 
-    using Value = ::Robot::Input::Value;
+    using Value = ::Robot::Value;
 
     enum class DriveMode {
         NONE,

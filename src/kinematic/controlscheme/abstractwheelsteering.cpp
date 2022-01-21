@@ -14,7 +14,7 @@ using namespace Robot::Config;
 
 namespace Robot::Kinematic {
 
-AbstractWheelSteering::AbstractWheelSteering(std::shared_ptr<Kinematic> kinematic, double wheel_base_factor) :
+AbstractWheelSteering::AbstractWheelSteering(std::shared_ptr<Kinematic> kinematic, float wheel_base_factor) :
     AbstractControlScheme { kinematic },
     m_wheel_base_factor { wheel_base_factor }
 {
@@ -77,7 +77,7 @@ void AbstractWheelSteering::resetMotors()
 }
 
 
-void AbstractWheelSteering::steer(double steering, double throttle, double aux_x, double aux_y) 
+void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, float aux_y) 
 {
     const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "  steering="<<steering;
@@ -92,13 +92,13 @@ void AbstractWheelSteering::steer(double steering, double throttle, double aux_x
     }
 
     // Inner angle is just the fraction of steering times max turn angle
-    double inner_angle = asteering * WHEEL_MAX_TURN_ANGLE;
+    auto inner_angle = asteering * WHEEL_MAX_TURN_ANGLE;
 
     // Inner wheel turning circle center from inner wheels centerpoint.
-    double turning_circle_dist = tan(M_PI_2-inner_angle) * m_wheel_base_factor;
+    auto turning_circle_dist = tan(M_PI_2-inner_angle) * m_wheel_base_factor;
 
     // Calculate outer angle
-    double outer_angle = atan(m_wheel_base_factor/(turning_circle_dist+WHEEL_BASE_MM));
+    auto outer_angle = atan(m_wheel_base_factor/(turning_circle_dist+WHEEL_BASE_MM));
 
     if (steering > 0.0) {
         setMotors(-outer_angle, inner_angle);

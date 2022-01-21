@@ -14,7 +14,7 @@ namespace Robot::Kinematic {
 
             virtual void updateOrientation(Orientation orientation) = 0;
 
-            virtual void steer(double steering, double throttle, double aux_x, double aux_y) = 0;
+            virtual void steer(float steering, float throttle, float aux_x, float aux_y) = 0;
     };
 
 };

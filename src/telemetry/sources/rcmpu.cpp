@@ -1,5 +1,7 @@
 #include "rcmpu.h"
 
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+
 #include <iostream>
 #include <boost/log/trivial.hpp>
 
@@ -230,3 +232,5 @@ void RCMPU::data_callback()
 }
 
 };
+
+#endif

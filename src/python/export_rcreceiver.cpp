@@ -5,6 +5,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
+#include <robotconfig.h>
 #include <rc/receiver.h>
 #include "util.h"
 
@@ -13,6 +14,8 @@ namespace py = boost::python;
 
 void python_export_rcreceiver() 
 {
+    #if ROBOT_HAVE_RC
+    
     using Robot::RC::Receiver;
 
     py::class_<Receiver, std::shared_ptr<Receiver>, boost::noncopyable>("RCReceiver", py::no_init)
@@ -28,4 +31,6 @@ void python_export_rcreceiver()
             rc.unlock();
         })
         ;
+    
+    #endif
 }

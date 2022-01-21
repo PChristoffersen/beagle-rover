@@ -70,11 +70,13 @@ void Control::cleanup()
 }
 
 
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
 void Control::setLED(rc_led_t led, bool state)
 {
     const guard lock(m_mutex);
     rc_led_set(led, state?1:0);
 }
+#endif
 
 
 void Control::clear(const Color &color) 
@@ -84,9 +86,11 @@ void Control::clear(const Color &color)
     RawColorArray pixels;
     pixels.fill(color);
 
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     if (rc_ext_neopixel_set(pixels.data())!=0) {
         BOOST_THROW_EXCEPTION(std::runtime_error("Error updating pixels"));
     }
+    #endif
 }
 
 
@@ -190,15 +194,11 @@ void Control::show()
         }
     }
 
-    #if 0
-    for (int i=0; i<pixels.size(); ++i) {
-        BOOST_LOG_TRIVIAL(info) << boost::format("    out %2d ") % i << Color(pixels[i]);
-    }
-    #endif
-
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     if (rc_ext_neopixel_set(pixels.data())!=0) {
         BOOST_THROW_EXCEPTION(std::runtime_error("Error updating pixels"));
     }
+    #endif
 
     m_last_show = clock_type::now();
 }

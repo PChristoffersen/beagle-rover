@@ -31,8 +31,6 @@ void ControlSchemePassthrough::init()
 
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     
-    m_motor_control->setPassthrough(true);
-
     #if 0
     m_rc_connection = m_rc_receiver->sigData.connect(
         [self_ptr=weak_from_this()] (const auto flags, const auto rssi, const auto &channels) {
@@ -61,7 +59,6 @@ void ControlSchemePassthrough::cleanup()
         motor->setEnabled(false);
         motor->servo()->setEnabled(false);
     }
-    m_motor_control->setPassthrough(false);
 }
 
 

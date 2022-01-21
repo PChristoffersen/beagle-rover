@@ -27,7 +27,7 @@ ControlSchemeRearWheel::~ControlSchemeRearWheel()
 }
 
 
-void ControlSchemeRearWheel::setMotors(double left, double right) 
+void ControlSchemeRearWheel::setMotors(float left, float right) 
 {
     motorServo(REAR_LEFT, -Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+left));
     motorServo(REAR_RIGHT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+right));

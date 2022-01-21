@@ -49,13 +49,12 @@ namespace Robot {
             
             uint m_motor_power_rail_cnt;
             uint m_servo_power_rail_cnt;
+            uint m_rc_power_rail_cnt;
 
             void initLogging();
 
-            void initBeagleBone();
-            void cleanupBeagleBone();
-            void initPC();
-            void cleanupPC();
+            void initPlatform();
+            void cleanupPlatform();
     };
 
 };

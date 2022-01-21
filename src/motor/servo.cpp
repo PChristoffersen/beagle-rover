@@ -6,9 +6,6 @@
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrol.h>
-#include <robotcontrolext.h>
-
 #include <robotconfig.h>
 #include <robotcontext.h>
 #include "control.h"
@@ -122,7 +119,7 @@ void Servo::update()
 {
     if (m_enabled && !m_passthrough && m_value) {
         //BOOST_LOG_TRIVIAL(info) << "Pulse";
-        #ifdef USE_ROBOTCONTROL
+        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_servo_send_pulse_us(servoChannel(), m_value.asServoPulse()+m_trim);
         #endif
     }

@@ -50,7 +50,7 @@ void SoftwareSource::setEnabled(bool enabled)
     m_enabled = enabled;
 }
 
-void SoftwareSource::steer(double steer, double throttle, double aux_x, double aux_y)
+void SoftwareSource::steer(float steer, float throttle, float aux_x, float aux_y)
 {
     const guard lock(m_mutex);
     if (!m_enabled) 

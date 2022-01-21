@@ -19,7 +19,7 @@ namespace Robot::Kinematic {
 
             virtual void updateOrientation(Orientation orientation) override;
 
-            virtual void steer(double steering, double throttle, double aux_x, double aux_y) override;
+            virtual void steer(float steering, float throttle, float aux_x, float aux_y) override;
 
         private:
             void resetMotors();

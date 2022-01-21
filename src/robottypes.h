@@ -6,6 +6,8 @@
 #include <cmath>
 #include <algorithm>
 
+#include <robotconfig.h>
+
 namespace Robot {
     class Context;
 
@@ -13,7 +15,6 @@ namespace Robot {
         class Receiver;
     };
     namespace Input {
-        class Value;
         class Control;
     };
     namespace Kinematic {

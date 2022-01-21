@@ -5,11 +5,11 @@
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
-#include <robotcontrol.h>
-#include <robotcontrolext.h>
-
+#include <robotconfig.h>
 #include <robotcontext.h>
 #include <telemetry/telemetry.h>
+
+#if ROBOT_HAVE_RC
 
 using namespace std::literals;
 
@@ -28,7 +28,6 @@ bit3 = n/a
 bit2 = n/a
 bit1 = n/a
 bit0 = n/a
-
 */
 
 
@@ -41,7 +40,9 @@ Receiver::Receiver(const std::shared_ptr<Robot::Context> &context) :
     m_enabled { false },
     m_timer { context->io() },
     m_rssi { 0 },
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus { nullptr },
+    #endif
     m_last_counter { std::numeric_limits<uint32_t>::max() }
 {
 }
@@ -58,13 +59,9 @@ void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetr
 {    
     const guard lock(m_mutex);
 
-    switch (rc_model_category()) {
-	case CATEGORY_BEAGLEBONE:
-        m_fbus = rc_ext_fbus_get_shm();
-        break;
-    default:
-        break;
-    }
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    m_fbus = rc_ext_fbus_get_shm();
+    #endif
 
     m_telemetry_connection = telemetry->sig_event.connect([&](const auto &e){ telemetryEvent(e); });
 
@@ -80,7 +77,10 @@ void Receiver::cleanup()
     m_initialized = false;
     m_telemetry_connection.disconnect();
     m_timer.cancel();
+
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus = nullptr;
+    #endif
 }
 
 
@@ -109,20 +109,23 @@ void Receiver::timerSetup() {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
         [self_ptr=weak_from_this()] (boost::system::error_code error) {
+            if (error!=boost::system::errc::success) {
+                return;
+            }
             if (auto self = self_ptr.lock()) { 
-                self->timer(error); 
+                self->timer(); 
             }
         }
     );
 }
 
 
-
-void Receiver::timer(boost::system::error_code error) 
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+void Receiver::timer() 
 {
     const guard lock(m_mutex);
 
-    if (error!=boost::system::errc::success || !m_initialized || !m_fbus) {
+    if (!m_initialized || !m_fbus) {
         return;
     }
 
@@ -183,6 +186,18 @@ void Receiver::timer(boost::system::error_code error)
     timerSetup();
 }
 
+#else
+void Receiver::timer() 
+{
+    const guard lock(m_mutex);
+
+    if (!m_initialized) {
+        return;
+    }
+}
+#endif
+
+
 
 void Receiver::telemetryEvent(const Robot::Telemetry::Event &event) 
 {
@@ -206,8 +221,12 @@ void Receiver::sendTelemetry(uint16_t appId, uint32_t data)
     if (!m_enabled || m_flags.frameLost())
         return;
     
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_ext_fbus_send_telemetry(appId, data);
+    #endif
 }
 
 
 };
+
+#endif

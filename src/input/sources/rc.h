@@ -5,10 +5,11 @@
 #include <mutex>
 #include <boost/asio.hpp>
 
+#include <robotconfig.h>
 #include <rc/types.h>
 #include "abstractinputsource.h"
-#include "../value.h"
 
+#if ROBOT_HAVE_RC
 
 namespace Robot::Input {
 
@@ -36,5 +37,5 @@ namespace Robot::Input {
 };
 
 #endif
-
+#endif
 

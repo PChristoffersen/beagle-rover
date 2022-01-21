@@ -5,8 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 
-#include <robotcontrolext.h>
-
+#include <robotconfig.h>
 #include <rc/types.h>
 #include "abstractcontrolscheme.h"
 

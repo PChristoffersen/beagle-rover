@@ -6,7 +6,6 @@
 #include <boost/asio.hpp>
 
 #include "abstractinputsource.h"
-#include "../value.h"
 #include "../softwareinterface.h"
 
 
@@ -24,7 +23,7 @@ namespace Robot::Input {
 
             void setEnabled(bool enabled);
 
-            virtual void steer(double steer, double throttle, double aux_x=0.0, double aux_y=0.0);
+            virtual void steer(float steer, float throttle, float aux_x=0.0f, float aux_y=0.0f);
 
         private:
             bool m_initialized;

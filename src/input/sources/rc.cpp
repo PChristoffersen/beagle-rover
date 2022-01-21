@@ -4,7 +4,7 @@
 
 #include <rc/receiver.h>
 
-
+#if ROBOT_HAVE_RC
 
 namespace Robot::Input {
 
@@ -108,3 +108,5 @@ void RCSource::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const 
 
 
 };
+
+#endif

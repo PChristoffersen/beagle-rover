@@ -4,8 +4,8 @@
 #include <memory>
 #include <robotcontext.h>
 #include <common/withmutex.h>
+#include "../types.h"
 #include "../inputsource.h"
-#include "../value.h"
 
 namespace Robot::Input {
 

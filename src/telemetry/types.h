@@ -6,7 +6,8 @@
 #include <variant>
 #include <map>
 #include <boost/signals2.hpp>
-#include <robotcontrol.h>
+
+#include <robotconfig.h>
 
 namespace Robot::Telemetry {
 
@@ -14,10 +15,14 @@ namespace Robot::Telemetry {
 
     using Signal = boost::signals2::signal<void(const class Event &)>;
 
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     using MPUData = rc_mpu_data_t;
+    #else
+    using MPUData = uint32_t;
+    #endif
     using MPUSignal = boost::signals2::signal<void(const MPUData &)>;
 
-    using Value = std::variant<std::string, double, std::uint32_t>;
+    using Value = std::variant<std::string, double, float, std::uint32_t>;
     using ValueMap = std::map<std::string, Value>;
 
 };

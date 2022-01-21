@@ -1,5 +1,5 @@
-#ifndef _ROBOT_INPUT_VALUE_H_
-#define _ROBOT_INPUT_VALUE_H_
+#ifndef _ROBOT_VALUE_H_
+#define _ROBOT_VALUE_H_
 
 #include <iostream>
 #include <cinttypes>
@@ -9,7 +9,7 @@
 
 #include <robotconfig.h>
 
-namespace Robot::Input {
+namespace Robot {
 
     class Value {
         public:
@@ -56,17 +56,17 @@ namespace Robot::Input {
             {
                 return Value { us };
             }
-            inline static constexpr Value fromPercent(double percent)
+            inline static constexpr Value fromPercent(float percent)
             {
                 return Value { (value_t)((percent * PULSE_RANGE) + PULSE_MIN) };
             }
-            inline static constexpr Value fromAngleRadians(double angle) 
+            inline static constexpr Value fromAngleRadians(float angle) 
             {
-                return Value { (value_t)((angle * PULSE_RANGE) / M_PI + PULSE_CENTER) };
+                return Value { (value_t)((angle * PULSE_RANGE) / (float)M_PI + PULSE_CENTER) };
             }
-            inline static constexpr Value fromAngle(double angle) 
+            inline static constexpr Value fromAngle(float angle) 
             {
-                return fromAngleRadians(angle * M_PI / 180.0);
+                return fromAngleRadians(angle * (float)M_PI / 180.0f);
             }
 
 
@@ -75,17 +75,17 @@ namespace Robot::Input {
             { 
                 return m_value; 
             }
-            inline constexpr double asPercent() const 
+            inline constexpr float asPercent() const 
             {
-                return (double)(2*((std::int32_t)m_value-PULSE_CENTER))/PULSE_RANGE;
+                return (float)(2*((std::int32_t)m_value-PULSE_CENTER))/PULSE_RANGE;
             }
-            inline constexpr double asAngleRadians() const 
+            inline constexpr float asAngleRadians() const 
             { 
-                return M_PI * (double)((int32_t)m_value - PULSE_CENTER) / PULSE_RANGE;
+                return (float)M_PI * (float)((int32_t)m_value - PULSE_CENTER) / PULSE_RANGE;
             }
-            inline constexpr double asAngle() const 
+            inline constexpr float asAngle() const 
             { 
-                return asAngleRadians() * 180.0 / M_PI;
+                return asAngleRadians() * 180.0f / (float)M_PI;
             }
             inline constexpr uint asButton(uint divisions) const 
             {
