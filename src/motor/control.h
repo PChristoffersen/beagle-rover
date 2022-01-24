@@ -12,6 +12,7 @@
 #include <robotconfig.h>
 #include <robottypes.h>
 #include <common/withmutex.h>
+#include <telemetry/types.h>
 #include "types.h"
 
 namespace Robot::Motor {
@@ -25,7 +26,7 @@ namespace Robot::Motor {
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();
 
-            void init();
+            void init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
 
             void start();

@@ -24,21 +24,23 @@ namespace Robot::Telemetry {
             friend class Telemetry;
             std::weak_ptr<Telemetry> m_telemetry;
 
-            void send(const Event &event)
+            void sendEvent(const Event &event)
             {
                 if (auto telemetry = m_telemetry.lock()) {
-                    send(telemetry, event);
+                    sendEvent(telemetry, event);
                 }
             }
-            static void send(const std::shared_ptr<Telemetry> &telemetry, const Event &event)
+            static void sendEvent(const std::shared_ptr<Telemetry> &telemetry, const Event &event)
             {
                 telemetry->process(event);
             }
-            static void send(const std::shared_ptr<Telemetry> &telemetry, const MPUData &data)
+
+            #if ROBOT_HAVE_MPU
+            static void sendData(const std::shared_ptr<Telemetry> &telemetry, const MPUData &data)
             {
                 telemetry->process(data);
             }
-
+            #endif
     };
 
 };

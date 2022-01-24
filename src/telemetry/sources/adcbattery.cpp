@@ -91,7 +91,7 @@ void ADCBattery::timer(boost::system::error_code error)
     event.cell_voltage.push_back(pack_voltage/2.0f);
     event.cell_voltage.push_back(pack_voltage/2.0f);
 
-    send(event);
+    sendEvent(event);
 
     timer_setup();
 }

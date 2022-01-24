@@ -22,6 +22,8 @@ static constexpr int32_t SERVO_TRIM[] {
     0
 };
 
+static const std::string TELEMETRY_SOURCE_NAME { "servo" };
+
 
 Servo::Servo(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
@@ -32,7 +34,8 @@ Servo::Servo(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_passthrough { false },
     m_limit_min { WHEEL_SERVO_LIMIT_MIN },
     m_limit_max { WHEEL_SERVO_LIMIT_MAX },
-    m_trim { SERVO_TRIM[index] }
+    m_trim { SERVO_TRIM[index] }, 
+    m_event { TELEMETRY_SOURCE_NAME + "[" + std::to_string(index) + "]", index }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
@@ -45,8 +48,10 @@ Servo::~Servo()
 }
 
 
-void Servo::init() 
+void Servo::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
 {
+    Robot:Telemetry::Source::init(telemetry);
+
     m_value = Value::UNSET;
     m_initialized = true;
 }
@@ -58,6 +63,8 @@ void Servo::cleanup()
         return;
     m_initialized = false;
     setEnabled(false);
+
+    Robot:Telemetry::Source::cleanup();
 }
 
 
@@ -68,6 +75,9 @@ void Servo::setEnabled(bool enabled)
         m_enabled = enabled;
         BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
         m_context->servoPower(m_enabled);
+
+        m_event.enabled = m_enabled;
+        sendEvent(m_event);
     }
 }
 
@@ -85,6 +95,9 @@ void Servo::setValue(const Value value)
     const guard lock(m_mutex);
     //BOOST_LOG_TRIVIAL(info) << *this << " Value " << value << " ( angle=" << value.asAngle() << " )";
     m_value = value.clamp(m_limit_min, m_limit_max);
+
+    m_event.angle = m_value.asAngleRadians();
+    sendEvent(m_event);
 }
 
 

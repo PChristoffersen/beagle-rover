@@ -28,14 +28,21 @@ namespace Robot::Telemetry {
             void init();
             void cleanup();
 
+            const ValueMap &valuesUnlocked() const { return m_values; }
+
             Signal sig_event;
+            #if ROBOT_HAVE_MPU
             MPUSignal sig_mpu;
+            #endif
 
         protected:
             friend class Source;
             
             void process(const Event &event);
+
+            #if ROBOT_HAVE_MPU
             void process(const MPUData &data);
+            #endif
 
         private:
             bool m_initialized;

@@ -1,5 +1,5 @@
-#ifndef _ROBOT_TELEMETRY_RCMPU_H_
-#define _ROBOT_TELEMETRY_RCMPU_H_
+#ifndef _ROBOT_TELEMETRY_ROBOTCONTROLMPU_H_
+#define _ROBOT_TELEMETRY_ROBOTCONTROLMPU_H_
 
 #include <memory>
 #include <mutex>
@@ -8,21 +8,21 @@
 
 #include <robotconfig.h>
 #include "../../common/withmutex.h"
-#include "../types.h"
+#include "../telemetry.h"
 #include "abstracttelemetrysource.h"
 
-#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+#if ROBOT_HAVE_ROBOTCONTROL_MPU
 
 namespace Robot::Telemetry {
 
-    class RCMPU : public AbstractSource<RCMPU>, public WithMutex<std::mutex> {
+    class RobotControlMPU : public AbstractSource<RobotControlMPU>, public WithMutex<std::mutex> {
         public:
             using clock_type = std::chrono::high_resolution_clock;
 
-            explicit RCMPU(const std::shared_ptr<Robot::Context> &context);
-            RCMPU(const RCMPU&) = delete; // No copy constructor
-            RCMPU(RCMPU&&) = delete; // No move constructor
-            virtual ~RCMPU();
+            explicit RobotControlMPU(const std::shared_ptr<Robot::Context> &context);
+            RobotControlMPU(const RobotControlMPU&) = delete; // No copy constructor
+            RobotControlMPU(RobotControlMPU&&) = delete; // No move constructor
+            virtual ~RobotControlMPU();
 
             void init(const std::shared_ptr<Telemetry> &telemetry);
             void cleanup();
@@ -33,7 +33,7 @@ namespace Robot::Telemetry {
             Signal sig_event;
 
         private:
-            static RCMPU *instance;
+            static RobotControlMPU *instance;
             bool m_initialized;
             boost::asio::steady_timer m_timer;
 
@@ -55,6 +55,7 @@ namespace Robot::Telemetry {
             void timer(boost::system::error_code error);
 
             void data_callback();
+
     };
 
         

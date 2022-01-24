@@ -16,6 +16,37 @@ namespace Robot::Telemetry {
             virtual void update(ValueMap &map) const = 0;
     };
 
+    class EventMotor : public Event {
+        public:
+            EventMotor(const std::string &name, uint index) : 
+                Event { name }, 
+                index { index },
+                enabled { false },
+                duty { 0.0f },
+                rpm { 0.0f },
+                rpm_target { -1.0f }
+            {}
+            uint index;
+            bool enabled;
+            float duty;
+            float rpm;
+            float rpm_target;
+            virtual void update(ValueMap &map) const;
+    };
+
+    class EventServo : public Event {
+        public:
+            EventServo(const std::string &name, uint index) : 
+                Event { name }, 
+                index { index },
+                enabled { false },
+                angle { 0.0f }
+            {}
+            uint index;
+            bool enabled;
+            float angle;
+            virtual void update(ValueMap &map) const;
+    };
 
     class EventBattery : public Event {
         public:

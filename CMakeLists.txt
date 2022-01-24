@@ -60,7 +60,7 @@ set(SRC
     src/telemetry/telemetry.cpp
     src/telemetry/events.cpp
     src/telemetry/sources/adcbattery.cpp
-    src/telemetry/sources/rcmpu.cpp
+    src/telemetry/sources/robotcontrolmpu.cpp
     src/kinematic/kinematic.cpp
     src/kinematic/controlscheme/abstractcontrolscheme.cpp
     src/kinematic/controlscheme/abstractwheelsteering.cpp

@@ -27,6 +27,7 @@ static constexpr auto MINUTE { std::chrono::duration_cast<std::chrono::microseco
 
 static constexpr auto SIMULATED_RPM_MAX { 180.0 };
 
+static const std::string TELEMETRY_SOURCE_NAME { "motor" };
 
 Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
@@ -43,7 +44,8 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_duty_set { 0.0f },
     m_target_rpm { 0.0f },
     m_rpm { 0.0f },
-    m_pid { PID_P, PID_I, PID_D, PID_INTERVAL, PID_EMA_ALPHA }
+    m_pid { PID_P, PID_I, PID_D, PID_INTERVAL, PID_EMA_ALPHA },
+    m_event { TELEMETRY_SOURCE_NAME + "[" + std::to_string(index) + "]", index }
 {
     BOOST_LOG_TRIVIAL(trace) << *this << " " << __FUNCTION__;
 
@@ -68,9 +70,15 @@ Motor::~Motor()
 }
 
 
-void Motor::init() 
+void Motor::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry) 
 {
-    m_last_enc_value = 0;//rc_ext_encoder_read(ENCODER_CHANNEL(m_index));
+    Robot:Telemetry::Source::init(telemetry);
+
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    rc_ext_encoder_read(encoderChannel());
+    #else
+    m_last_enc_value = 0;
+    #endif
     m_odometer_base = m_last_enc_value;
     m_last_update = clock_type::now();
     m_rpm = 0;
@@ -82,7 +90,7 @@ void Motor::init()
     #endif
     m_state = FREE_SPIN;
 
-    m_servo->init();
+    m_servo->init(telemetry);
     m_initialized = true;
 }
 
@@ -95,6 +103,8 @@ void Motor::cleanup()
     m_servo->cleanup();
 
     setEnabled(false);
+
+    Robot:Telemetry::Source::cleanup();
 }
 
 
@@ -128,6 +138,10 @@ void Motor::setDuty(float duty)
     BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
     m_state = RUNNING_DUTY;
     m_duty = duty;
+
+    m_event.duty = m_duty;
+    m_event.rpm_target = -1.0f;
+    sendEvent(m_event);
 }
 
 void Motor::setTargetRPM(float rpm) 
@@ -142,6 +156,9 @@ void Motor::setTargetRPM(float rpm)
     m_state = RUNNING_RPM;
     m_target_rpm = rpm;
     m_pid.setSetpoint(rpm);
+
+    m_event.rpm_target = m_target_rpm;
+    sendEvent(m_event);
 }
 
 
@@ -165,6 +182,8 @@ void Motor::setEnabled(bool enabled)
             #endif
             m_context->motorPower(false);
         }
+        m_event.enabled = enabled;
+        sendEvent(m_event);
     }
 }
 
@@ -217,17 +236,16 @@ void Motor::update()
     if (m_state == RUNNING_RPM) {
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         m_duty = std::clamp(m_duty + rc_filter_march(&m_rc_pid, m_target_rpm-m_rpm), -1.0, 1.0);
-        if (m_target_rpm<0.0 && m_duty > 0.0) {
-            m_duty = 0.0;
+        if (m_target_rpm<0.0f && m_duty > 0.0f) {
+            m_duty = 0.0f;
         }
-        else if (m_target_rpm>0.0 && m_duty < 0.0) {
-            m_duty = 0.0;
+        else if (m_target_rpm>0.0f && m_duty < 0.0f) {
+            m_duty = 0.0f;
         }
-        else if (m_target_rpm==0.0) {
-            m_duty = 0.0;
+        else if (m_target_rpm==0.0f) {
+            m_duty = 0.0f;
         }
         #endif
-        
     }
 
     // Update motor duty cycle
@@ -242,6 +260,11 @@ void Motor::update()
         }
         #endif
         m_duty_set = m_duty;
+    }
+
+    if (m_rpm != m_event.rpm) {
+        m_event.rpm = m_rpm;
+        sendEvent(m_event);
     }
 
     m_last_update = now;

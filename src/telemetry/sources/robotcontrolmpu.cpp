@@ -1,6 +1,6 @@
-#include "rcmpu.h"
+#include "robotcontrolmpu.h"
 
-#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+#if ROBOT_HAVE_ROBOTCONTROL_MPU
 
 #include <iostream>
 #include <boost/log/trivial.hpp>
@@ -36,9 +36,9 @@ static constexpr auto MPU_INTERRUPT_PRIORITY { 10 };
 static constexpr auto TIMER_INTERVAL { 250ms };
 
 
-RCMPU *RCMPU::instance { nullptr };
+RobotControlMPU *RobotControlMPU::instance { nullptr };
 
-RCMPU::RCMPU(const std::shared_ptr<Robot::Context> &context):
+RobotControlMPU::RobotControlMPU(const std::shared_ptr<Robot::Context> &context):
     AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() },
@@ -49,13 +49,13 @@ RCMPU::RCMPU(const std::shared_ptr<Robot::Context> &context):
 
 }
 
-RCMPU::~RCMPU() 
+RobotControlMPU::~RobotControlMPU() 
 {
     cleanup();
 }
 
 
-void RCMPU::init(const std::shared_ptr<Telemetry> &telemetry) 
+void RobotControlMPU::init(const std::shared_ptr<Telemetry> &telemetry) 
 {
     const guard lock(m_mutex);
     AbstractSource::init(telemetry);
@@ -81,10 +81,10 @@ void RCMPU::init(const std::shared_ptr<Telemetry> &telemetry)
     conf.dmp_interrupt_priority = MPU_INTERRUPT_PRIORITY;
 
 	if(rc_mpu_initialize_dmp(&m_data, conf)){
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing RCMPU"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing RobotControlMPU"));
 	}
 
-    rc_mpu_set_dmp_callback([]() { RCMPU::instance->data_callback(); });
+    rc_mpu_set_dmp_callback([]() { RobotControlMPU::instance->data_callback(); });
 
     m_timer.expires_after(TIMER_INTERVAL);
     timer_setup();
@@ -93,14 +93,14 @@ void RCMPU::init(const std::shared_ptr<Telemetry> &telemetry)
 }
 
 
-void RCMPU::cleanup() 
+void RobotControlMPU::cleanup() 
 {
     const guard lock(m_mutex);
     if (!m_initialized)
         return;
     m_initialized = false;
 
-    BOOST_LOG_TRIVIAL(info) << "RCMPU::cleanup()";
+    BOOST_LOG_TRIVIAL(info) << "RobotControlMPU::cleanup()";
 
     m_timer.cancel();
 
@@ -111,7 +111,7 @@ void RCMPU::cleanup()
 }
 
 
-void RCMPU::timer_setup() 
+void RobotControlMPU::timer_setup() 
 {
     m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
     m_timer.async_wait(
@@ -123,7 +123,7 @@ void RCMPU::timer_setup()
     );
 }
 
-void RCMPU::timer(boost::system::error_code error) 
+void RobotControlMPU::timer(boost::system::error_code error) 
 {
     const guard lock(m_mutex);
     if (error!=boost::system::errc::success || !m_initialized) {
@@ -152,7 +152,7 @@ void RCMPU::timer(boost::system::error_code error)
 
     if (have_data) {
         if (auto telemetry = m_telemetry.lock()) {
-            send(telemetry, m_event);
+            sendEvent(telemetry, m_event);
         }
     }
 
@@ -211,7 +211,7 @@ void RCMPU::timer(boost::system::error_code error)
 }
 
 
-void RCMPU::data_callback()
+void RobotControlMPU::data_callback()
 {
     const auto now = clock_type::now();
     if (now-m_last_temp_read > MPU_TEMP_INTERVAL) {
@@ -227,7 +227,7 @@ void RCMPU::data_callback()
 
 
     if (auto telemetry = m_telemetry.lock()) {
-        send(telemetry, m_data);
+        sendData(telemetry, m_data);
     }
 }
 

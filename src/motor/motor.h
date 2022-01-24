@@ -11,11 +11,14 @@
 #include <robotconfig.h>
 #include <robottypes.h>
 #include <math/pid.h>
+#include <telemetry/types.h>
+#include <telemetry/events.h>
+#include <telemetry/telemetrysource.h>
 #include "types.h"
 
 namespace Robot::Motor {
 
-    class Motor {
+    class Motor : private Robot::Telemetry::Source {
         public:
             using clock = std::chrono::high_resolution_clock;
             using mutex_type = std::recursive_mutex;
@@ -61,7 +64,7 @@ namespace Robot::Motor {
             class Servo *servo() const { return m_servo.get(); }
 
         protected:
-            void init();
+            void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
 
             void setPassthrough(bool passthrough);
@@ -71,7 +74,7 @@ namespace Robot::Motor {
         private:
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
-            uint m_index;
+            const uint m_index;
             mutex_type &m_mutex;
             std::unique_ptr<class Servo> m_servo;
 
@@ -93,6 +96,8 @@ namespace Robot::Motor {
             rc_filter_t m_rc_pid;
             #endif
             Robot::Math::PID m_pid;
+
+            Robot::Telemetry::EventMotor m_event;
 
             inline uint encoderChannel() const;
             inline uint motorChannel() const;

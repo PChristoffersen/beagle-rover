@@ -5,6 +5,7 @@
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
+#include <boost/python/dict.hpp>
 
 #include "util.h"
 #include <telemetry/telemetry.h>
@@ -62,6 +63,33 @@ class TelemetryListenerWrap : public TelemetryListener, public boost::python::wr
 #endif
 
 
+static void set_dict_value(py::dict &out, const std::string &key, const Robot::Telemetry::Value &value) 
+{
+    if (std::holds_alternative<std::string>(value)) {
+        out[key] = std::get<std::string>(value);
+    }
+    if (std::holds_alternative<bool>(value)) {
+        out[key] = std::get<bool>(value);
+    }
+    else if (std::holds_alternative<double>(value)) {
+        out[key] = std::get<double>(value);
+    }
+    else if (std::holds_alternative<float>(value)) {
+        out[key] = std::get<float>(value);
+    }
+    else if (std::holds_alternative<std::uint32_t>(value)) {
+        out[key] = std::get<std::uint32_t>(value);
+    }
+}
+
+static void map2dict(py::dict &out, const Robot::Telemetry::ValueMap &in) 
+{
+    for (const auto &e : in) {
+        auto &key = e.first;
+        set_dict_value(out, key, e.second);
+    }
+}
+
 
 void python_export_telemetry() 
 {
@@ -69,6 +97,12 @@ void python_export_telemetry()
 
   
     py::class_<Telemetry, std::shared_ptr<Telemetry>, boost::noncopyable>("Telemetry", py::no_init)
+        .add_property("values", +[](Telemetry &telemetry){ 
+            Telemetry::guard(telemetry.getMutex());
+            py::dict vals;
+            map2dict(vals, telemetry.valuesUnlocked());
+            return vals; 
+        })
         ;
 
     #if 0        

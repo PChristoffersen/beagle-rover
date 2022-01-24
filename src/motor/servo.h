@@ -6,11 +6,14 @@
 #include <mutex>
 #include <iostream>
 #include <robottypes.h>
+#include <telemetry/types.h>
+#include <telemetry/events.h>
+#include <telemetry/telemetrysource.h>
 #include "types.h"
 
 namespace Robot::Motor {
 
-    class Servo {
+    class Servo : private Robot::Telemetry::Source {
         public:
             using mutex_type = std::recursive_mutex;
             using guard = std::lock_guard<mutex_type>;
@@ -38,7 +41,7 @@ namespace Robot::Motor {
 
 
         protected:
-            void init();
+            void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
 
             void setPassthrough(bool passthrough);
@@ -50,7 +53,7 @@ namespace Robot::Motor {
         private:
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
-            uint m_index;
+            const uint m_index;
             mutex_type &m_mutex;
             bool m_enabled;
             bool m_passthrough;
@@ -59,6 +62,8 @@ namespace Robot::Motor {
             std::uint32_t m_limit_min;
             std::uint32_t m_limit_max;
             std::int32_t  m_trim;
+
+            Robot::Telemetry::EventServo m_event;
 
             inline uint servoChannel() const;
 

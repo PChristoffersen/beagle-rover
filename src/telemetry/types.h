@@ -15,14 +15,16 @@ namespace Robot::Telemetry {
 
     using Signal = boost::signals2::signal<void(const class Event &)>;
 
-    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    #if ROBOT_HAVE_MPU
+    #if ROBOT_HAVE_ROBOTCONTROL_MPU
     using MPUData = rc_mpu_data_t;
     #else
-    using MPUData = uint32_t;
+    using MPUData = char; // Dummy data
     #endif
     using MPUSignal = boost::signals2::signal<void(const MPUData &)>;
+    #endif
 
-    using Value = std::variant<std::string, double, float, std::uint32_t>;
+    using Value = std::variant<std::string, bool, double, float, std::uint32_t>;
     using ValueMap = std::map<std::string, Value>;
 
 };

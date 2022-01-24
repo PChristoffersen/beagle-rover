@@ -15,55 +15,26 @@
 #define ROBOT_BOARD_BEAGLEBONE_POCKET 11
 
 
-#if defined(__arm__) && defined(HAVE_ROBOTCONTROL)
+#if defined(__arm__)
+#ifndef HAVE_ROBOTCONTROL
+#error "Beaglebone builds requires the robotcontrol library"
+#endif
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
-#define ROBOT_PLATFORM ROBOT_PLATFORM_BEAGLEBONE
-#define ROBOT_BOARD ROBOT_BOARD_BEAGLEBONE_BLUE
 
-#define ROBOT_HAVE_RC 1
-#define ROBOT_HAVE_BALANCE 1
-#define ROBOT_HAVE_WIFI 1
-#define ROBOT_NEOPIXEL_COUNT RC_EXT_NEOPIXEL_COUNT
+#include <configs/beaglebone-blue.h>
+//#include <configs/beaglebone-pocket.h>
 
 
 #elif defined(__x86_64)
-#define ROBOT_PLATFORM ROBOT_PLATFORM_PC
-#define ROBOT_BOARD ROBOT_BOARD_PC
-
-#define ROBOT_NEOPIXEL_COUNT 16
-#define ROBOT_HAVE_RC 1
+#ifdef HAVE_ROBOTCONTROL
+#include <robotcontrol.h>
+#endif
+#include <configs/board-pc.h>
+#include <configs/chassis-beaglerover.h>
 
 #else
 #error "Unsupported platform"
 #endif
-
-
-namespace Robot::Config {
-
-    // Servo motor limits
-    inline constexpr auto SERVO_LIMIT_MIN { 500u };
-    inline constexpr auto SERVO_LIMIT_MAX { 2500u };
-    inline constexpr auto SERVO_CENTER    { (SERVO_LIMIT_MAX+SERVO_LIMIT_MIN)/2u };
-    inline constexpr auto SERVO_RANGE     { SERVO_LIMIT_MAX-SERVO_LIMIT_MIN };
-
-    // Chassis dimensions
-    inline constexpr float WHEEL_BASE_MM { 178.0f };
-    inline constexpr float WHEEL_BASE_2_MM { WHEEL_BASE_MM/2.0f };
-
-    // Wheel dimentions
-    inline constexpr float WHEEL_CIRC_MM { 300.0f };
-    inline constexpr float WHEEL_DIAMETER_MM { WHEEL_CIRC_MM / M_PI };
-
-    // Wheel servo limits 
-    inline constexpr auto WHEEL_SERVO_LIMIT_MIN { 650u };
-    inline constexpr auto WHEEL_SERVO_LIMIT_MAX { 2350u };
-    inline constexpr auto WHEEL_MIN_ANGLE { (float)M_PI * (float)((int)WHEEL_SERVO_LIMIT_MIN-SERVO_CENTER)/SERVO_RANGE };
-    inline constexpr auto WHEEL_MAX_ANGLE { (float)M_PI * (float)((int)WHEEL_SERVO_LIMIT_MAX-SERVO_CENTER)/SERVO_RANGE };
-    inline constexpr auto WHEEL_CENTER_ANGLE { 0.0f };
-    inline constexpr auto WHEEL_STRAIGHT_ANGLE { (float)M_PI_4 };
-    inline constexpr auto WHEEL_MAX_TURN_ANGLE { std::min(-(WHEEL_STRAIGHT_ANGLE+WHEEL_MIN_ANGLE), WHEEL_MAX_ANGLE-WHEEL_STRAIGHT_ANGLE) };
-
-};
 
 #endif

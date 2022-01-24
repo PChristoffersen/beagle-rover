@@ -65,7 +65,7 @@ void Robot::init()
 
     m_context->init();
     m_telemetry->init();
-    m_motor_control->init();
+    m_motor_control->init(m_telemetry);
     m_led_control->init();
     #if ROBOT_HAVE_RC
     m_rc_receiver->init(m_telemetry);

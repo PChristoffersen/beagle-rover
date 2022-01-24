@@ -41,14 +41,14 @@ Control::~Control()
 }
 
 
-void Control::init() 
+void Control::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry) 
 {
     const guard lock(m_mutex);
     BOOST_ASSERT_MSG(!m_initialized, "Already initialized");
     m_initialized = true;
 
     for (auto &motor : m_motors) {
-       motor->init();
+       motor->init(telemetry);
     }
 
     onMotorPower(m_context->motorPower());

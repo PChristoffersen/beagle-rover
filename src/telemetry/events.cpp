@@ -3,6 +3,20 @@
 namespace Robot::Telemetry {
 
 
+void EventMotor::update(ValueMap &map) const 
+{
+    map[name+".enabled"] = enabled;
+    map[name+".duty"] = duty;
+    map[name+".rpm"] = rpm;
+    map[name+".rpm_target"] = rpm_target;
+}
+
+void EventServo::update(ValueMap &map) const 
+{
+    map[name+".enabled"] = enabled;
+    map[name+".angle"] = angle;
+}
+
 void EventBattery::update(ValueMap &map) const 
 {
     map[name+".id"] = (uint32_t)battery_id;
