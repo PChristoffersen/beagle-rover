@@ -30,8 +30,8 @@ Servo::Servo(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
+    m_update_version { 0 },
     m_enabled { false },
-    m_passthrough { false },
     m_limit_min { WHEEL_SERVO_LIMIT_MIN },
     m_limit_max { WHEEL_SERVO_LIMIT_MAX },
     m_trim { SERVO_TRIM[index] }, 
@@ -52,8 +52,11 @@ void Servo::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry)
 {
     Robot:Telemetry::Source::init(telemetry);
 
-    m_value = Value::UNSET;
+    m_value = Value::CENTER;
     m_initialized = true;
+
+    m_event.angle = m_value.asAngle();
+    sendEvent(m_event);
 }
 
 
@@ -73,6 +76,7 @@ void Servo::setEnabled(bool enabled)
     const guard lock(m_mutex);
     if (enabled!=m_enabled) {
         m_enabled = enabled;
+        m_update_version++;
         BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
         m_context->servoPower(m_enabled);
 
@@ -82,21 +86,14 @@ void Servo::setEnabled(bool enabled)
 }
 
 
-void Servo::setPassthrough(bool passthrough) 
-{
-    const guard lock(m_mutex);
-    //BOOST_LOG_TRIVIAL(info) << "Enable " << enable;
-    m_passthrough = passthrough;
-}
-
-
 void Servo::setValue(const Value value)
 {
     const guard lock(m_mutex);
-    //BOOST_LOG_TRIVIAL(info) << *this << " Value " << value << " ( angle=" << value.asAngle() << " )";
+    //BOOST_LOG_TRIVIAL(info) << *this << " Value " << value << " ( angle=" << value.asAngleDegrees() << " )";
     m_value = value.clamp(m_limit_min, m_limit_max);
+    m_update_version++;
 
-    m_event.angle = m_value.asAngleRadians();
+    m_event.angle = m_value.asAngle();
     sendEvent(m_event);
 }
 
@@ -113,12 +110,14 @@ void Servo::setLimitMin(uint32_t limit)
 {
     const guard lock(m_mutex);
     m_limit_min = std::clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
+    m_update_version++;
 }
 
 void Servo::setLimitMax(uint32_t limit) 
 {
     const guard lock(m_mutex);
     m_limit_max = std::clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
+    m_update_version++;
 }
 
 
@@ -130,7 +129,7 @@ inline uint Servo::servoChannel() const {
 
 void Servo::update() 
 {
-    if (m_enabled && !m_passthrough && m_value) {
+    if (m_enabled && m_value) {
         //BOOST_LOG_TRIVIAL(info) << "Pulse";
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_servo_send_pulse_us(servoChannel(), m_value.asServoPulse()+m_trim);

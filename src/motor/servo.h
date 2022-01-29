@@ -28,23 +28,20 @@ namespace Robot::Motor {
             void setEnabled(bool enable);
             bool getEnabled() const { return m_enabled; }
 
-            bool getPassthrough() const { return m_passthrough; }
-
             void setValue(const Value value);
             Value getValue() const { return m_value; }
 
             void setLimits(std::uint32_t lmin, std::uint32_t lmax);
             void setLimitMin(std::uint32_t limit);
-            std::uint32_t getLimitMin() const { return m_limit_min; };
+            std::uint32_t getLimitMin() const { return m_limit_min; }
             void setLimitMax(std::uint32_t limit);
             std::uint32_t getLimitMax() const { return m_limit_max; }
 
+            uint32_t updateVersion() const { return m_update_version; }
 
         protected:
             void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
-
-            void setPassthrough(bool passthrough);
 
             void update();
 
@@ -53,10 +50,10 @@ namespace Robot::Motor {
         private:
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
+            uint32_t m_update_version;
             const uint m_index;
             mutex_type &m_mutex;
             bool m_enabled;
-            bool m_passthrough;
             Value m_value;
 
             std::uint32_t m_limit_min;

@@ -34,10 +34,11 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
+    m_update_version { 0 },
+    m_telemetry_version { 0 },
     m_servo { std::make_unique<Servo>(index, mutex, context) },
     m_enabled { false },
-    m_passthrough { false },
-    m_state { FREE_SPIN },
+    m_mode { Mode::FREE_SPIN },
     m_last_enc_value { 0 },
     m_odometer_base { 0 },
     m_duty { 0.0f },
@@ -88,10 +89,12 @@ void Motor::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_motor_free_spin(motorChannel());
     #endif
-    m_state = FREE_SPIN;
+    m_mode = Mode::FREE_SPIN;
 
     m_servo->init(telemetry);
     m_initialized = true;
+
+    sendEvent(m_event);
 }
 
 void Motor::cleanup() 
@@ -111,19 +114,25 @@ void Motor::cleanup()
 void Motor::brake() 
 {
     const guard lock(m_mutex);
-    m_state = BRAKE;
-    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-    rc_motor_brake(motorChannel());
-    #endif
+    if (m_mode != Mode::BRAKE) {
+        m_update_version++;
+        m_mode = Mode::BRAKE;
+        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+        rc_motor_brake(motorChannel());
+        #endif
+    }
 }
 
 void Motor::freeSpin() 
 {
     const guard lock(m_mutex);
-    m_state = FREE_SPIN;
-    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-    rc_motor_free_spin(motorChannel());
-    #endif
+    if (m_mode != Mode::FREE_SPIN) {
+        m_mode = Mode::FREE_SPIN;
+        m_update_version++;
+        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+        rc_motor_free_spin(motorChannel());
+        #endif
+    }
 }
 
 
@@ -135,26 +144,30 @@ void Motor::setValue(const Value value) {
 void Motor::setDuty(float duty) 
 {
     const guard lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
-    m_state = RUNNING_DUTY;
-    m_duty = duty;
+    if (duty != m_duty || m_mode != Mode::DUTY) {
+        BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
+        m_mode = Mode::DUTY;
+        m_duty = duty;
+        m_update_version++;
 
-    m_event.duty = m_duty;
-    m_event.rpm_target = -1.0f;
-    sendEvent(m_event);
+        m_event.duty = m_duty;
+        m_event.rpm_target = 0.0f;
+        sendEvent(m_event);
+    }
 }
 
 void Motor::setTargetRPM(float rpm) 
 {
     const guard lock(m_mutex);
-    if (m_state!=RUNNING_RPM) {
+    if (m_mode!=Mode::RPM) {
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_filter_reset(&m_rc_pid);
         #endif
         m_pid.reset();
     }
-    m_state = RUNNING_RPM;
+    m_mode = Mode::RPM;
     m_target_rpm = rpm;
+    m_update_version++;
     m_pid.setSetpoint(rpm);
 
     m_event.rpm_target = m_target_rpm;
@@ -167,6 +180,7 @@ void Motor::setEnabled(bool enabled)
     const guard lock(m_mutex);
     if (enabled!=m_enabled) {
         m_enabled = enabled;
+        m_update_version++;
         BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
         if (m_enabled) {
             m_context->motorPower(true);
@@ -187,17 +201,12 @@ void Motor::setEnabled(bool enabled)
     }
 }
 
-void Motor::setPassthrough(bool passthrough) 
-{
-    const guard lock(m_mutex);
-    m_state = RUNNING_PASSTHROUGH;
-    m_passthrough = passthrough;
-}
-
-
 void Motor::resetOdometer() 
 {
+    const guard lock(m_mutex);
+    BOOST_LOG_TRIVIAL(info) << *this << " resetOdometer";
     m_odometer_base = m_last_enc_value;
+    m_telemetry_version++;
 }
 
 
@@ -225,15 +234,19 @@ void Motor::update()
     auto value_diff = value-m_last_enc_value;
     float rpm = (float)(value_diff*MINUTE.count())/((float)(ENCODER_CPR*GEARING)*diff.count());
     #else
-    int32_t value = m_last_enc_value+1;
-    float rpm = m_duty_set*SIMULATED_RPM_MAX;
+    int32_t value = 0;
+    float rpm = 0.0f;
     #endif
 
-    m_rpm = (rpm+m_rpm)/2.0;
+    auto new_rpm = (rpm+m_rpm)/2.0;
+    if (new_rpm!=m_rpm || m_last_enc_value!=value) {
+        m_telemetry_version++;
+    }
+    m_rpm = new_rpm;
     m_last_enc_value = value;
 
     // Update PID
-    if (m_state == RUNNING_RPM) {
+    if (m_mode == Mode::RPM) {
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         m_duty = std::clamp(m_duty + rc_filter_march(&m_rc_pid, m_target_rpm-m_rpm), -1.0, 1.0);
         if (m_target_rpm<0.0f && m_duty > 0.0f) {

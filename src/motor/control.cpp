@@ -221,8 +221,8 @@ void Control::motorTimer()
             % m_motors[0]->getTargetRPM()
             % m_motors[0]->getDuty()
             ;
-#endif
         resetOdometer();
+#endif
 
         last_print = now;
     }

@@ -70,10 +70,10 @@ void AbstractWheelSteering::updateOrientation(Orientation orientation)
 void AbstractWheelSteering::resetMotors()
 {
     const auto &motors = m_motor_control->getMotors();
-    motorSet(FRONT_LEFT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(FRONT_RIGHT,Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(REAR_LEFT,  Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(REAR_RIGHT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(FRONT_RIGHT,Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(REAR_LEFT,  Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0);
 }
 
 

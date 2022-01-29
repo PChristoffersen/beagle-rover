@@ -51,8 +51,6 @@ namespace Robot {
             uint m_servo_power_rail_cnt;
             uint m_rc_power_rail_cnt;
 
-            void initLogging();
-
             void initPlatform();
             void cleanupPlatform();
     };

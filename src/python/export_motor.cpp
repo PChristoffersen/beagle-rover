@@ -21,16 +21,25 @@ void python_export_motor()
     using Robot::Motor::Control, Robot::Motor::MotorList, Robot::Motor::Motor, Robot::Motor::Servo, Robot::Motor::Value;
     //py::register_ptr_to_python<shared_ptr<MotorControl>>();
 
-    py::enum_<Motor::State>("MotorState");
+    py::enum_<Motor::Mode>("MotorMode")
+        .value("DUTY", Motor::Mode::DUTY)
+        .value("RPM", Motor::Mode::RPM)
+        .value("FREE_SPIN", Motor::Mode::FREE_SPIN)
+        .value("BRAKE", Motor::Mode::BRAKE)
+        ;
 
     py::class_<Motor, boost::noncopyable>("Motor", py::no_init)
         .add_property("index", &Motor::getIndex)
         .add_property("enabled", &Motor::getEnabled, &Motor::setEnabled)
-        .add_property("servo", py::make_function(&Motor::servo, py::return_internal_reference<>()))
         .add_property("duty", &Motor::getDuty, &Motor::setDuty)
         .add_property("target_rpm", &Motor::getTargetRPM, &Motor::setTargetRPM)
         .add_property("rpm", &Motor::getRPM)
-        .add_property("state", &Motor::getState)
+        .add_property("mode", &Motor::getMode)
+        .add_property("odometer", &Motor::getOdometer)
+        .add_property("encoder", &Motor::getEncoderValue)
+        .add_property("update_version", &Motor::updateVersion)
+        .add_property("telemetry_version", &Motor::telemetryVersion)
+        .add_property("servo", py::make_function(&Motor::servo, py::return_internal_reference<>()))
         .def("brake", &Motor::brake)
         .def("free_spin", &Motor::freeSpin)
         .def("reset_odometer", &Motor::resetOdometer)
@@ -42,9 +51,10 @@ void python_export_motor()
         .add_property("enabled", &Servo::getEnabled, &Servo::setEnabled)
         .add_property("pulse_us", +[](const Servo &servo) { return servo.getValue().asServoPulse(); }, +[](Servo &servo, uint32_t value) { servo.setValue(Value::fromMicroSeconds(value)); })
         .add_property("angle", +[](const Servo &servo) { return servo.getValue().asAngle(); }, +[](Servo &servo, float value) { servo.setValue(Value::fromAngle(value)); })
-        .add_property("angle_radians", +[](const Servo &servo) { return servo.getValue().asAngleRadians(); }, +[](Servo &servo, float value) { servo.setValue(Value::fromAngleRadians(value)); })
+        .add_property("angle_degrees", +[](const Servo &servo) { return servo.getValue().asAngleDegrees(); }, +[](Servo &servo, float value) { servo.setValue(Value::fromAngleDegrees(value)); })
         .add_property("limit_min", &Servo::getLimitMin, &Servo::setLimitMin)
         .add_property("limit_max", &Servo::getLimitMax, &Servo::setLimitMax)
+        .add_property("update_version", &Servo::updateVersion)
         .def("set_limits", &Servo::setLimits)
         .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
@@ -65,7 +75,7 @@ void python_export_motor()
         .add_property("odometer", &Control::getOdometer)
         .def("brake", &Control::brake)
         .def("free_spin", &Control::freeSpin)
-        .def("resetOdometer", &Control::resetOdometer)
+        .def("reset_odometer", &Control::resetOdometer)
         .def("__enter__", +[](Control &ctl) {
             ctl.lock();
             return ctl.shared_from_this();

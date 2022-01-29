@@ -77,10 +77,10 @@ void ControlSchemeSkid::updateOrientation(Orientation orientation)
 void ControlSchemeSkid::resetMotors()
 {
     const auto &motors = m_motor_control->getMotors();
-    motorSet(FRONT_LEFT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(FRONT_RIGHT,Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(REAR_LEFT,  Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(REAR_RIGHT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(FRONT_LEFT, Value::fromAngle( WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(FRONT_RIGHT,Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(REAR_LEFT,  Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
+    motorSet(REAR_RIGHT, Value::fromAngle( WHEEL_STRAIGHT_ANGLE), 0.0);
 }
 
 
@@ -100,10 +100,10 @@ void ControlSchemeSkid::steer(float steering, float throttle, float aux_x, float
 
 
     const auto &motors = m_motor_control->getMotors();
-    motorSet(FRONT_LEFT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE + skew), left);
-    motorSet(FRONT_RIGHT,Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE - skew), right);
-    motorSet(REAR_LEFT,  Value::fromAngleRadians(-WHEEL_STRAIGHT_ANGLE - skew), left);
-    motorSet(REAR_RIGHT, Value::fromAngleRadians( WHEEL_STRAIGHT_ANGLE + skew), right);
+    motorSet(FRONT_LEFT, Value::fromAngle( WHEEL_STRAIGHT_ANGLE + skew), left);
+    motorSet(FRONT_RIGHT,Value::fromAngle(-WHEEL_STRAIGHT_ANGLE - skew), right);
+    motorSet(REAR_LEFT,  Value::fromAngle(-WHEEL_STRAIGHT_ANGLE - skew), left);
+    motorSet(REAR_RIGHT, Value::fromAngle( WHEEL_STRAIGHT_ANGLE + skew), right);
 }
 
 

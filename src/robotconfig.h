@@ -22,8 +22,11 @@
 #include <robotcontrol.h>
 #include <robotcontrolext.h>
 
-#include <configs/beaglebone-blue.h>
-//#include <configs/beaglebone-pocket.h>
+#include <configs/board-beaglebone-blue.h>
+//#include <configs/board-beaglebone-pocket.h>
+
+#include <configs/chassis-beaglerover.h>
+
 
 
 #elif defined(__x86_64)

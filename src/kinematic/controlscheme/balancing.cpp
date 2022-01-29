@@ -154,7 +154,7 @@ void ControlSchemeBalancing::initMotors()
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(false);
-        motor->servo()->setValue(Value::fromAngleRadians(WHEEL_MIN_ANGLE));
+        motor->servo()->setValue(Value::fromAngle(WHEEL_MIN_ANGLE));
         motor->servo()->setEnabled(true);
     }
     {
@@ -162,21 +162,21 @@ void ControlSchemeBalancing::initMotors()
         motor->setDuty(0.0);
         motor->brake();
         motor->setEnabled(false);
-        motor->servo()->setValue(Value::fromAngleRadians(WHEEL_MIN_ANGLE));
+        motor->servo()->setValue(Value::fromAngle(WHEEL_MIN_ANGLE));
         motor->servo()->setEnabled(true);
     }
     {
         auto &motor = motors[MotorPosition::REAR_LEFT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
-        motor->servo()->setValue(Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE));
+        motor->servo()->setValue(Value::fromAngle(WHEEL_STRAIGHT_ANGLE));
         motor->servo()->setEnabled(true);
     }
     {
         auto &motor = motors[MotorPosition::REAR_RIGHT];
         motor->setDuty(0.0);
         motor->setEnabled(true);
-        motor->servo()->setValue(Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE));
+        motor->servo()->setValue(Value::fromAngle(WHEEL_STRAIGHT_ANGLE));
         motor->servo()->setEnabled(true);
     }
 }

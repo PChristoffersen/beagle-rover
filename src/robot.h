@@ -39,8 +39,14 @@ namespace Robot {
             uint heartbeat() const { return m_heartbeat; }
 
         private:
+            class LogConfig {
+                public:
+                    LogConfig();
+            };
+
             static class Robot *m_instance;
             bool m_initialized;
+            LogConfig m_log_config;
             std::shared_ptr<Context> m_context;
             boost::asio::high_resolution_timer m_timer;
 

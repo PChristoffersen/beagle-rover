@@ -14,7 +14,8 @@
 namespace Robot::Telemetry {
 
 Telemetry::Telemetry(const std::shared_ptr<Robot::Context> &context) :
-    m_initialized { false }
+    m_initialized { false },
+    m_values_version { 0 }
 {
 
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
@@ -58,6 +59,7 @@ void Telemetry::process(const Event &event)
 {
     const guard lock(m_mutex);
     event.update(m_values);
+    m_values_version++;
     sig_event(event);
 }
 

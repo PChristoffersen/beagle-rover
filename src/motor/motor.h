@@ -24,10 +24,9 @@ namespace Robot::Motor {
             using mutex_type = std::recursive_mutex;
             using guard = std::lock_guard<mutex_type>;
 
-            enum State {
-                RUNNING_DUTY,
-                RUNNING_RPM,
-                RUNNING_PASSTHROUGH,
+            enum class Mode {
+                DUTY,
+                RPM,
                 FREE_SPIN,
                 BRAKE
             };
@@ -45,21 +44,21 @@ namespace Robot::Motor {
             void setEnabled(bool enabled);
             bool getEnabled() const { return m_enabled; }
 
-            bool getPassthrough() const { return m_passthrough; }
-
-
             void setValue(const Value value);
             void setDuty(float duty);
             float getDuty() const { return m_duty; }
             void setTargetRPM(float rpm);
             float getTargetRPM() const { return m_target_rpm; }
 
-            State getState() const { return m_state; }
+            Mode getMode() const { return m_mode; }
             float getRPM() const { return m_rpm; }
 
             void resetOdometer();
             double getOdometer() const;
             int32_t getEncoderValue() const { return m_last_enc_value-m_odometer_base; }
+
+            uint32_t updateVersion() const { return m_update_version; }
+            uint32_t telemetryVersion() const { return m_telemetry_version; }
 
             class Servo *servo() const { return m_servo.get(); }
 
@@ -67,20 +66,20 @@ namespace Robot::Motor {
             void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
 
-            void setPassthrough(bool passthrough);
             void update();
 
             friend class Control;
         private:
             std::shared_ptr<::Robot::Context> m_context;
+            uint32_t m_update_version;
+            uint32_t m_telemetry_version;
             bool m_initialized;
             const uint m_index;
             mutex_type &m_mutex;
             std::unique_ptr<class Servo> m_servo;
 
             bool m_enabled;
-            bool m_passthrough;
-            State m_state;
+            Mode m_mode;
 
             std::int32_t m_last_enc_value;
             clock::time_point m_last_update;

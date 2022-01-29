@@ -3,9 +3,7 @@
 #include <iostream>
 #include <functional>
 #include <boost/bind.hpp>
-#include <boost/log/core.hpp> 
 #include <boost/log/trivial.hpp> 
-#include <boost/log/expressions.hpp> 
 
 #include <robotconfig.h>
 
@@ -24,7 +22,6 @@ Context::Context() :
     m_servo_power_rail_cnt { 0 },
     m_rc_power_rail_cnt { 0 }
 {
-    initLogging();
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
@@ -40,21 +37,6 @@ Context::~Context()
     cleanup();
 }
 
-
-void Context::initLogging() {
-    namespace logging = boost::log;
-    namespace keywords = boost::log::keywords;
-
-    #if 0
-    constexpr auto level = logging::trivial::trace;
-    #else
-    constexpr auto level = logging::trivial::debug;
-    #endif
-
-    logging::core::get()->set_filter(
-        logging::trivial::severity >= level
-    ); 
-}
 
 
 
@@ -88,6 +70,11 @@ void Context::cleanup()
 #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
 void Context::initPlatform() 
 {
+    auto uid = geteuid();
+    if (uid!=0) {
+        BOOST_THROW_EXCEPTION(std::runtime_error("Robot library requires root"));
+    }
+
     if (rc_adc_init()<0) {
         BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing ADC"));
     }
@@ -131,6 +118,8 @@ void Context::cleanupPlatform()
 #if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
 void Context::initPlatform() 
 {
+
+
 }
 
 void Context::cleanupPlatform() 
@@ -147,7 +136,9 @@ void Context::start()
     m_thread = std::make_shared<std::thread>([&]{ 
         auto val = nice(CONTEXT_THREAD_NICE);
         if (val != CONTEXT_THREAD_NICE) {
+            #if ROBOT_PLATFORM != ROBOT_PLATFORM_PC
             BOOST_LOG_TRIVIAL(warning) << "Failed to set context thread nice value (" << val << ")";
+            #endif
         }
         m_io.run(); 
     });

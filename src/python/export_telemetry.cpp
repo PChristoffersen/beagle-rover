@@ -101,8 +101,10 @@ void python_export_telemetry()
             Telemetry::guard(telemetry.getMutex());
             py::dict vals;
             map2dict(vals, telemetry.valuesUnlocked());
+            vals["version"] = telemetry.valuesVersion();
             return vals; 
         })
+        .add_property("values_version", &Telemetry::valuesVersion)
         ;
 
     #if 0        

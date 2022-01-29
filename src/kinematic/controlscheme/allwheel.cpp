@@ -31,10 +31,10 @@ ControlSchemeAllWheel::~ControlSchemeAllWheel()
 
 void ControlSchemeAllWheel::setMotors(float left, float right) 
 {
-    motorServo(FRONT_LEFT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+left));
-    motorServo(FRONT_RIGHT, -Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+right));
-    motorServo(REAR_LEFT, -Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+left));
-    motorServo(REAR_RIGHT, Value::fromAngleRadians(WHEEL_STRAIGHT_ANGLE+right));
+    motorServo(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left));
+    motorServo(FRONT_RIGHT, -Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right));
+    motorServo(REAR_LEFT, -Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left));
+    motorServo(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right));
 }
 
 

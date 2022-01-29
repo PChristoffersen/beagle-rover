@@ -24,7 +24,8 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
     m_initialized { false },
     m_background { Color::BLACK },
-    m_animation_mode { AnimationMode::NONE }
+    m_animation_mode { AnimationMode::NONE },
+    m_indicator_mode { IndicatorMode::NONE }
 {
 
 }

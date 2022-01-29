@@ -3,7 +3,17 @@
 #include <iostream>
 #include <exception>
 #include <chrono>
-#include <boost/log/trivial.hpp> 
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/sync_frontend.hpp>
+#include <boost/log/sinks/text_ostream_backend.hpp>
+#include <boost/log/sources/logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/support/date_time.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/console.hpp>
+
 
 #include <robottypes.h>
 #include <robotcontext.h>
@@ -25,8 +35,12 @@ static constexpr auto TIMER_INTERVAL { 1s };
 Robot *Robot::m_instance { nullptr };
 
 
+
+
+
 Robot::Robot() : 
     m_initialized { false },
+    m_log_config {},
     m_context { std::make_shared<Context>() },
     #if ROBOT_HAVE_RC
     m_rc_receiver { std::make_shared<RC::Receiver>(m_context) },
@@ -45,6 +59,9 @@ Robot::Robot() :
     m_timer { m_context->io() },
     m_heartbeat { 0u }
 {
+
+//    m_context = std::make_shared<Context>();
+
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
@@ -53,6 +70,9 @@ Robot::~Robot()
     cleanup();
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
+
+
+
 
 
 void Robot::init() 
@@ -144,4 +164,46 @@ void Robot::timer()
 }
 
 
+Robot::LogConfig::LogConfig() 
+{
+    namespace logging = boost::log;
+    namespace keywords = boost::log::keywords;
+    namespace expr = boost::log::expressions;
+ 
+    logging::add_common_attributes();
+
+    auto sink = logging::add_console_log();
+    auto formatter =
+            expr::stream
+            << "["
+            << expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%H:%M:%S.%f")
+            << "] ["
+            << expr::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID") 
+            << "] ["
+            << boost::log::trivial::severity
+            << "]  "
+            << expr::message;
+
+    sink->set_formatter(formatter);
+    sink->locked_backend()->auto_flush(true);
+
+    #if 0
+    constexpr auto level = logging::trivial::trace;
+    #else
+    constexpr auto level = logging::trivial::debug;
+    #endif
+
+    logging::core::get()->set_filter(
+        logging::trivial::severity >= level
+    );
+
+
+    BOOST_LOG_TRIVIAL(info) << "Logging initialized";
+}
+
+
 };
+
+
+
+

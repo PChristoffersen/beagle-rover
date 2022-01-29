@@ -60,13 +60,13 @@ namespace Robot {
             {
                 return Value { (value_t)((percent * PULSE_RANGE) + PULSE_MIN) };
             }
-            inline static constexpr Value fromAngleRadians(float angle) 
+            inline static constexpr Value fromAngle(float angle) 
             {
                 return Value { (value_t)((angle * PULSE_RANGE) / (float)M_PI + PULSE_CENTER) };
             }
-            inline static constexpr Value fromAngle(float angle) 
+            inline static constexpr Value fromAngleDegrees(float angle) 
             {
-                return fromAngleRadians(angle * (float)M_PI / 180.0f);
+                return fromAngle(angle * (float)M_PI / 180.0f);
             }
 
 
@@ -79,13 +79,13 @@ namespace Robot {
             {
                 return (float)(2*((std::int32_t)m_value-PULSE_CENTER))/PULSE_RANGE;
             }
-            inline constexpr float asAngleRadians() const 
+            inline constexpr float asAngle() const 
             { 
                 return (float)M_PI * (float)((int32_t)m_value - PULSE_CENTER) / PULSE_RANGE;
             }
-            inline constexpr float asAngle() const 
+            inline constexpr float asAngleDegrees() const 
             { 
-                return asAngleRadians() * 180.0f / (float)M_PI;
+                return asAngle() * 180.0f / (float)M_PI;
             }
             inline constexpr uint asButton(uint divisions) const 
             {

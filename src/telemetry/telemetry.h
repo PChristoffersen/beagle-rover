@@ -28,6 +28,7 @@ namespace Robot::Telemetry {
             void init();
             void cleanup();
 
+            std::uint32_t valuesVersion() const { return m_values_version; }
             const ValueMap &valuesUnlocked() const { return m_values; }
 
             Signal sig_event;
@@ -48,6 +49,7 @@ namespace Robot::Telemetry {
             bool m_initialized;
             std::vector<std::shared_ptr<class Source>> m_sources;
 
+            std::uint32_t m_values_version;
             ValueMap m_values;
     };
         
