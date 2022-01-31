@@ -2,6 +2,8 @@
 
 namespace py = boost::python;
 
+namespace Robot::Python {
+
 std::string parse_python_exception() 
 {
     PyObject *type_ptr = nullptr, *value_ptr = nullptr, *traceback_ptr = nullptr;
@@ -41,3 +43,4 @@ std::string parse_python_exception()
 }
 
 
+}

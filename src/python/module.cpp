@@ -4,25 +4,30 @@
 
 #include "util.h"
 
-void python_export_std();
-void python_export_motor();
-void python_export_telemetry();
-void python_export_rcreceiver();
-void python_export_led();
-void python_export_kinematic();
-void python_export_robot();
-void python_export_input();
+
+
+namespace Robot::Python {
+    void export_util();
+    void export_motor();
+    void export_telemetry();
+    void export_rcreceiver();
+    void export_led();
+    void export_kinematic();
+    void export_robot();
+    void export_input();
+};
 
 
 BOOST_PYTHON_MODULE(robotsystem) 
 {
-    python_export_std();
-    python_export_motor();
-    python_export_telemetry();
-    python_export_rcreceiver();
-    python_export_led();
-    python_export_kinematic();
-    python_export_input();
-    python_export_robot();
+    using namespace Robot::Python;
 
+    export_util();
+    export_motor();
+    export_telemetry();
+    export_rcreceiver();
+    export_led();
+    export_kinematic();
+    export_input();
+    export_robot();
 }

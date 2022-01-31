@@ -13,7 +13,10 @@
 namespace py = boost::python;
 
 
-void python_export_input() 
+namespace Robot::Python {
+
+
+void export_input() 
 {
     using Robot::Input::Control, Robot::Input::InputSource, Robot::Input::SoftwareInterface;
 
@@ -33,6 +36,7 @@ void python_export_input()
         .add_property("source", &Control::getInputSource, &Control::setInputSource)
         .add_property("manual", py::make_function(&Control::manual, py::return_internal_reference<>() ))
         .add_property("web", py::make_function(&Control::web, py::return_internal_reference<>() ))
+        .def("subscribe", +[](Control &control, py::object &func) { return notify_subscribe<Control>(control, func); })
         .def("__enter__", +[](Control &ctl) {
             ctl.lock();
             return ctl.shared_from_this();
@@ -41,4 +45,8 @@ void python_export_input()
             ctl.unlock();
         })
         ;
+
 }
+
+
+};

@@ -11,8 +11,9 @@
 
 namespace py = boost::python;
 
+namespace Robot::Python {
 
-void python_export_rcreceiver() 
+void export_rcreceiver() 
 {
     #if ROBOT_HAVE_RC
     
@@ -23,6 +24,7 @@ void python_export_rcreceiver()
         .add_property("connected", &Receiver::isConnected)
         .add_property("flags", &Receiver::getFlags)
         .add_property("rssi", &Receiver::getRSSI)
+        //.def("subscribe", +[](Receiver &receiver, py::object &func) { return notify_subscribe<Receiver>(receiver, func); })
         .def("__enter__", +[](Receiver &rc) {
             rc.lock();
             return rc.shared_from_this();
@@ -33,4 +35,6 @@ void python_export_rcreceiver()
         ;
     
     #endif
+}
+
 }

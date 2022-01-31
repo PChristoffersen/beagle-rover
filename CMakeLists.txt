@@ -92,7 +92,6 @@ add_library(robotsystem MODULE
     ${SRC}
     src/python/module.cpp
     src/python/util.cpp
-    src/python/export_std.cpp
     src/python/export_motor.cpp
     src/python/export_telemetry.cpp
     src/python/export_rcreceiver.cpp
@@ -100,6 +99,7 @@ add_library(robotsystem MODULE
     src/python/export_kinematic.cpp
     src/python/export_input.cpp
     src/python/export_robot.cpp
+    src/python/export_util.cpp
 )
 set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})

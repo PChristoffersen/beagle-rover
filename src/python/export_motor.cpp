@@ -15,8 +15,10 @@
 
 namespace py = boost::python;
 
+namespace Robot::Python {
 
-void python_export_motor() 
+
+void export_motor() 
 {
     using Robot::Motor::Control, Robot::Motor::MotorList, Robot::Motor::Motor, Robot::Motor::Servo, Robot::Motor::Value;
     //py::register_ptr_to_python<shared_ptr<MotorControl>>();
@@ -37,12 +39,11 @@ void python_export_motor()
         .add_property("mode", &Motor::getMode)
         .add_property("odometer", &Motor::getOdometer)
         .add_property("encoder", &Motor::getEncoderValue)
-        .add_property("update_version", &Motor::updateVersion)
-        .add_property("telemetry_version", &Motor::telemetryVersion)
         .add_property("servo", py::make_function(&Motor::servo, py::return_internal_reference<>()))
         .def("brake", &Motor::brake)
         .def("free_spin", &Motor::freeSpin)
         .def("reset_odometer", &Motor::resetOdometer)
+        .def("subscribe", +[](Motor &motor, py::object &func) { return notify_subscribe<Motor>(motor, func); })
         .def("__str__", +[](const Motor &m) { return (boost::format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
 
@@ -54,8 +55,8 @@ void python_export_motor()
         .add_property("angle_degrees", +[](const Servo &servo) { return servo.getValue().asAngleDegrees(); }, +[](Servo &servo, float value) { servo.setValue(Value::fromAngleDegrees(value)); })
         .add_property("limit_min", &Servo::getLimitMin, &Servo::setLimitMin)
         .add_property("limit_max", &Servo::getLimitMax, &Servo::setLimitMax)
-        .add_property("update_version", &Servo::updateVersion)
         .def("set_limits", &Servo::setLimits)
+        .def("subscribe", +[](Servo &servo, py::object &func) { return notify_subscribe<Servo>(servo, func); })
         .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
 
@@ -86,5 +87,6 @@ void python_export_motor()
         .def("__str__", +[](const Control &ctl) { return "<MotorControl>"; })
         ;
 
-
 }
+
+};

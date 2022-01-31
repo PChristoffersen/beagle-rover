@@ -34,8 +34,6 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_initialized { false },
     m_index { index },
     m_mutex { mutex },
-    m_update_version { 0 },
-    m_telemetry_version { 0 },
     m_servo { std::make_unique<Servo>(index, mutex, context) },
     m_enabled { false },
     m_mode { Mode::FREE_SPIN },
@@ -115,11 +113,11 @@ void Motor::brake()
 {
     const guard lock(m_mutex);
     if (m_mode != Mode::BRAKE) {
-        m_update_version++;
         m_mode = Mode::BRAKE;
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_motor_brake(motorChannel());
         #endif
+        notify(nullptr);
     }
 }
 
@@ -128,10 +126,10 @@ void Motor::freeSpin()
     const guard lock(m_mutex);
     if (m_mode != Mode::FREE_SPIN) {
         m_mode = Mode::FREE_SPIN;
-        m_update_version++;
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_motor_free_spin(motorChannel());
         #endif
+        notify(nullptr);
     }
 }
 
@@ -148,30 +146,32 @@ void Motor::setDuty(float duty)
         BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
         m_mode = Mode::DUTY;
         m_duty = duty;
-        m_update_version++;
 
         m_event.duty = m_duty;
         m_event.rpm_target = 0.0f;
         sendEvent(m_event);
+        notify(nullptr);
     }
 }
 
 void Motor::setTargetRPM(float rpm) 
 {
     const guard lock(m_mutex);
-    if (m_mode!=Mode::RPM) {
-        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-        rc_filter_reset(&m_rc_pid);
-        #endif
-        m_pid.reset();
-    }
-    m_mode = Mode::RPM;
-    m_target_rpm = rpm;
-    m_update_version++;
-    m_pid.setSetpoint(rpm);
+    if (m_mode!=Mode::RPM || m_target_rpm != rpm) {
+        if (m_mode!=Mode::RPM) {
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+            rc_filter_reset(&m_rc_pid);
+            #endif
+            m_pid.reset();
+            m_mode = Mode::RPM;
+        }
+        m_target_rpm = rpm;
+        m_pid.setSetpoint(rpm);
 
-    m_event.rpm_target = m_target_rpm;
-    sendEvent(m_event);
+        m_event.rpm_target = m_target_rpm;
+        sendEvent(m_event);
+        notify(nullptr);
+    }
 }
 
 
@@ -180,7 +180,6 @@ void Motor::setEnabled(bool enabled)
     const guard lock(m_mutex);
     if (enabled!=m_enabled) {
         m_enabled = enabled;
-        m_update_version++;
         BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
         if (m_enabled) {
             m_context->motorPower(true);
@@ -198,6 +197,7 @@ void Motor::setEnabled(bool enabled)
         }
         m_event.enabled = enabled;
         sendEvent(m_event);
+        notify(nullptr);
     }
 }
 
@@ -206,7 +206,7 @@ void Motor::resetOdometer()
     const guard lock(m_mutex);
     BOOST_LOG_TRIVIAL(info) << *this << " resetOdometer";
     m_odometer_base = m_last_enc_value;
-    m_telemetry_version++;
+    notify(NOTIFY_TELEMETRY);
 }
 
 
@@ -224,6 +224,7 @@ void Motor::update()
     if (!m_enabled)
         return;
 
+    bool changed = false;
     auto now = clock::now();
     auto diff = duration_cast<microseconds>(now-m_last_update);
 
@@ -231,16 +232,15 @@ void Motor::update()
     // Calculate RPM
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     int32_t value = rc_ext_encoder_read(encoderChannel());
-    auto value_diff = value-m_last_enc_value;
-    float rpm = (float)(value_diff*MINUTE.count())/((float)(ENCODER_CPR*GEARING)*diff.count());
     #else
     int32_t value = 0;
-    float rpm = 0.0f;
     #endif
+    auto value_diff = value-m_last_enc_value;
+    float rpm = (float)(value_diff*MINUTE.count())/((float)(ENCODER_CPR*GEARING)*diff.count());
 
     auto new_rpm = (rpm+m_rpm)/2.0;
     if (new_rpm!=m_rpm || m_last_enc_value!=value) {
-        m_telemetry_version++;
+        changed = true;
     }
     m_rpm = new_rpm;
     m_last_enc_value = value;
@@ -278,6 +278,9 @@ void Motor::update()
     if (m_rpm != m_event.rpm) {
         m_event.rpm = m_rpm;
         sendEvent(m_event);
+    }
+    if (changed) {
+        notify(NOTIFY_TELEMETRY);
     }
 
     m_last_update = now;

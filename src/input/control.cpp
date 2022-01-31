@@ -108,6 +108,7 @@ void Control::setInputSource(InputSource input)
         m_active_source->setEnabled(true);
         m_input_source = input;
 
+        notify(nullptr);
     }
 }
 

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <iostream>
 #include <robottypes.h>
+#include <common/withnotify.h>
 #include <telemetry/types.h>
 #include <telemetry/events.h>
 #include <telemetry/telemetrysource.h>
@@ -13,7 +14,7 @@
 
 namespace Robot::Motor {
 
-    class Servo : private Robot::Telemetry::Source {
+    class Servo : private Robot::Telemetry::Source, public WithNotifyDefault {
         public:
             using mutex_type = std::recursive_mutex;
             using guard = std::lock_guard<mutex_type>;
@@ -37,8 +38,6 @@ namespace Robot::Motor {
             void setLimitMax(std::uint32_t limit);
             std::uint32_t getLimitMax() const { return m_limit_max; }
 
-            uint32_t updateVersion() const { return m_update_version; }
-
         protected:
             void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
             void cleanup();
@@ -50,7 +49,6 @@ namespace Robot::Motor {
         private:
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
-            uint32_t m_update_version;
             const uint m_index;
             mutex_type &m_mutex;
             bool m_enabled;

@@ -11,6 +11,7 @@
 #include <robotconfig.h>
 #include <robottypes.h>
 #include <math/pid.h>
+#include <common/withnotify.h>
 #include <telemetry/types.h>
 #include <telemetry/events.h>
 #include <telemetry/telemetrysource.h>
@@ -18,8 +19,10 @@
 
 namespace Robot::Motor {
 
-    class Motor : private Robot::Telemetry::Source {
+    class Motor : private Robot::Telemetry::Source, public WithNotifyDefault {
         public:
+            static constexpr NotifyType NOTIFY_TELEMETRY { "telemetry" };
+
             using clock = std::chrono::high_resolution_clock;
             using mutex_type = std::recursive_mutex;
             using guard = std::lock_guard<mutex_type>;
@@ -57,9 +60,6 @@ namespace Robot::Motor {
             double getOdometer() const;
             int32_t getEncoderValue() const { return m_last_enc_value-m_odometer_base; }
 
-            uint32_t updateVersion() const { return m_update_version; }
-            uint32_t telemetryVersion() const { return m_telemetry_version; }
-
             class Servo *servo() const { return m_servo.get(); }
 
         protected:
@@ -71,8 +71,6 @@ namespace Robot::Motor {
             friend class Control;
         private:
             std::shared_ptr<::Robot::Context> m_context;
-            uint32_t m_update_version;
-            uint32_t m_telemetry_version;
             bool m_initialized;
             const uint m_index;
             mutex_type &m_mutex;

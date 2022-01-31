@@ -48,6 +48,15 @@ namespace Robot {
                     return UNSET;
             }
 
+            inline constexpr bool operator==(const Value& other) const 
+            { 
+                return m_value == other.m_value;
+            }
+            inline constexpr bool operator!=(const Value& other) const 
+            {
+                return m_value != other.m_value;
+            }
+
             inline constexpr Value clamp(value_t min, value_t max) const {
                 return Value { std::clamp(m_value, min, max) };
             }

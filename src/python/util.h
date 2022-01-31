@@ -2,75 +2,67 @@
 #define _PYTHON_UTIL_H_
 
 #include <string>
+#include <memory>
 #include <boost/log/trivial.hpp> 
+#include <boost/signals2.hpp>
 
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
+namespace Robot::Python {
 
-std::string parse_python_exception();
+    std::string parse_python_exception();
 
 
-struct iterable_converter
-{
-    /// @note Registers converter from a python interable type to the
-    ///       provided type.
-    template <typename Container>
-    iterable_converter&
-    from_python()
+    class NotifySubscription : public std::enable_shared_from_this<NotifySubscription> {
+        public:
+            NotifySubscription(boost::signals2::connection &&connection) :
+                m_connection { connection }
+            {
+                BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+            }
+
+            ~NotifySubscription()
+            {
+                BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+                m_connection.disconnect();
+            }
+
+            void unsubscribe()
+            {
+                BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+                m_connection.disconnect();
+            }
+
+            bool subscribed() 
+            {
+                return m_connection.connected();
+            }
+
+        private:
+            boost::signals2::connection m_connection;
+    };
+
+
+    template<typename T>
+    std::shared_ptr<NotifySubscription> notify_subscribe(T &obj, boost::python::object &func)
     {
-        boost::python::converter::registry::push_back(
-        &iterable_converter::convertible,
-        &iterable_converter::construct<Container>,
-        boost::python::type_id<Container>());
+        return std::make_shared<NotifySubscription>(obj.subscribe([func](typename T::NotifyType arg) {
+            namespace py = boost::python;
 
-        // Support chaining.
-        return *this;
+            PyGILState_STATE gstate = PyGILState_Ensure();
+            try {
+                func(arg);
+            }
+            catch (const py::error_already_set &err) {
+                BOOST_LOG_TRIVIAL(warning) << "Notify error: " << parse_python_exception();
+            }
+            PyGILState_Release(gstate);
+        }));
     }
 
-    /// @brief Check if PyObject is iterable.
-    static void* convertible(PyObject* object)
-    {
-        return PyObject_GetIter(object) ? object : nullptr;
-    }
-
-    /// @brief Convert iterable PyObject to C++ container type.
-    ///
-    /// Container Concept requirements:
-    ///
-    ///   * Container::value_type is CopyConstructable.
-    ///   * Container can be constructed and populated with two iterators.
-    ///     I.e. Container(begin, end)
-    template <typename Container>
-    static void construct(
-        PyObject* object,
-        boost::python::converter::rvalue_from_python_stage1_data* data)
-    {
-        namespace python = boost::python;
-        // Object is a borrowed reference, so create a handle indicting it is
-        // borrowed for proper reference counting.
-        python::handle<> handle(python::borrowed(object));
-
-        // Obtain a handle to the memory block that the converter has allocated
-        // for the C++ type.
-        using storage_type = python::converter::rvalue_from_python_storage<Container>;
-        void* storage = reinterpret_cast<storage_type*>(data)->storage.bytes;
-        using iterator = python::stl_input_iterator<typename Container::value_type>;
-
-        // Allocate the C++ type into the converter's memory block, and assign
-        // its handle to the converter's convertible variable.  The C++
-        // container is populated by passing the begin and end iterators of
-        // the python object to the container's constructor.
-        new (storage) Container(
-        iterator(python::object(handle)), // begin
-        iterator());                      // end
-        data->convertible = storage;
-    }
 };
-
-
-
 
 
 #endif

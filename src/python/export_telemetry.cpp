@@ -12,6 +12,8 @@
 
 namespace py = boost::python;
 
+namespace Robot::Python {
+
 #if 0
 class TelemetryListener {
     public:
@@ -91,7 +93,7 @@ static void map2dict(py::dict &out, const Robot::Telemetry::ValueMap &in)
 }
 
 
-void python_export_telemetry() 
+void export_telemetry() 
 {
     using Robot::Telemetry::Telemetry;
 
@@ -105,22 +107,9 @@ void python_export_telemetry()
             return vals; 
         })
         .add_property("values_version", &Telemetry::valuesVersion)
+        //.def("subscribe", +[](Telemetry &telemetry, py::object &func) { return notify_subscribe<Telemetry>(kinematic, func); })
         ;
 
-    #if 0        
-    py::class_<TelemetryListenerWrap, boost::noncopyable>("TelemetryListener")
-        .def("connect", &TelemetryListenerWrap::connect)
-        .def("disconnect", &TelemetryListenerWrap::disconnect)
-        .def("on_event", pure_virtual(&TelemetryListenerWrap::on_event))
-        ;
-
-    py::class_<Event>("TelemetryEvent", py::no_init)
-        ;
-
-    py::class_<EventBattery, py::bases<Event>>("TelemetryEventBattery")
-        .def_readonly("battery_id", &EventBattery::battery_id)
-        .def_readonly("cell_voltages", &EventBattery::cell_voltage)
-        ;
-    #endif
+}
 
 }

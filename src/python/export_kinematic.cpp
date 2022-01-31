@@ -10,8 +10,9 @@
 
 namespace py = boost::python;
 
+namespace Robot::Python {
 
-void python_export_kinematic() 
+void export_kinematic() 
 {
     using Robot::Kinematic::Kinematic;
     using Robot::Kinematic::DriveMode, Robot::Kinematic::Orientation;
@@ -36,6 +37,7 @@ void python_export_kinematic()
     py::class_<Kinematic, std::shared_ptr<Kinematic>, boost::noncopyable>("Kinematic", py::no_init)
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
+        //.def("subscribe", +[](Kinematic &kinematic, py::object &func) { return notify_subscribe<Kinematic>(kinematic, func); })
         .def("__enter__", +[](Kinematic &kinematic) {
             kinematic.lock();
             return kinematic.shared_from_this();
@@ -45,3 +47,5 @@ void python_export_kinematic()
         })
         ;
 }
+
+};

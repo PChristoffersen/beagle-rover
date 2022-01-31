@@ -7,6 +7,7 @@
 
 #include <robottypes.h>
 #include <common/withmutex.h>
+#include <common/withnotify.h>
 #include <rc/receiver.h>
 #include "types.h"
 #include "softwareinterface.h"
@@ -20,7 +21,7 @@ namespace Robot::Input {
         CONTROLLER
     };
 
-    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
+    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
             Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor

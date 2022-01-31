@@ -18,6 +18,8 @@ namespace py = boost::python;
 
 using Robot::LED::Color, Robot::LED::ColorLayer;
 
+namespace Robot::Python {
+
 
 static Color tuple2color(const py::tuple & value) 
 {
@@ -61,15 +63,10 @@ void checkIndex(const ColorLayer::Segment &l, uint index)
 
 
 
-void python_export_led() 
+void export_led() 
 {
     using Robot::LED::Control;
     using Robot::LED::AnimationMode, Robot::LED::IndicatorMode;
-    /*
-    iterable_converter()
-        .from_python<ColorList>()
-        ;
-    */
 
     py::enum_<AnimationMode>("LEDAnimation")
         .value("NONE", AnimationMode::NONE)
@@ -156,6 +153,7 @@ void python_export_led()
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("show", &Control::show)
+        //.def("subscribe", +[](Control &control, py::object &func) { return notify_subscribe<Control>(kinematic, func); })
         .def("__enter__", +[](Control &ctl) {
             ctl.lock();
             return ctl.shared_from_this();
@@ -165,3 +163,5 @@ void python_export_led()
         })
         ;
 }
+
+};
