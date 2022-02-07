@@ -1,5 +1,10 @@
 import logging
 from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
+from socketio import AsyncNamespace, AsyncServer
+
+
+logger = logging.getLogger(__name__)
+
 
 route = RouteTableDef()
 
@@ -14,5 +19,8 @@ async def index(request: Request) -> Response:
     return json_response({ "version": robot.telemetry.values_version })
 
 
-app = Application()
-app.add_routes(route)
+def create_app(root: Application, sio: AsyncServer) -> Application:
+    app = Application()
+    app.add_routes(route)
+
+    return app

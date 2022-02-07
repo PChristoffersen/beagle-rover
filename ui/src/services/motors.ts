@@ -1,11 +1,15 @@
+import _ from 'lodash';
 import { io } from 'socket.io-client';
 
-import { robotApi } from './robot';
+import { robotApi, socketPrefix } from './robot';
+import { RecursivePartial } from './util';
 
 export interface MotorServo {
-    id: number,
     enabled: boolean,
     angle: number,
+    pulse_us: number,
+    limit_min: number,
+    limit_max: number,
 }
 
 export interface Motor {
@@ -16,8 +20,9 @@ export interface Motor {
     rpm: number,
     encoder: number,
     odometer: number,
-    servo: MotorServo,
+    servo?: MotorServo,
 }
+
 
 
 
@@ -31,38 +36,48 @@ const motorApi = robotApi.injectEndpoints({
     endpoints: (builder) => ({
         getMotor: builder.query<Motor, number>({
             query: (id) => `motors/${id}`,
+
             // @ts-expect-error
             providesTags: (result, error, id) => [{ type: 'Motor', id }],
 
             async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                const sock = io("/motors");
-
-                sock.on("connect", () => {
-                    sock.emit("watch", { id: arg })
-                });
-
+                const sock = io(socketPrefix+"/motors");
+                const watchName = "update_motor_"+arg
 
                 try {
+                    sock.on("connect", () => {
+                        sock.emit("add_watch", watchName, (answer: RecursivePartial<Motor>) => {
+                            updateCachedData((draft) => {
+                                _.merge(draft, answer)
+                            })
+                        })
+                    })
+                        
                     // wait for the initial query to resolve before proceeding
                     await cacheDataLoaded
 
-                    sock.on("updated", (data) => {
-                        console.log("MotorChanged", data)
-                        updateCachedData((draft) => {
-                            Object.assign(draft, data)
-                        })
+                    sock.on(watchName, (data: RecursivePartial<Motor>) => {
+                        //console.log("MotorChanged", data)
+                        if (data?.id === arg) {
+                            updateCachedData((draft) => {
+                                _.merge(draft, data)
+                            })
+                        }
                     })
+                    
                 } catch {
                     // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
                     // in which case `cacheDataLoaded` will throw
                 }
    
                 await cacheEntryRemoved
-                console.log("Socket closed")
-                sock.close()
+
+                sock.disconnect()
             }
         }),
-        setMotor: builder.mutation<Motor, Partial<Motor> & Pick<Motor, 'id'>>({
+
+
+        setMotor: builder.mutation<Motor, RecursivePartial<Motor> & Pick<Motor, 'id'>>({
             query(data) {
                 const { id, ...body } = data
                 return {
@@ -71,25 +86,33 @@ const motorApi = robotApi.injectEndpoints({
                     body,
                 }
             },
+
+            /*
+            // @ts-expect-error
+            invalidatesTags: (result, error, { id }) => [{ type: 'Motor', id }],
+            */
+
             async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
                 const patchResult = dispatch(
                     motorApi.util.updateQueryData('getMotor', id, (draft) => {
-                        Object.assign(draft, patch)
+                        _.merge(draft, patch)
                     })
                 )
                 try {
-                    await queryFulfilled
+                    const { data } = await queryFulfilled
+                    if (data?.id === id) {
+                        dispatch(motorApi.util.updateQueryData('getMotor', id, (draft) => {
+                            _.merge(draft, data)
+                        }));
+                    }
                 } catch {
                     patchResult.undo()
                     // @ts-expect-error
-                    dispatch(extendedApi.util.invalidateTags([{ type: 'Motor', id }]))
+                    dispatch(motorApi.util.invalidateTags([{ type: 'Motor', id }]))
                 }
             },
 
-            // @ts-expect-error
-            invalidatesTags: (result, error, { id }) => [{ type: 'Motor', id }],
         }),
-
     }),
     overrideExisting: false,
 });
