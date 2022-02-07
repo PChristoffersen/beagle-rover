@@ -2,7 +2,7 @@
   "name": "robot-fe",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5000",
+  "proxy": "http://beaglebone-blue:5000",
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
@@ -10,17 +10,9 @@
     "@mui/icons-material": "^5.3.1",
     "@mui/material": "^5.3.1",
     "@reduxjs/toolkit": "^1.7.1",
-    "@testing-library/jest-dom": "^5.16.1",
-    "@testing-library/react": "^12.1.2",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.4.0",
-    "@types/node": "^16.11.21",
-    "@types/react": "^17.0.38",
-    "@types/react-dom": "^17.0.11",
-    "@types/react-redux": "^7.1.22",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/recharts": "^1.8.23",
+    "lodash": "^4.17.21",
     "react": "^17.0.2",
+    "react-color": "^2.19.3",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
     "react-router-dom": "^6.2.1",
@@ -55,6 +47,13 @@
     ]
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.178"
+    "@types/jest": "^27.4.0",
+    "@types/lodash": "^4.14.178",
+    "@types/node": "^16.11.21",
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
+    "@types/react-redux": "^7.1.22",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/recharts": "^1.8.23"
   }
 }

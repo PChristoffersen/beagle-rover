@@ -1,0 +1,228 @@
+openapi: "3.0.0"
+
+info:
+  version: 1.0.0
+  title: Robot REST API
+
+servers:
+  - url: http://localhost:5000/api
+
+tags:
+  - name: LEDS
+    description: Control lights
+  - name: Motors
+    description: Direct motor control
+
+paths:
+  /leds:
+    get:
+      summary: Get LED controller properties
+      operationId: leds_get
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: LED controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Set LED controller properties
+      operationId: leds_set
+      tags:
+        - LEDS
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+      responses:
+        '200':
+          description: LED controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+
+  /motors:
+    get:
+      summary: Get all motors
+      operationId: motors_list
+      tags:
+        - Motors
+      responses:
+        '200':
+          description: List of motors
+          content:
+            application/json:    
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Motor"
+      
+
+  /motors/{id}:
+    get:
+      summary: Get motor
+      operationId: motors_get
+      tags:
+        - Motors
+      responses:
+        '200':
+          description: Motor properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Motor"
+
+    put:
+      summary: Set motor
+      operationId: motors_set
+      tags:
+        - Motors
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Motor"
+      responses:
+        '200':
+          description: Motor properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Motor"
+
+
+
+components:
+  schemas:
+    LEDControl:
+      type: object
+      properties:
+        brightness:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+        background:
+          $ref: "#/components/schemas/LEDColor"
+        animation:
+          $ref: "#/components/schemas/LEDAnimation"
+        indicators:
+          $ref: "#/components/schemas/LEDIndicators"
+
+    LEDColor:
+      type: string
+      pattern: "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{8})$"
+      example: "#aa33cc"
+
+    LEDAnimation:
+      type: string
+      enum:
+        - NONE
+        - HEADLIGHTS
+        - CONSTRUCTION
+        - POLICE
+        - AMBULANCE
+        - KNIGHT_RIDER
+        - RAINBOW
+      default: NONE
+
+    LEDIndicators:
+      type: string
+      enum:
+        - NONE
+        - LEFT
+        - RIGHT
+        - HAZARD
+      default: NONE
+
+    Motor:
+      description: Motor properties
+      type: object
+      properties:
+        id:
+          description: Motor
+          type: integer
+          readOnly: true
+        enabled:
+          type: boolean
+          description: Whether power to the motor is enabled
+        duty:
+          type: number
+          format: float
+          minimum: -1.0
+          maximum: 1.0
+          description: Motor duty cycle
+        target_rpm:
+          type: number
+          format: float
+          description: Target RPM of motor
+        rpm:
+          type: number
+          format: float
+          description: Motor RPM
+          readOnly: true
+        encoder:
+          type: integer
+          description: Value of the encoder counter
+          readOnly: true
+        odometer:
+          type: number
+          format: float
+          description: Odometer value in mm
+          readOnly: true
+        servo:
+          $ref: "#/components/schemas/Servo"
+          
+    Servo:
+      description: Servo properties
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Whether power to the servo is enabled
+        pulse_us:
+          type: integer
+          description: The servo signal pulse width in micro seconds
+        angle:
+          type: number
+          format: float
+          description: Angle of the servo in radians
+        limit_min:
+          type: number
+          format: float
+          readOnly: true
+          description: The minimum angle of the servo
+        limit_max:
+          type: number
+          format: float
+          readOnly: true
+          description: The maximum angle of the servo
+
+
+    Error:
+      type: object
+      required:
+        - status
+        - title
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        detail:
+          type: string
+        type:
+          type: string
+        instance: 
+          type: string

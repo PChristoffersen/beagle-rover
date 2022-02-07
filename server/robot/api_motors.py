@@ -1,66 +1,18 @@
 import asyncio
+import contextlib
 import logging
+import threading
+import concurrent
+from dataclasses import dataclass
 from typing import Dict
 from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
 from socketio import AsyncNamespace, AsyncServer
+from .watches import WatchableNamespace, SubscriptionWatch
+
+from robotsystem import Motor, Servo
+
 
 logger = logging.getLogger(__name__)
-
-my_rpm = 1
-
-
-class MotorNamespace(AsyncNamespace):
-    NAME = "/motors"
-
-    def __init__(self, app: Application, sio: AsyncServer):
-        super().__init__(namespace=MotorNamespace.NAME)
-        self.app = app
-        self.sio = sio
-        self.n_clients = 0
-        self.task = None
-
-        @sio.on("*")
-        async def on_event(event, sid, data):
-            logger.info(f"Event: {event} sid={sid}  data={data}")
-
-
-
-    async def telemetry_task(self):
-        global my_rpm
-        while True:
-            #logger.info("Ping")
-            await asyncio.sleep(1)
-            data = {
-                "id": 0,
-                "rpm": my_rpm
-            }
-            await self.sio.emit("motor", data=data, namespace=MotorNamespace.NAME)
-            my_rpm = my_rpm+1
-
-
-    def on_connect(self, sid, environ):
-        #logger.info(f"Motor connection  sid={sid} env={environ}")
-        logger.info(f"Motor connection  sid={sid}")
-        self.n_clients = self.n_clients + 1
-        #if self.task == None:
-        #    self.task =self.app.loop.create_task(timer(self.asio))
-    
-    def on_disconnect(self, sid):
-        logger.info(f"Motor disconnected  sid={sid}")
-        self.n_clients = self.n_clients - 1
-        if self.n_clients <= 0:
-            logger.info("No more clients")
-            self.n_clients = 0
-            if self.task:
-                self.task.cancel()
-                self.task = None
-
-    def on_watch(self, sid, data):
-        logger.info(f"Motor watch  sid={sid}  data={data}")
-        room = f"motor{data['id']}"
-        self.sio.enter_room(sid, room, namespace=self.NAME)
-
-
 
 
 route = RouteTableDef()
@@ -74,7 +26,6 @@ MOTOR_PROPERTIES = frozenset([
 SERVO_PROPERTIES = frozenset([
     "enabled",
     "angle",
-    "angle_degrees",
     "pulse_us"
 ])
 
@@ -83,7 +34,17 @@ SERVO_PROPERTIES = frozenset([
 def servo2dict(servo) -> Dict:
     return {
         "enabled": servo.enabled,
-        "angle": servo.angle
+        "angle": servo.angle,
+        "pulse_us": servo.pulse_us,
+        "limit_min": servo.limit_min,
+        "limit_max": servo.limit_max,
+    }
+
+def servo2dict_update(servo) -> Dict:
+    return {
+        "enabled": servo.enabled,
+        "angle": servo.angle,
+        "angle_degrees": servo.angle_degrees,
     }
 
 def motor2dict(motor) -> Dict:
@@ -93,12 +54,19 @@ def motor2dict(motor) -> Dict:
         "duty": motor.duty,
         "target_rpm": motor.target_rpm,
         "mode": str(motor.mode),
-        "rpm": my_rpm, #motor.rpm,
+        "rpm": motor.rpm,
         "encoder": motor.encoder,
         "odometer": motor.odometer,
     }
-    if motor.servo:
-        res["servo"] = servo2dict(motor.servo)
+    return res
+
+def motor2dict_telemetry(motor) -> Dict:
+    res = {
+        "id": motor.index,
+        "rpm": motor.rpm,
+        "encoder": motor.encoder,
+        "odometer": motor.odometer,
+    }
     return res
 
 
@@ -113,6 +81,7 @@ def set_motor_from_dict(motor, json: dict) -> None:
         if key == "servo":
             set_servo_from_dict(motor.servo, value)
         elif key in MOTOR_PROPERTIES:
+            logger.info(f"{motor.index} set  {key}={value}")
             setattr(motor, key, value)
 
 
@@ -121,52 +90,111 @@ async def index(request: Request) -> Response:
     robot = request.config_dict["robot"]
     res = []
     for motor in robot.motor_control.motors:
-        res.append(motor2dict(motor))
+        mot = motor2dict(motor)
+        mot["servo"] = servo2dict(motor.servo)
+        res.append(mot)
     return json_response(res)
 
 
 @route.get("/{index:\d+}")
-async def motor(request: Request) -> Response:
+async def get_motor(request: Request) -> Response:
     index = int(request.match_info["index"])
     robot = request.config_dict["robot"]
     motor = robot.motor_control.motors[index]
 
     logger.info(f"GET Motor {index}")
 
-    return json_response(motor2dict(motor))
+    mot = motor2dict(motor)
+    mot["servo"] = servo2dict(motor.servo)
+    return json_response(mot)
 
 
 @route.put("/{index:\d+}")
-async def motor(request: Request) -> Response:
+async def put_motor(request: Request) -> Response:
     robot = request.config_dict["robot"]
-    sio = request.config_dict["sio"]
+    ns = request.config_dict["ns"]
     index = int(request.match_info["index"])
     motor = robot.motor_control.motors[index]
 
     logger.info(f"PUT Motor {index}")
 
-
     json = await request.json()
-    logging.warning(json)
     set_motor_from_dict(motor, json)
-    res = motor2dict(motor)
     
-    await sio.emit("motor", data=res, room=f"motor{index}", namespace=MotorNamespace.NAME)
+    logger.info(f"PUT Motor {index} <<")
+
+    json = motor2dict(motor)
+    json["servo"] = servo2dict(motor.servo)
+    return json_response(json)
+
+
+
+class MotorWatch(SubscriptionWatch):
+    SERVO_OFFSET = 1000
+    UPDATE_GRACE_PERIOD = 0.1
     
-    return json_response(res)
+    def data(self):
+        data = motor2dict(self.target)
+        data["servo"] = servo2dict(self.target.servo)
+        return data
+
+    def _target_subscribe(self):
+        if not self.sub:
+            super()._target_subscribe()
+            self.sub = self.target.servo.subscribe(self.sub, self.SERVO_OFFSET)
+
+    async def emit(self, res: tuple):
+        data = {
+            "id": self.target.index
+        }
+        for id in res:
+            if id == Motor.NOTIFY_DEFAULT:
+                data.update(motor2dict(self.target))
+            if id == Motor.NOTIFY_TELEMETRY and not Motor.NOTIFY_DEFAULT in res:
+                data.update(motor2dict_telemetry(self.target))
+            if id == self.SERVO_OFFSET+Servo.NOTIFY_DEFAULT:
+                data["servo"] = servo2dict_update(self.target.servo)
+        
+        logger.info(f"{data}")
+        await self.owner.emit(self.name, data=data, room=self.name)
+        await asyncio.sleep(self.UPDATE_GRACE_PERIOD)
+
+
+
+
+class MotorNamespace(WatchableNamespace):
+    NAME = "/motors"
+    WATCH_TYPE = MotorWatch
+
+    def __init__(self, app: Application):
+        super().__init__(logger=logger)
+        self.app = app
+
+    async def app_started(self):
+        robot = self.app["root"]["robot"]
+        await self._init_watches([MotorWatch(self, motor, f"update_motor_{motor.index}") for motor in robot.motor_control.motors])
+
+
+    async def app_cleanup(self):
+        await self._destroy_watches()
+
+
 
 
 
 
 async def app_on_startup(app: Application):
-    robot = app["root"]["robot"]
     logger.info("Startup")
-    logger.info(robot)
+    ns = app["ns"]
+    await ns.app_started()
+
 
 
 
 async def app_on_cleanup(app: Application):
     logger.info("Cleanup")
+    ns = app["ns"]
+    await ns.app_cleanup()
 
 
 def create_app(root: Application, sio: AsyncServer) -> Application:
@@ -178,7 +206,8 @@ def create_app(root: Application, sio: AsyncServer) -> Application:
     app["root"] = root
     app["sio"] = sio
 
-    ns = MotorNamespace(app, sio)
+    ns = MotorNamespace(app)
     sio.register_namespace(ns)
+    app["ns"] = ns
 
     return app

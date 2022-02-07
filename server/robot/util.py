@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def to_enum(enum_type, value):
     if isinstance(value, int):
@@ -6,3 +10,6 @@ def to_enum(enum_type, value):
         if value == str(v):
             return v
     raise ValueError(f"Unknown enum value {value}")
+
+
+
