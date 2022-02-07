@@ -22,7 +22,6 @@ namespace Robot::LED {
             using raw_type = std::uint32_t;
 
             constexpr Color() : Color(TRANSPARENT) {}
-            constexpr Color(raw_type data) : m_data { data } {}
             constexpr Color(std::uint8_t r, std::uint8_t g, std::uint8_t b) : m_data { raw_argb(0xFF, r, g, b) } {}
             constexpr Color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint32_t a) : m_data { raw_argb(a, r, g, b) } {}
             constexpr Color(const Color &color) : m_data{ color.m_data } {}

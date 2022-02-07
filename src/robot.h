@@ -19,7 +19,6 @@ namespace Robot {
 
             virtual ~Robot();
 
-
             void init();
             void cleanup();
 

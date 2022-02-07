@@ -24,12 +24,14 @@ def main():
     layer.visible = True
 
     with layer:
-        layer.front[0] = (0xFF, 0x00, 0x00)
-        layer.front[1] = (0x00, 0xFF, 0x00)
-        layer.front[2] = (0x00, 0x00, 0xFF)
-        layer.back[0] = (0xFF, 0x00, 0x00)
-        layer.back[1] = (0x00, 0xFF, 0x00)
-        layer.back[2] = (0x00, 0x00, 0xFF)
+        front = layer.segments[0]
+        back = layer.segments[1]
+        front[0] = "#FF0000"
+        front[1] = "#00FF00"
+        front[2] = "#0000FF"
+        back[0] = "#FF000080"
+        back[1] = "#00FF0080"
+        back[2] = "#0000FF80"
         layer.show()
 
     led_control.detach_layer(layer)

@@ -118,6 +118,8 @@ void Kinematic::setDriveMode(DriveMode mode)
         m_drive_mode = mode;
         m_control_scheme->updateOrientation(m_orientation);
         m_control_scheme->init();
+
+        notify(nullptr);
     }
 }
 
@@ -127,10 +129,13 @@ void Kinematic::setOrientation(Orientation orientation)
     const guard lock(m_mutex);
     if (orientation==m_orientation)
         return;
+  
     m_orientation = orientation;
 
     BOOST_LOG_TRIVIAL(info) << "Kinematic orientation: " << (int)orientation;
     m_control_scheme->updateOrientation(orientation);
+
+    notify(nullptr);
 }
 
 

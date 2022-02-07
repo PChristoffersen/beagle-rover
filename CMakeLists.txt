@@ -78,6 +78,9 @@ set(SRC
     src/input/sources/gamepad.cpp
     src/system/prudebug.cpp
     src/system/wifi.cpp
+    src/hardware/abstractpower.cpp
+    src/hardware/beaglebone/servopower.cpp
+    src/hardware/beaglebone/motorpower.cpp
     src/math/pid.cpp
 )
 include_directories(BEFORE SYSTEM src)

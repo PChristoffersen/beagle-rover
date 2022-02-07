@@ -6,7 +6,7 @@ from math import pi as PI
 sys.path.append('../build')
 
 from time import sleep
-from robotsystem import Robot, TelemetryListener, DriveMode
+from robotsystem import Robot
 
 from datetime import datetime
 
@@ -25,16 +25,27 @@ def set_motors(robot: Robot, duty):
 def set_servos(robot: Robot, dir: bool):
     motors = robot.motor_control.motors
 
+    log.info(f">> SetServos {dir}")
+
+    motors[0].servo.enabled = dir
+    motors[1].servo.enabled = dir
+    motors[2].servo.enabled = dir
+    motors[3].servo.enabled = dir
+
     if dir:
-        motors[0].servo.angle = -45.0
-        motors[1].servo.angle = 45.0
-        motors[2].servo.angle = 45.0
-        motors[3].servo.angle = -45.0
+        #motors[0].servo.angle = -45.0
+        #motors[1].servo.angle = 45.0
+        #motors[2].servo.angle = 45.0
+        #motors[3].servo.angle = -45.0
+        pass
     else:
-        motors[0].servo.angle = 45.0
-        motors[1].servo.angle = -45.0
-        motors[2].servo.angle = -45.0
-        motors[3].servo.angle = 45.0
+        #motors[0].servo.angle = 45.0
+        #motors[1].servo.angle = -45.0
+        #motors[2].servo.angle = -45.0
+        #motors[3].servo.angle = 45.0
+        pass
+
+    log.info(f"<< SetServos {dir}")
 
 
 
@@ -59,25 +70,25 @@ def main():
         while True:
             set_servos(robot, False)
             sleep(2)
-            set_motors(robot, 0.7)
-            sleep(3)
-            set_motors(robot, 0.0)
-            sleep(2)
-            set_motors(robot, -0.3)
-            sleep(3)
-            set_motors(robot, 0.0)
-            sleep(1)
+            #set_motors(robot, 0.7)
+            #sleep(3)
+            #set_motors(robot, 0.0)
+            #sleep(2)
+            #set_motors(robot, -0.3)
+            #sleep(3)
+            #set_motors(robot, 0.0)
+            #sleep(1)
 
             set_servos(robot, True)
             sleep(2)
-            set_motors(robot, 0.7)
-            sleep(3)
-            set_motors(robot, 0.0)
-            sleep(2)
-            set_motors(robot, -0.3)
-            sleep(3)
-            set_motors(robot, 0.0)
-            sleep(1)
+            #set_motors(robot, 0.7)
+            #sleep(3)
+            #set_motors(robot, 0.0)
+            #sleep(2)
+            #set_motors(robot, -0.3)
+            #sleep(3)
+            #set_motors(robot, 0.0)
+            #sleep(1)
 
     except KeyboardInterrupt:
         print("Shutdown")

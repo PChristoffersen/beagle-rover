@@ -21,7 +21,6 @@ namespace Robot::Python {
 void export_motor() 
 {
     using Robot::Motor::Control, Robot::Motor::MotorList, Robot::Motor::Motor, Robot::Motor::Servo, Robot::Motor::Value;
-    //py::register_ptr_to_python<shared_ptr<MotorControl>>();
 
     py::enum_<Motor::Mode>("MotorMode")
         .value("DUTY", Motor::Mode::DUTY)

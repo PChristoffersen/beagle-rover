@@ -10,6 +10,7 @@
 namespace Robot::LED {
 
     constexpr uint PIXEL_COUNT { ROBOT_NEOPIXEL_COUNT };
+    constexpr uint SEGMENT_COUNT { 2 };
 
     constexpr auto LAYER_DEPTH_ANIMATION  { 10 };
     constexpr auto LAYER_DEPTH_INDICATORS { 20 };
@@ -35,15 +36,16 @@ namespace Robot::LED {
                     const size_type m_size;
                     ColorLayer *m_parent;
             };
+            using SegmentArray = std::array<Segment, SEGMENT_COUNT>;
 
-            explicit ColorLayer(int depth);
+            explicit ColorLayer(uint depth);
             virtual ~ColorLayer();
 
             void setVisible(bool visible);
 
             void show();
 
-            int depth() const { return m_depth; }
+            uint depth() const { return m_depth; }
             bool visible() const { return m_visible; }
             
             void detach();
@@ -53,8 +55,7 @@ namespace Robot::LED {
 
             const std::weak_ptr<class Control> &control() const { return m_control; }
 
-            Segment front;
-            Segment back;
+            SegmentArray &segments() { return m_segments; }
 
         protected:
             friend class Control;
@@ -62,8 +63,9 @@ namespace Robot::LED {
             void setControl(const std::shared_ptr<class Control> &control);
 
         private:
-            const int m_depth;
+            const uint m_depth;
             bool m_visible;
+            SegmentArray m_segments;
 
             std::weak_ptr<class Control> m_control;
 

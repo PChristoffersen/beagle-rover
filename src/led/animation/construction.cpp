@@ -36,27 +36,30 @@ void Construction::cleanup()
 
 void Construction::update(ColorLayer &layer) 
 {
-    if (m_state) {
-        layer.front[0] = LED_COLOR;
-        layer.front[1] = Color::TRANSPARENT;
-        layer.front[6] = Color::TRANSPARENT;
-        layer.front[7] = LED_COLOR;
+    auto &front { layer.segments()[0] };
+    auto &back { layer.segments()[1] };
 
-        layer.back[0]  = LED_COLOR;
-        layer.back[1]  = Color::TRANSPARENT;
-        layer.back[6] = Color::TRANSPARENT;
-        layer.back[7] = LED_COLOR;
+    if (m_state) {
+        front[0] = LED_COLOR;
+        front[1] = Color::TRANSPARENT;
+        front[6] = Color::TRANSPARENT;
+        front[7] = LED_COLOR;
+
+        back[0]  = LED_COLOR;
+        back[1]  = Color::TRANSPARENT;
+        back[6] = Color::TRANSPARENT;
+        back[7] = LED_COLOR;
     }
     else {
-        layer.front[0] = Color::TRANSPARENT;
-        layer.front[1] = LED_COLOR;
-        layer.front[6] = LED_COLOR;
-        layer.front[7] = Color::TRANSPARENT;
+        front[0] = Color::TRANSPARENT;
+        front[1] = LED_COLOR;
+        front[6] = LED_COLOR;
+        front[7] = Color::TRANSPARENT;
 
-        layer.back[0]  = Color::TRANSPARENT;
-        layer.back[1]  = LED_COLOR;
-        layer.back[6] = LED_COLOR;
-        layer.back[7] = Color::TRANSPARENT;
+        back[0]  = Color::TRANSPARENT;
+        back[1]  = LED_COLOR;
+        back[6] = LED_COLOR;
+        back[7] = Color::TRANSPARENT;
     }
 
     layer.show();

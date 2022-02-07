@@ -88,9 +88,10 @@ void Servo::setEnabled(bool enabled)
 void Servo::setValue(const Value value)
 {
     const guard lock(m_mutex);
-    //BOOST_LOG_TRIVIAL(info) << *this << " Value " << value << " ( angle=" << value.asAngleDegrees() << " )";
+    BOOST_LOG_TRIVIAL(trace) << *this << " Value " << value << " ( angle=" << value.asAngleDegrees() << " )";
     auto v = value.clamp(m_limit_min, m_limit_max);
     if (m_value != v) {
+        m_value = v;
         m_event.angle = m_value.asAngle();
         sendEvent(m_event);
         notify(nullptr);

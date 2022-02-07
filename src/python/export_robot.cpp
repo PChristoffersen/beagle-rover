@@ -5,6 +5,7 @@
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include <robot.h>
+#include <robotcontext.h>
 #include <rc/receiver.h>
 #include <telemetry/telemetry.h>
 #include <motor/control.h>
@@ -12,17 +13,17 @@
 #include <kinematic/kinematic.h>
 #include <input/control.h>
 
-
-namespace py = boost::python;
+#include "util.h"
 
 namespace Robot::Python {
 
 
-class RobotDummy { 
+class DummyComponent { 
 };
 
 void export_robot() 
 {
+    namespace py = boost::python;
     using namespace ::Robot;
 
     py::class_<Robot, std::shared_ptr<Robot>, boost::noncopyable>("Robot")
@@ -31,7 +32,7 @@ void export_robot()
             #if ROBOT_HAVE_RC
             return r.rcReceiver().get(); 
             #else
-            return (RobotDummy*)nullptr;
+            return (DummyComponent*)nullptr;
             #endif
         }, py::return_internal_reference<>()))
         .add_property("motor_control", py::make_function(+[](const Robot &r){ return r.motorControl().get(); }, py::return_internal_reference<>()))
@@ -39,8 +40,19 @@ void export_robot()
         .add_property("telemetry", py::make_function(+[](const Robot &r){ return r.telemetry().get(); }, py::return_internal_reference<>()))
         .add_property("kinematic", py::make_function(+[](const Robot &r){ return r.kinematic().get(); }, py::return_internal_reference<>()))
         .add_property("input", py::make_function(+[](const Robot &r){ return r.input().get(); }, py::return_internal_reference<>()))
-        .def("init", &Robot::init)
+        .def("init", +[](Robot &r) {
+            // Set the python name for the context thread
+            r.context()->sig_thread.connect([](auto started) {
+                if (started) {
+                    set_python_thread_name("RobotContext");
+                }
+            });
+            r.init();
+        })
         .def("cleanup", &Robot::cleanup)
+        ;
+
+    py::class_<DummyComponent>("DummyComponent")
         ;
 }
 

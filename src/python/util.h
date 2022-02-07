@@ -62,6 +62,9 @@ namespace Robot::Python {
         }));
     }
 
+
+    void set_python_thread_name(const char *name);
+
 };
 
 

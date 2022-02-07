@@ -181,8 +181,8 @@ void Motor::setEnabled(bool enabled)
     if (enabled!=m_enabled) {
         m_enabled = enabled;
         BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
+        m_context->motorPower(m_enabled);
         if (m_enabled) {
-            m_context->motorPower(true);
             m_duty_set = m_duty;
             #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
             rc_motor_set(motorChannel(), m_duty_set);
@@ -193,7 +193,6 @@ void Motor::setEnabled(bool enabled)
             #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
             rc_motor_set(motorChannel(), m_duty_set);
             #endif
-            m_context->motorPower(false);
         }
         m_event.enabled = enabled;
         sendEvent(m_event);
@@ -233,7 +232,7 @@ void Motor::update()
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     int32_t value = rc_ext_encoder_read(encoderChannel());
     #else
-    int32_t value = 0;
+    int32_t value = m_last_enc_value + 1;
     #endif
     auto value_diff = value-m_last_enc_value;
     float rpm = (float)(value_diff*MINUTE.count())/((float)(ENCODER_CPR*GEARING)*diff.count());

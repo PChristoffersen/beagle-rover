@@ -1,6 +1,7 @@
 #include <memory>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/utility/string_ref.hpp>
 
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
@@ -45,6 +46,36 @@ static Color tuple2color(const py::tuple & value)
 }
 
 
+static Color str2color(const std::string &value) 
+{   
+    auto len = value.length();
+    if ((len!=7 && len!=9) || value[0]!='#') {
+        PyErr_SetString(PyExc_IndexError, "Invalid color string");
+        py::throw_error_already_set();
+    }
+    uint32_t v;
+    std::size_t end = 0;
+    if (len==7) { // Without alpha
+        v = (std::stoul(value.substr(1), &end, 16) << 8 ) | 0xFF;
+    }
+    else { // With alpha
+        v = std::stoul(value.substr(1), &end, 16);
+    }
+    if (end+1!=len) {
+        PyErr_SetString(PyExc_IndexError, "Invalid color string");
+        py::throw_error_already_set();
+    }
+    return Color((v>>24) & 0xFF, (v>>16) & 0xFF, (v>>8) & 0xFF, (v) & 0xFF);
+}
+
+static std::string color2str(const Color &color)
+{
+    std::stringstream stream;
+    stream << boost::format("#%+02x%+02x%+02x%+02x") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue() % (uint32_t)color.alpha();
+    return stream.str();
+}
+
+
 void checkIndex(const ColorLayer &l, uint index) 
 {
     if (index >= l.size()) {
@@ -86,48 +117,45 @@ void export_led()
         ;
 
 
-   py::class_<ColorLayer::Segment, boost::noncopyable>("LEDColorLayerSegment", py::no_init)
-        .def("__getitem__", +[](const ColorLayer::Segment &l, uint index){
-            checkIndex(l, index);
-            const auto &color = l[index];
-            return py::make_tuple(color.red(), color.green(), color.blue(), color.alpha());
+   py::class_<ColorLayer::Segment, boost::noncopyable>("LEDSegment", py::no_init)
+        .def("__getitem__", +[](const ColorLayer::Segment &segment, uint index){
+            checkIndex(segment, index);
+            return color2str(segment[index]);
         })
-        .def("__setitem__", +[](ColorLayer::Segment &l, uint index, std::uint32_t value) {
-            checkIndex(l, index);
-            l[index] = value;
-        })
-        .def("__setitem__", +[](ColorLayer::Segment &l, uint index, const py::tuple &value) {
-            checkIndex(l, index);
-            l[index] = tuple2color(value);
+        .def("__setitem__", +[](ColorLayer::Segment &segment, uint index, const std::string &value) {
+            checkIndex(segment, index);
+            segment[index] = str2color(value);
         })
         .def("__len__", &ColorLayer::Segment::size)
-        ;;
+        ;
+
+    py::class_<ColorLayer::SegmentArray, boost::noncopyable>("LEDSegmentArray", py::no_init)
+        .def("__getitem__", +[](const ColorLayer::SegmentArray &array, uint index) {
+            if (index >= array.size()) {
+                PyErr_SetString(PyExc_IndexError, "Index out of range");
+                py::throw_error_already_set();
+            }
+            return &array[index];
+        }, py::return_internal_reference<>())
+        .def("__len__", &ColorLayer::SegmentArray::size)
+        ;
 
    py::class_<ColorLayer, std::shared_ptr<ColorLayer>, boost::noncopyable>("LEDColorLayer", py::init<int>())
         .add_property("depth", &ColorLayer::depth)
         .add_property("visible", &ColorLayer::visible, &ColorLayer::setVisible)
-        .add_property("front", py::make_function(+[](const ColorLayer &l){ return &l.front; }, py::return_internal_reference<>()))
-        .add_property("back", py::make_function(+[](const ColorLayer &l){ return &l.back; }, py::return_internal_reference<>()))
+        .add_property("segments", py::make_function(+[](ColorLayer &l){ return &l.segments(); }, py::return_internal_reference<>()))
         .def("detach", &ColorLayer::detach)
         .def("show", &ColorLayer::show)
-        .def("fill", +[](ColorLayer &l, std::uint32_t value) { 
-            l.fill(Color { value }); 
-        })
-        .def("fill", +[](ColorLayer &l, const py::tuple &value) { 
-            l.fill(tuple2color(value)); 
+        .def("fill", +[](ColorLayer &l, const std::string &value) { 
+            l.fill(str2color(value)); 
         })
         .def("__getitem__", +[](const ColorLayer &l, uint index){
             checkIndex(l, index);
-            const auto &color = l[index];
-            return py::make_tuple(color.red(), color.green(), color.blue(), color.alpha());
+            return color2str(l[index]);
         })
-        .def("__setitem__", +[](ColorLayer &l, uint index, std::uint32_t value) {
+        .def("__setitem__", +[](ColorLayer &l, uint index, const std::string &value) {
             checkIndex(l, index);
-            l[index] = value;
-        })
-        .def("__setitem__", +[](ColorLayer &l, uint index, const py::tuple &value) {
-            checkIndex(l, index);
-            l[index] = tuple2color(value);
+            l[index] = str2color(value);
         })
         .def("__len__", &ColorLayer::size)
         .def("__enter__", +[](ColorLayer &l) {
@@ -142,11 +170,10 @@ void export_led()
     py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("LEDControl", py::no_init)
         .add_property("background", 
             +[](const Control &ctl) {
-                const auto color = ctl.getBackground();
-                return py::make_tuple(color.red(), color.green(), color.blue(), color.alpha());
+                return color2str(ctl.getBackground());
             },
-            +[](Control &ctl, py::tuple &value) {
-                ctl.setBackground(tuple2color(value));
+            +[](Control &ctl, const std::string &value) {
+                ctl.setBackground(str2color(value));
             })
         .add_property("animation", &Control::getAnimation, &Control::setAnimation)
         .add_property("indicators", &Control::getIndicators, &Control::setIndicators)

@@ -11,6 +11,7 @@
 
 #include <robotconfig.h>
 #include <common/withmutex.h>
+#include <common/withnotify.h>
 #include <robottypes.h>
 #include "color.h"
 
@@ -34,7 +35,7 @@ namespace Robot::LED {
     };
 
 
-    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
+    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
             using clock_type = std::chrono::high_resolution_clock;
             using LayerList = std::list<std::weak_ptr<ColorLayer>>;

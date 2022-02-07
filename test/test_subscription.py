@@ -14,7 +14,7 @@ logger = logging.getLogger("test")
 
 
 def on_notify(what):
-    logger.info(f"notify {what} {type(what)}")
+    logger.info(f"notify {what}")
 
 
 def main():

@@ -51,9 +51,13 @@ void Control::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemet
        motor->init(telemetry);
     }
 
-    onMotorPower(m_context->motorPower());
+    if (m_context->motorPower()) {
+        onMotorPower(true);
+    }
     m_motor_power_con = m_context->sig_motor_power.connect([&](bool enabled){ onMotorPower(enabled); });
-    onServoPower(m_context->servoPower());
+    if (m_context->servoPower()) {
+        onServoPower(true);
+    }
     m_servo_power_con = m_context->sig_servo_power.connect([&](bool enabled){ onServoPower(enabled); });
 }
 
@@ -147,6 +151,7 @@ void Control::onMotorPower(bool enabled)
         motorTimerSetup();
     }
     else {
+        BOOST_LOG_TRIVIAL(info) << *this << " Stopping motor timer";
         m_motor_timer.cancel();
     }
 }
@@ -164,6 +169,7 @@ void Control::onServoPower(bool enabled)
         servoTimerSetup();
     }
     else {
+        BOOST_LOG_TRIVIAL(info) << *this << " Stopping servo timer";
         m_servo_timer.cancel();
     }
 }

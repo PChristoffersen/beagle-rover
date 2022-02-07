@@ -6,6 +6,7 @@
 
 #include <robottypes.h>
 #include <common/withmutex.h>
+#include <common/withnotify.h>
 #include <motor/control.h>
 #include <telemetry/telemetry.h>
 #include <led/control.h>
@@ -14,7 +15,7 @@
 
 namespace Robot::Kinematic {
 
-    class Kinematic : public std::enable_shared_from_this<Kinematic>, public WithMutex<std::recursive_mutex> {
+    class Kinematic : public std::enable_shared_from_this<Kinematic>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
 
             Kinematic(const std::shared_ptr<::Robot::Context> &context);

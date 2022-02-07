@@ -16,8 +16,6 @@ namespace Robot {
                 return m_sig.connect(subscriber);
             }
 
-        protected:
-
             void notify(NotifyType arg) 
             {
                 m_sig(arg);

@@ -8,11 +8,13 @@
 
 namespace Robot::LED {
 
-ColorLayer::ColorLayer(int depth) :
+ColorLayer::ColorLayer(uint depth) :
     m_depth { depth },
     m_visible { false },
-    front { this, 0, PIXEL_COUNT/2 },
-    back { this, PIXEL_COUNT/2, PIXEL_COUNT/2 }
+    m_segments {
+        Segment { this, 0, PIXEL_COUNT/2 },
+        Segment { this, PIXEL_COUNT/2, PIXEL_COUNT/2 }, 
+    }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
@@ -29,7 +31,9 @@ ColorLayer::~ColorLayer()
 
 void ColorLayer::setVisible(bool visible) 
 {
-    m_visible = visible;
+    if (m_visible!=visible) {
+        m_visible = visible;
+    }
 }
 
 

@@ -39,27 +39,30 @@ void Police::cleanup()
 
 void Police::update(ColorLayer &layer) 
 {
-    if (m_state) {
-        layer.front[0] = LED_COLOR1;
-        layer.front[1] = LED_COLOR2;
-        layer.front[6] = LED_COLOR1;
-        layer.front[7] = LED_COLOR2;
+    auto &front { layer.segments()[0] };
+    auto &back { layer.segments()[1] };
 
-        layer.back[0] = LED_COLOR1;
-        layer.back[1] = LED_COLOR2;
-        layer.back[6] = LED_COLOR1;
-        layer.back[7] = LED_COLOR2;
+    if (m_state) {
+        front[0] = LED_COLOR1;
+        front[1] = LED_COLOR2;
+        front[6] = LED_COLOR1;
+        front[7] = LED_COLOR2;
+
+        back[0] = LED_COLOR1;
+        back[1] = LED_COLOR2;
+        back[6] = LED_COLOR1;
+        back[7] = LED_COLOR2;
     }
     else {
-        layer.front[0] = LED_COLOR2;
-        layer.front[1] = LED_COLOR1;
-        layer.front[6] = LED_COLOR2;
-        layer.front[7] = LED_COLOR1;
+        front[0] = LED_COLOR2;
+        front[1] = LED_COLOR1;
+        front[6] = LED_COLOR2;
+        front[7] = LED_COLOR1;
 
-        layer.back[0] = LED_COLOR2;
-        layer.back[1] = LED_COLOR1;
-        layer.back[6] = LED_COLOR2;
-        layer.back[7] = LED_COLOR1;
+        back[0] = LED_COLOR2;
+        back[1] = LED_COLOR1;
+        back[6] = LED_COLOR2;
+        back[7] = LED_COLOR1;
     }
 
     layer.show();

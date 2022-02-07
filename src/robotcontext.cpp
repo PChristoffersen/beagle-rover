@@ -6,6 +6,11 @@
 #include <boost/log/trivial.hpp> 
 
 #include <robotconfig.h>
+#include <hardware/nooppower.h>
+#include <hardware/proxypower.h>
+#include <hardware/beaglebone/servopower.h>
+#include <hardware/beaglebone/motorpower.h>
+
 
 using namespace std::literals;
 
@@ -18,9 +23,10 @@ static constexpr auto CONTEXT_THREAD_NICE { -20 };
 Context::Context() : 
     m_initialized { false },
     m_started { false },
-    m_motor_power_rail_cnt { 0 },
-    m_servo_power_rail_cnt { 0 },
-    m_rc_power_rail_cnt { 0 }
+    m_motor_power_enabled { false },
+    m_servo_power_enabled { false },
+    m_led_power_enabled { false },
+    m_rc_power_enabled { false }
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
@@ -64,6 +70,8 @@ void Context::cleanup()
     m_io.restart();
     m_io.run_for(10s);
     m_io.stop();
+
+    sig_thread.disconnect_all_slots();
 }
 
 
@@ -98,7 +106,13 @@ void Context::initPlatform()
     }
 
     rc_motor_standby(1);
-    rc_servo_power_rail_en(0);
+    rc_servo_power_en(0);
+
+    m_motor_power = std::make_shared<::Robot::Hardware::Beaglebone::MotorPower>();
+    m_servo_power = std::make_shared<::Robot::Hardware::Beaglebone::ServoPower>();
+    m_led_power = std::make_shared<Robot::Hardware::NoopPower>();
+    m_rc_power = m_servo_power;
+
 }
 
 void Context::cleanupPlatform() 
@@ -111,19 +125,31 @@ void Context::cleanupPlatform()
     rc_servo_cleanup();
     rc_adc_cleanup();
     rc_led_cleanup();
+
+    m_servo_power = nullptr;
+    m_motor_power = nullptr;
+    m_led_power = nullptr;
+    m_rc_power = nullptr;
 }
 #endif
 
 
 #if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
+
 void Context::initPlatform() 
 {
-
-
+    m_servo_power = std::make_shared<Robot::Hardware::NoopPower>();
+    m_motor_power = std::make_shared<Robot::Hardware::NoopPower>();
+    m_led_power = std::make_shared<Robot::Hardware::NoopPower>();
+    m_rc_power = std::make_shared<Robot::Hardware::NoopPower>();
 }
 
 void Context::cleanupPlatform() 
 {
+    m_servo_power = nullptr;
+    m_motor_power = nullptr;
+    m_led_power = nullptr;
+    m_rc_power = nullptr;
 }
 #endif
 
@@ -140,7 +166,9 @@ void Context::start()
             BOOST_LOG_TRIVIAL(warning) << "Failed to set context thread nice value (" << val << ")";
             #endif
         }
+        sig_thread(true);
         m_io.run(); 
+        sig_thread(false);
     });
     m_started = true;
 }
@@ -163,32 +191,33 @@ void Context::stop()
 }
 
 
+void Context::setPowerEnabled(std::shared_ptr<::Robot::Hardware::AbstractPower> &power, PowerSignal &sig_power, bool enabled, bool &state, const char *name)
+{
+    auto cnt = power->setEnabled(enabled);
+    if (cnt>=1) {
+        if (!state) {
+            state = true;
+            BOOST_LOG_TRIVIAL(info) << "Enabling " << name << " power";
+            sig_power(true);
+        }
+    }
+    else if (cnt==0) {
+        if (state) {
+            state = false;
+            BOOST_LOG_TRIVIAL(info) << "Disabling " << name << " power";
+            sig_power(false);
+        }
+    }
+}
+
 void Context::motorPower(bool enable) 
 {
     const guard lock(m_mutex);
     if (!m_initialized)
         return;
 
-    if (enable) {
-        m_motor_power_rail_cnt++;
-        if (m_motor_power_rail_cnt==1) {
-            BOOST_LOG_TRIVIAL(info) << "Enabling motor power";
-            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-            rc_motor_standby(0);
-            #endif
-            sig_motor_power(true);
-        }
-    }
-    else {
-        m_motor_power_rail_cnt--;
-        if (m_motor_power_rail_cnt==0) {
-            BOOST_LOG_TRIVIAL(info) << "Disabling motor power";
-            sig_motor_power(false);
-            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-            rc_motor_standby(1);
-            #endif
-        }
-    }
+    BOOST_LOG_TRIVIAL(info) << "motorPower " << enable << " - " << m_motor_power_enabled;
+    setPowerEnabled(m_motor_power, sig_motor_power, enable, m_motor_power_enabled, "motor");
 }
 
 
@@ -197,32 +226,19 @@ void Context::servoPower(bool enable)
     const guard lock(m_mutex);
     if (!m_initialized)
         return;
-        
-    if (enable) {
-        m_servo_power_rail_cnt++;
-        if (m_servo_power_rail_cnt==1) {
-            BOOST_LOG_TRIVIAL(info) << "Enabling servo power";
-            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-            rc_servo_power_rail_en(1);
-            #endif
-            sig_servo_power(true);
-            sig_rc_power(true);
-        }
-    }
-    else {
-        assert(m_servo_power_rail_cnt>0);
-        m_servo_power_rail_cnt--;
-        if (m_servo_power_rail_cnt==0) {
-            BOOST_LOG_TRIVIAL(info) << "Disabling servo power";
-            sig_rc_power(false);
-            sig_servo_power(false);
-            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-            rc_servo_power_rail_en(0);
-            #endif
-        }
-    }
+
+    setPowerEnabled(m_servo_power, sig_servo_power, enable, m_servo_power_enabled, "servo");
 }
 
+
+void Context::ledPower(bool enable) 
+{
+    const guard lock(m_mutex);
+    if (!m_initialized)
+        return;
+
+    setPowerEnabled(m_led_power, sig_led_power, enable, m_led_power_enabled, "led");
+}
 
 void Context::rcPower(bool enable) 
 {
@@ -230,29 +246,7 @@ void Context::rcPower(bool enable)
     if (!m_initialized)
         return;
 
-    if (enable) {
-        m_rc_power_rail_cnt++;
-        if (m_rc_power_rail_cnt==1) {
-            BOOST_LOG_TRIVIAL(info) << "Enabling rc power";
-            #if ROBOT_BOARD == ROBOT_BOARD_BEAGLEBONE_BLUE
-            // RC Receiver is powered from the servo rail
-            servoPower(true);
-            #endif
-            sig_rc_power(true);
-        }
-    }
-    else {
-        assert(m_rc_power_rail_cnt>0);
-        m_rc_power_rail_cnt--;
-        if (m_rc_power_rail_cnt==0) {
-            BOOST_LOG_TRIVIAL(info) << "Disabling rc power";
-            #if ROBOT_BOARD == ROBOT_BOARD_BEAGLEBONE_BLUE
-            // RC Receiver is powered from the servo rail
-            servoPower(false);
-            #endif
-            sig_rc_power(false);
-        }
-    }
+    setPowerEnabled(m_rc_power, sig_rc_power, enable, m_rc_power_enabled, "rc");
 }
 
 

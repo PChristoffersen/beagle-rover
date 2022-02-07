@@ -98,7 +98,10 @@ void Control::clear(const Color &color)
 void Control::setBackground(const Color &color) 
 {
     const guard lock(m_mutex);
-    m_background = color;
+    if (m_background!=color) {
+        m_background = color;
+        notify(nullptr);
+    }
 }
 
 
@@ -145,6 +148,8 @@ void Control::setAnimation(AnimationMode mode)
             attachLayer(m_animation->layer());
         }
         show();
+
+        notify(nullptr);
     }
 }
 
@@ -169,6 +174,7 @@ void Control::setIndicators(IndicatorMode mode)
             break;
         }
         m_indicator_mode = mode;
+        notify(nullptr);
     }
 }
 
@@ -235,6 +241,7 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
         }
     }
     m_layers.push_back(layer->weak_from_this());
+    notify(nullptr);
 }
 
 
@@ -266,6 +273,7 @@ void Control::removeLayer(const std::shared_ptr<ColorLayer> &layer)
     });
     if (removed) {
         show();
+        notify(nullptr);
     }
 }
 

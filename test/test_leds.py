@@ -13,10 +13,10 @@ log = logging.getLogger("test")
 
 
 
-BLACK = ( 0x00, 0x00, 0x00 )
-RED   = ( 0xFF, 0x00, 0x00 )
-GREEN = ( 0x00, 0xFF, 0x00 )
-BLUE  = ( 0x00, 0x00, 0xFF )
+BLACK = "#000000"
+RED   = "#FF0000"
+GREEN = "#00FF00"
+BLUE  = "#0000FF"
 
 
 
@@ -35,7 +35,7 @@ def shift_loop(led_control):
     layer = LEDColorLayer(0)
     led_control.attach_layer(layer)
 
-    layer.fill( ( 0xFF, 0x00, 0x00, 0x80 ))
+    layer.fill("#FF000080")
     layer.show()
 
     try:

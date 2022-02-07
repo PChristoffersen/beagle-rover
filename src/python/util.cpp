@@ -43,4 +43,16 @@ std::string parse_python_exception()
 }
 
 
+    void set_python_thread_name(const char *name)
+    {
+        namespace py = boost::python;
+
+        PyGILState_STATE gstate = PyGILState_Ensure();
+        auto threading = py::import("threading");
+        auto current_thread = threading.attr("current_thread")();
+        current_thread.attr("name") = name;
+        PyGILState_Release(gstate);
+    }
+
+
 }
