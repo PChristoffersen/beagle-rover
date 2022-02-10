@@ -61,11 +61,15 @@ void RCSource::setEnabled(bool enabled)
 
     if (m_enabled) {
         if (auto receiver = m_receiver.lock()) {
+            receiver->setEnabled(true);
             m_connection = receiver->sigData.connect(::Robot::RC::SignalData::slot_type(&RCSource::onRCData, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
         }
     }
     else {
-        m_connection.disconnect();
+        if (auto receiver = m_receiver.lock()) {
+            receiver->setEnabled(false);
+            m_connection.disconnect();
+        }
     }
 }
 

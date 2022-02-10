@@ -142,11 +142,13 @@ void RobotControlMPU::timer(boost::system::error_code error)
             m_event.temp  = m_saved_data.temp;
             m_saved_data_count = m_data_count;
 
+            #if 0
             BOOST_LOG_TRIVIAL(info) 
                 << boost::format("MPU %04d  ") % m_data_count
                 << boost::format("| %6.1f | %6.1f |") % rad2deg(m_saved_data.compass_heading_raw) % rad2deg(m_saved_data.compass_heading)
                 << boost::format("| %6.1f | %6.1f | %6.1f |") % rad2deg(m_saved_data.fused_TaitBryan[TB_PITCH_X]) % rad2deg(m_saved_data.fused_TaitBryan[TB_ROLL_Y]) % rad2deg(m_saved_data.fused_TaitBryan[TB_YAW_Z])
                 ;
+            #endif
         }
     }
 

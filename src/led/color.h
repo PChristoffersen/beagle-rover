@@ -33,6 +33,11 @@ namespace Robot::LED {
             inline std::uint8_t alpha() const { return (m_data >> ALPHA_SHIFT) & 0xFF; }
             inline raw_type     data() const { return m_data; }
 
+            static constexpr inline std::uint8_t rawRed(raw_type c) { return (c >> RED_SHIFT) & 0xFF; }
+            static constexpr inline std::uint8_t rawGreen(raw_type c) { return (c >> GREEN_SHIFT) & 0xFF; }
+            static constexpr inline std::uint8_t rawBlue(raw_type c) { return (c >> BLUE_SHIFT) & 0xFF; }
+            static constexpr inline std::uint8_t rawAlpha(raw_type c) { return (c >> ALPHA_SHIFT) & 0xFF; }
+
             Color &operator=(const Color &other) { m_data = other.m_data; return *this; }
             Color &operator=(const raw_type other) { m_data = other; return *this; }
 

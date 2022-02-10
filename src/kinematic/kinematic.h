@@ -56,6 +56,11 @@ namespace Robot::Kinematic {
             Orientation  m_orientation;
 
             void onSteer(float steering, float throttle, float aux_x, float aux_y);
+
+            friend std::ostream &operator<<(std::ostream &os, const Kinematic &self)
+            {
+                return os << "Robot::Kinematic::Kinematic";
+            }
     };
 
 

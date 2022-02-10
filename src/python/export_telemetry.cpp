@@ -8,6 +8,7 @@
 #include <boost/python/dict.hpp>
 
 #include "util.h"
+#include "subscription.h"
 #include <telemetry/telemetry.h>
 
 namespace py = boost::python;
@@ -107,7 +108,7 @@ void export_telemetry()
             return vals; 
         })
         .add_property("values_version", &Telemetry::valuesVersion)
-        //.def("subscribe", +[](Telemetry &telemetry, py::object &func) { return notify_subscribe<Telemetry>(kinematic, func); })
+        //.def("subscribe", +[](Telemetry &telemetry) { return notify_subscribe<Telemetry>(telemetry); })
         ;
 
 }

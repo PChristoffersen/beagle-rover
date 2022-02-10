@@ -26,7 +26,7 @@ namespace Robot::RC {
             static constexpr value_type FRAME_LOST_MASK { 1<<2 };
             static constexpr value_type FAILSAFE_MASK   { 1<<3 };
 
-            static constexpr value_type INITIAL_VALUE { FRAME_LOST_MASK | 0x80 };
+            static constexpr value_type INITIAL_VALUE { FRAME_LOST_MASK };
 
 
             constexpr Flags() : m_value { INITIAL_VALUE } {}

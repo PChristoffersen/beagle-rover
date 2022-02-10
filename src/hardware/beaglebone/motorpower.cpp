@@ -8,12 +8,12 @@ namespace Robot::Hardware::Beaglebone {
 
 void MotorPower::enable()
 {
-    rc_motor_standby(1);
+    rc_motor_standby(0);
 }
 
 void MotorPower::disable() 
 {
-    rc_motor_standby(0);
+    rc_motor_standby(1);
 }
 
 

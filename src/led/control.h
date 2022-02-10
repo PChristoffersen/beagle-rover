@@ -87,6 +87,12 @@ namespace Robot::LED {
             clock_type::time_point m_last_show;
 
             void clear(const Color &color);
+
+            friend std::ostream &operator<<(std::ostream &os, const Control &self)
+            {
+                return os << "Robot::LED::Control";
+            }
+
     };
 
 };

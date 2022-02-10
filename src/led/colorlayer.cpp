@@ -58,7 +58,7 @@ void ColorLayer::detach()
 void ColorLayer::lock() 
 {
     if (auto control = m_control.lock()) {
-        control->lock();
+        control->mutex_lock();
     }
 }
 
@@ -66,7 +66,7 @@ void ColorLayer::lock()
 void ColorLayer::unlock() 
 {
     if (auto control = m_control.lock()) {
-        control->unlock();
+        control->mutex_unlock();
     }
 }
 

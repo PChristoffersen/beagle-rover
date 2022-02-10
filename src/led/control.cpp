@@ -100,7 +100,7 @@ void Control::setBackground(const Color &color)
     const guard lock(m_mutex);
     if (m_background!=color) {
         m_background = color;
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -149,7 +149,7 @@ void Control::setAnimation(AnimationMode mode)
         }
         show();
 
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -174,7 +174,7 @@ void Control::setIndicators(IndicatorMode mode)
             break;
         }
         m_indicator_mode = mode;
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -205,6 +205,13 @@ void Control::show()
     if (rc_ext_neopixel_set(pixels.data())!=0) {
         BOOST_THROW_EXCEPTION(std::runtime_error("Error updating pixels"));
     }
+    #endif
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
+    std::stringstream sstream;
+    for (auto &pixel : pixels) {
+        sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)Color::rawRed(pixel) % (uint32_t)Color::rawGreen(pixel) % (uint32_t)Color::rawBlue(pixel);
+    }
+    BOOST_LOG_TRIVIAL(info) << *this << " " << sstream.str();
     #endif
 
     m_last_show = clock_type::now();
@@ -241,7 +248,7 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
         }
     }
     m_layers.push_back(layer->weak_from_this());
-    notify(nullptr);
+    notify(NOTIFY_DEFAULT);
 }
 
 
@@ -273,7 +280,7 @@ void Control::removeLayer(const std::shared_ptr<ColorLayer> &layer)
     });
     if (removed) {
         show();
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 

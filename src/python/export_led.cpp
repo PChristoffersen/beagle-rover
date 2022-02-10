@@ -14,6 +14,7 @@
 #include <led/color.h>
 #include <led/colorlayer.h>
 #include "util.h"
+#include "subscription.h"
 
 namespace py = boost::python;
 
@@ -168,6 +169,7 @@ void export_led()
         ;
 
     py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("LEDControl", py::no_init)
+        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Control::NOTIFY_DEFAULT))
         .add_property("background", 
             +[](const Control &ctl) {
                 return color2str(ctl.getBackground());
@@ -180,13 +182,14 @@ void export_led()
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("show", &Control::show)
-        //.def("subscribe", +[](Control &control, py::object &func) { return notify_subscribe<Control>(kinematic, func); })
+        .def("subscribe", +[](Control &control) { return notify_subscribe<Control>(control); })
+        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach<Control>(sub, control, offset); })
         .def("__enter__", +[](Control &ctl) {
-            ctl.lock();
+            ctl.mutex_lock();
             return ctl.shared_from_this();
         })
         .def("__exit__", +[](Control &ctl, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            ctl.unlock();
+            ctl.mutex_unlock();
         })
         ;
 }

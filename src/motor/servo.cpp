@@ -80,7 +80,7 @@ void Servo::setEnabled(bool enabled)
 
         m_event.enabled = m_enabled;
         sendEvent(m_event);
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -94,32 +94,32 @@ void Servo::setValue(const Value value)
         m_value = v;
         m_event.angle = m_value.asAngle();
         sendEvent(m_event);
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
 
 
-void Servo::setLimits(uint32_t lmin, uint32_t lmax) 
+void Servo::setLimits(Value lmin, Value lmax) 
 {
     const guard lock(m_mutex);
-    m_limit_min = std::clamp(lmin, Value::PULSE_MIN, Value::PULSE_MAX);
-    m_limit_max = std::clamp(lmax, Value::PULSE_MIN, Value::PULSE_MAX);
-    notify(nullptr);
+    m_limit_min = lmin;
+    m_limit_max = lmax;
+    notify(NOTIFY_DEFAULT);
 }
 
-void Servo::setLimitMin(uint32_t limit) 
+void Servo::setLimitMin(Value limit) 
 {
     const guard lock(m_mutex);
-    m_limit_min = std::clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
-    notify(nullptr);
+    m_limit_min = limit;
+    notify(NOTIFY_DEFAULT);
 }
 
-void Servo::setLimitMax(uint32_t limit) 
+void Servo::setLimitMax(Value limit) 
 {
     const guard lock(m_mutex);
-    m_limit_max = std::clamp(limit, Value::PULSE_MIN, Value::PULSE_MAX);
-    notify(nullptr);
+    m_limit_max = limit;
+    notify(NOTIFY_DEFAULT);
 }
 
 

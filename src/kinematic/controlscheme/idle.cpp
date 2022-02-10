@@ -70,11 +70,7 @@ void ControlSchemeIdle::cleanup()
         return;
     m_initialized = false;
 
-    BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
-
     m_timer.cancel();
-
-    BOOST_LOG_TRIVIAL(info) << this << ": " << __FUNCTION__ << "  <<<<";
 }
 
 
@@ -84,8 +80,6 @@ void ControlSchemeIdle::timer()
     const guard lock(m_mutex);
     if (!m_initialized)
         return;
-
-    BOOST_LOG_TRIVIAL(info) << this << ": " << __FUNCTION__;
 
     // Disable motor and servos
     for (auto &motor : m_motor_control->getMotors()) {

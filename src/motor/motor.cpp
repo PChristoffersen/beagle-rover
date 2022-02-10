@@ -117,7 +117,7 @@ void Motor::brake()
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_motor_brake(motorChannel());
         #endif
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -129,7 +129,7 @@ void Motor::freeSpin()
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_motor_free_spin(motorChannel());
         #endif
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -143,14 +143,14 @@ void Motor::setDuty(float duty)
 {
     const guard lock(m_mutex);
     if (duty != m_duty || m_mode != Mode::DUTY) {
-        BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
+        BOOST_LOG_TRIVIAL(info) << *this << " setDuty(" << duty << ")";
         m_mode = Mode::DUTY;
         m_duty = duty;
 
         m_event.duty = m_duty;
         m_event.rpm_target = 0.0f;
         sendEvent(m_event);
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -170,7 +170,7 @@ void Motor::setTargetRPM(float rpm)
 
         m_event.rpm_target = m_target_rpm;
         sendEvent(m_event);
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -196,7 +196,7 @@ void Motor::setEnabled(bool enabled)
         }
         m_event.enabled = enabled;
         sendEvent(m_event);
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -232,7 +232,7 @@ void Motor::update()
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     int32_t value = rc_ext_encoder_read(encoderChannel());
     #else
-    int32_t value = m_last_enc_value + 1;
+    int32_t value = m_last_enc_value + (m_duty/20.0*ENCODER_CPR*GEARING);
     #endif
     auto value_diff = value-m_last_enc_value;
     float rpm = (float)(value_diff*MINUTE.count())/((float)(ENCODER_CPR*GEARING)*diff.count());
@@ -262,7 +262,7 @@ void Motor::update()
 
     // Update motor duty cycle
     if (fabs(m_duty-m_duty_set)>DUTY_MIN_CHANGE) {
-        //BOOST_LOG_TRIVIAL(info) << *this << " Duty " << m_duty_set << " -> " << m_duty;
+        BOOST_LOG_TRIVIAL(trace) << *this << " Duty " << m_duty_set << " -> " << m_duty;
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         if (fabs(m_duty)<MOTOR_DEADZONE) {
             rc_motor_set(motorChannel(), 0.0);

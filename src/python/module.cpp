@@ -7,7 +7,7 @@
 
 
 namespace Robot::Python {
-    void export_util();
+    void export_misc();
     void export_motor();
     void export_telemetry();
     void export_rcreceiver();
@@ -22,7 +22,7 @@ BOOST_PYTHON_MODULE(robotsystem)
 {
     using namespace Robot::Python;
 
-    export_util();
+    export_misc();
     export_motor();
     export_telemetry();
     export_rcreceiver();

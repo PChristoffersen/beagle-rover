@@ -106,7 +106,7 @@ void Context::initPlatform()
     }
 
     rc_motor_standby(1);
-    rc_servo_power_en(0);
+    rc_servo_power_rail_en(0);
 
     m_motor_power = std::make_shared<::Robot::Hardware::Beaglebone::MotorPower>();
     m_servo_power = std::make_shared<::Robot::Hardware::Beaglebone::ServoPower>();
@@ -216,7 +216,6 @@ void Context::motorPower(bool enable)
     if (!m_initialized)
         return;
 
-    BOOST_LOG_TRIVIAL(info) << "motorPower " << enable << " - " << m_motor_power_enabled;
     setPowerEnabled(m_motor_power, sig_motor_power, enable, m_motor_power_enabled, "motor");
 }
 

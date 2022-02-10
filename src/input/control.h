@@ -35,8 +35,13 @@ namespace Robot::Input {
             #endif
             void cleanup();
 
-            void setInputSource(InputSource input);
-            InputSource getInputSource() const { return m_input_source; }
+            void setSource(InputSource input);
+            InputSource getSource() const { return m_source; }
+            void setKinematicSource(InputSource input);
+            InputSource getKinematicSource() const { return m_kinematic_source; }
+            void setLedSource(InputSource input);
+            InputSource getLedSource() const { return m_led_source; }
+
 
             SoftwareInterface *manual() const;
             SoftwareInterface *web() const;
@@ -46,8 +51,9 @@ namespace Robot::Input {
         private:
             bool m_initialized;
             
-            InputSource m_input_source;
-            class Source *m_active_source;
+            InputSource m_source;
+            InputSource m_kinematic_source;
+            InputSource m_led_source;
 
             std::unique_ptr<class SoftwareSource> m_manual_source;
             std::unique_ptr<class SoftwareSource> m_web_source;
@@ -55,6 +61,13 @@ namespace Robot::Input {
             std::unique_ptr<class RCSource> m_rc_source;
             #endif
             std::unique_ptr<class GamepadSource> m_gamepad_source;
+
+            class Source *findSource(InputSource input);
+
+            friend std::ostream &operator<<(std::ostream &os, const Control &self)
+            {
+                return os << "Robot::Input::Control";
+            }
     };
 
 };

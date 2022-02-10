@@ -10,14 +10,15 @@
 namespace Robot::Input {
 
 Control::Control(const std::shared_ptr<Robot::Context> &context) :
-    m_input_source { InputSource::MANUAL },
+    m_source { InputSource::MANUAL },
+    m_kinematic_source { InputSource::MANUAL },
+    m_led_source { InputSource::MANUAL },
     m_manual_source { std::make_unique<SoftwareSource>("Manual", signals) },
     m_web_source { std::make_unique<SoftwareSource>("WEB", signals) },
     #if ROBOT_HAVE_RC
     m_rc_source { std::make_unique<RCSource>(signals) },
     #endif
-    m_gamepad_source { std::make_unique<GamepadSource>(context, signals) },
-    m_active_source { m_manual_source.get() }
+    m_gamepad_source { std::make_unique<GamepadSource>(context, signals) }
 {
 }
 
@@ -54,8 +55,9 @@ void Control::init()
     m_gamepad_source->init();
 
     m_manual_source->setEnabled(true);
-    m_input_source = InputSource::MANUAL;
-    m_active_source = m_manual_source.get();
+    m_source = InputSource::MANUAL;
+    m_kinematic_source = InputSource::MANUAL;
+    m_led_source = InputSource::MANUAL;
 }
 
 void Control::cleanup()
@@ -65,8 +67,9 @@ void Control::cleanup()
         return;
     m_initialized = false;
 
-    m_input_source = InputSource::MANUAL;
-    m_active_source = m_manual_source.get();
+    m_source = InputSource::MANUAL;
+    m_kinematic_source = InputSource::MANUAL;
+    m_led_source = InputSource::MANUAL;
 
     m_manual_source->cleanup();
     m_web_source->cleanup();
@@ -77,40 +80,103 @@ void Control::cleanup()
 }
 
 
-void Control::setInputSource(InputSource input)
+
+void Control::setSource(InputSource input)
 {
     const guard lock(m_mutex);
-    if (input!=m_input_source) {
+    if (input!=m_source) {
         BOOST_LOG_TRIVIAL(info) << "Input source: " << (int)input;
 
-        m_active_source->setEnabled(false);
-
-        switch (input) {
-        case InputSource::RC:
-            #if ROBOT_HAVE_RC
-            m_active_source = m_rc_source.get();
-            #else
-            m_active_source = m_manual_source.get();
-            #endif
-            break;
-        case InputSource::WEB:
-            m_active_source = m_web_source.get();
-            break;
-        case InputSource::CONTROLLER:
-            // TODO
-            m_active_source = m_manual_source.get();
-            break;
-        case InputSource::MANUAL:
-            m_active_source = m_manual_source.get();
-            break;
+        auto oldSource = findSource(m_source);
+        auto newSource = findSource(input);
+        if (oldSource!=newSource) {
+            oldSource->setEnabled(false);
+            m_source = input;
+            newSource->setEnabled(true);
+        }
+        else {
+            m_source = input;
         }
 
-        m_active_source->setEnabled(true);
-        m_input_source = input;
-
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
+
+void Control::setKinematicSource(InputSource input)
+{
+    const guard lock(m_mutex);
+    if (input!=m_kinematic_source) {
+        BOOST_LOG_TRIVIAL(info) << "Kinematic source: " << (int)input;
+
+        #if 0
+        auto oldSource = findSource(m_kinematic_source);
+        auto newSource = findSource(input);
+        if (oldSource!=newSource) {
+            oldSource->setEnabled(false);
+            m_kinematic_source = input;
+            newSource->setEnabled(true);
+        }
+        else {
+            m_kinematic_source = input;
+        }
+        #else
+        m_kinematic_source = input;
+        #endif
+
+        notify(NOTIFY_DEFAULT);
+    }
+}
+
+
+void Control::setLedSource(InputSource input)
+{
+    const guard lock(m_mutex);
+    if (input!=m_led_source) {
+        BOOST_LOG_TRIVIAL(info) << "LED source: " << (int)input;
+
+        #if 0
+        auto oldSource = findSource(m_led_source);
+        auto newSource = findSource(input);
+        if (oldSource!=newSource) {
+            oldSource->setEnabled(false);
+            m_led_source = input;
+            newSource->setEnabled(true);
+        }
+        else {
+            m_led_source = input;
+        }
+        #else
+        m_led_source = input;
+        #endif
+
+        notify(NOTIFY_DEFAULT);
+    }
+}
+
+
+
+Source *Control::findSource(InputSource input)
+{
+    switch (input) {
+    #if ROBOT_HAVE_RC
+    case InputSource::RC:
+        return m_rc_source.get();
+        break;
+    #endif
+    case InputSource::WEB:
+        return m_web_source.get();
+        break;
+    case InputSource::CONTROLLER:
+        // TODO
+        return m_manual_source.get();
+        break;
+    case InputSource::MANUAL:
+    default:
+        return m_manual_source.get();
+        break;
+    }
+
+}
 
 };

@@ -1,6 +1,7 @@
 #include "receiver.h"
 
 #include <algorithm>
+#include <random>
 #include <boost/assert.hpp>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
@@ -31,7 +32,11 @@ bit0 = n/a
 */
 
 
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
+static constexpr auto TIMER_INTERVAL { 500ms };
+#else
 static constexpr auto TIMER_INTERVAL { 10ms };
+#endif
 
 
 Receiver::Receiver(const std::shared_ptr<Robot::Context> &context) :
@@ -101,6 +106,8 @@ void Receiver::setEnabled(bool enabled)
             m_timer.cancel();
             m_context->rcPower(false);
         }
+
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -163,6 +170,9 @@ void Receiver::timer()
         if (sig_rssi)
             sigRSSI(m_rssi);
 
+        if (sig_rssi || sig_flags)
+            notify(NOTIFY_DEFAULT);
+
         // Print data
 #if 1
         static std::chrono::high_resolution_clock::time_point last_update;
@@ -194,6 +204,40 @@ void Receiver::timer()
     if (!m_initialized) {
         return;
     }
+
+    bool sig_flags = false;
+    bool sig_rssi = false;
+
+
+    m_last_counter++;
+    if (m_last_counter > 4 && m_flags.frameLost()) {
+        m_flags = 0x00;
+        sig_flags = true;
+    }
+
+    static std::random_device rd;
+    static std::mt19937 mt { rd() };
+    std::normal_distribution<float> dist { 50.0f, 10.0f };
+
+    if (!m_flags.frameLost()) {
+        uint8_t rssi = std::clamp((int)dist(mt), 0, 100);
+        if (rssi!=m_rssi) {
+            m_rssi = rssi;
+            sig_rssi = true;
+        }
+    }
+
+
+    if (sig_flags) {
+        sigFlags(m_flags);
+    }
+    if (sig_rssi)
+        sigRSSI(m_rssi);
+
+    if (sig_rssi || sig_flags)
+        notify(NOTIFY_DEFAULT);
+
+    timerSetup();
 }
 #endif
 

@@ -12,6 +12,7 @@
 #include <motor/servo.h>
 #include <motor/control.h>
 #include "util.h"
+#include "subscription.h"
 
 namespace py = boost::python;
 
@@ -30,6 +31,8 @@ void export_motor()
         ;
 
     py::class_<Motor, boost::noncopyable>("Motor", py::no_init)
+        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Motor::NOTIFY_DEFAULT))
+        .add_static_property("NOTIFY_TELEMETRY", py::make_getter(Motor::NOTIFY_TELEMETRY))
         .add_property("index", &Motor::getIndex)
         .add_property("enabled", &Motor::getEnabled, &Motor::setEnabled)
         .add_property("duty", &Motor::getDuty, &Motor::setDuty)
@@ -42,20 +45,23 @@ void export_motor()
         .def("brake", &Motor::brake)
         .def("free_spin", &Motor::freeSpin)
         .def("reset_odometer", &Motor::resetOdometer)
-        .def("subscribe", +[](Motor &motor, py::object &func) { return notify_subscribe<Motor>(motor, func); })
+        .def("subscribe", +[](Motor &motor) { return notify_subscribe<Motor>(motor); })
+        .def("subscribe_attach", +[](Motor &motor, NotifySubscription<Motor::NotifyType> &sub, int offset) { return notify_attach<Motor>(sub, motor, offset); })
         .def("__str__", +[](const Motor &m) { return (boost::format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
 
     py::class_<Servo, boost::noncopyable>("Servo", py::no_init)
+        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Servo::NOTIFY_DEFAULT))
         .add_property("index", &Servo::getIndex)
         .add_property("enabled", &Servo::getEnabled, &Servo::setEnabled)
         .add_property("pulse_us", +[](const Servo &servo) { return servo.getValue().asServoPulse(); }, +[](Servo &servo, uint32_t value) { servo.setValue(Value::fromMicroSeconds(value)); })
         .add_property("angle", +[](const Servo &servo) { return servo.getValue().asAngle(); }, +[](Servo &servo, float value) { servo.setValue(Value::fromAngle(value)); })
         .add_property("angle_degrees", +[](const Servo &servo) { return servo.getValue().asAngleDegrees(); }, +[](Servo &servo, float value) { servo.setValue(Value::fromAngleDegrees(value)); })
-        .add_property("limit_min", &Servo::getLimitMin, &Servo::setLimitMin)
-        .add_property("limit_max", &Servo::getLimitMax, &Servo::setLimitMax)
-        .def("set_limits", &Servo::setLimits)
-        .def("subscribe", +[](Servo &servo, py::object &func) { return notify_subscribe<Servo>(servo, func); })
+        .add_property("limit_min", +[](const Servo &servo) { return servo.getLimitMin().asAngle(); }, +[](Servo &servo, float value) { servo.setLimitMin(Value::fromAngle(value)); })
+        .add_property("limit_max", +[](const Servo &servo) { return servo.getLimitMax().asAngle(); }, +[](Servo &servo, float value) { servo.setLimitMax(Value::fromAngle(value)); })
+        .def("set_limits", +[](Servo &servo, float min, float max) { servo.setLimits(Value::fromAngle(min), Value::fromAngle(max)); })
+        .def("subscribe", +[](Servo &servo) { return notify_subscribe<Servo>(servo); })
+        .def("subscribe_attach", +[](Servo &servo, NotifySubscription<Servo::NotifyType> &sub, int offset) { return notify_attach<Servo>(sub, servo, offset); })
         .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
 
@@ -77,11 +83,13 @@ void export_motor()
         .def("free_spin", &Control::freeSpin)
         .def("reset_odometer", &Control::resetOdometer)
         .def("__enter__", +[](Control &ctl) {
-            ctl.lock();
+            BOOST_LOG_TRIVIAL(info) << "MotorControl __enter__";
+            ctl.mutex_lock();
             return ctl.shared_from_this();
         })
         .def("__exit__", +[](Control &ctl, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            ctl.unlock();
+            BOOST_LOG_TRIVIAL(info) << "MotorControl __exit__";
+            ctl.mutex_unlock();
         })
         .def("__str__", +[](const Control &ctl) { return "<MotorControl>"; })
         ;

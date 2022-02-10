@@ -26,7 +26,10 @@ namespace Robot {
     };
     
 
-    using WithNotifyDefault = WithNotify<const char*>;
+    class WithNotifyDefault : public WithNotify<int> {
+        public:
+            static constexpr NotifyType NOTIFY_DEFAULT { 0 };
+    };
 
 };
 

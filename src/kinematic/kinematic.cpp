@@ -100,18 +100,17 @@ void Kinematic::setDriveMode(DriveMode mode)
         case DriveMode::SPINNING:
             m_control_scheme = std::make_shared<ControlSchemeSpinning>(shared_from_this());
             break;
+        #if ROBOT_HAVE_BALANCING
         case DriveMode::BALANCING:
-            #if ROBOT_HAVE_BALANCING
             m_control_scheme = std::make_shared<ControlSchemeBalancing>(shared_from_this());
-            #else
-            m_control_scheme = std::make_shared<ControlSchemeIdle>(shared_from_this());
-            #endif
             break;
+        #endif
         case DriveMode::PASSTHROUGH:
             m_control_scheme = std::make_shared<ControlSchemePassthrough>(shared_from_this());
             break;
         default:
             m_control_scheme = std::make_shared<ControlSchemeIdle>(shared_from_this());
+            mode = DriveMode::NONE;
             break;
         }
 
@@ -119,7 +118,7 @@ void Kinematic::setDriveMode(DriveMode mode)
         m_control_scheme->updateOrientation(m_orientation);
         m_control_scheme->init();
 
-        notify(nullptr);
+        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -135,7 +134,7 @@ void Kinematic::setOrientation(Orientation orientation)
     BOOST_LOG_TRIVIAL(info) << "Kinematic orientation: " << (int)orientation;
     m_control_scheme->updateOrientation(orientation);
 
-    notify(nullptr);
+    notify(NOTIFY_DEFAULT);
 }
 
 

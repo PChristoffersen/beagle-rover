@@ -12,6 +12,7 @@
 #include <robotconfig.h>
 #include <robottypes.h>
 #include <common/withmutex.h>
+#include <common/withnotify.h>
 #include <telemetry/types.h>
 #include "types.h"
 
@@ -19,7 +20,7 @@
 
 namespace Robot::RC {
 
-    class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex> {
+    class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
             using timer_type = boost::asio::steady_timer;
 
@@ -38,7 +39,7 @@ namespace Robot::RC {
             void setEnabled(bool enabled);
             bool getEnabled() const { return m_enabled; }
 
-            bool isConnected() const { return m_flags.frameLost(); }
+            bool isConnected() const { return !m_flags.frameLost(); }
             std::uint8_t getRSSI() const { return m_rssi; }
             Flags getFlags() const { return m_flags; }
 
@@ -65,6 +66,12 @@ namespace Robot::RC {
 
             void telemetryEvent(const ::Robot::Telemetry::Event &event);
             void sendTelemetry(std::uint16_t appId, std::uint32_t data);
+
+            friend std::ostream &operator<<(std::ostream &os, const Receiver &self)
+            {
+                return os << "Robot::RC::Receiver";
+            }
+
    };
  
 };

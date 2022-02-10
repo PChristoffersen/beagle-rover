@@ -65,7 +65,7 @@ namespace Robot::Motor {
 
             friend std::ostream &operator<<(std::ostream &os, const Control &control)
             {
-                return os << "Motor::Control";
+                return os << "Robot::Motor::Control";
             }
 
     };

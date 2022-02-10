@@ -21,7 +21,7 @@ namespace Robot::Motor {
 
     class Motor : private Robot::Telemetry::Source, public WithNotifyDefault {
         public:
-            static constexpr NotifyType NOTIFY_TELEMETRY { "telemetry" };
+            static constexpr NotifyType NOTIFY_TELEMETRY { 1 };
 
             using clock = std::chrono::high_resolution_clock;
             using mutex_type = std::recursive_mutex;
@@ -101,7 +101,7 @@ namespace Robot::Motor {
 
             friend std::ostream &operator<<(std::ostream &os, const Motor &self)
             {
-                return os << "Motor::Motor[" << self.m_index << "]";
+                return os << "Robot::Motor::Motor[" << self.m_index << "]";
             }
     };
 

@@ -14,12 +14,10 @@
 #include <input/control.h>
 
 #include "util.h"
+#include "subscription.h"
 
 namespace Robot::Python {
 
-
-class DummyComponent { 
-};
 
 void export_robot() 
 {
@@ -40,15 +38,7 @@ void export_robot()
         .add_property("telemetry", py::make_function(+[](const Robot &r){ return r.telemetry().get(); }, py::return_internal_reference<>()))
         .add_property("kinematic", py::make_function(+[](const Robot &r){ return r.kinematic().get(); }, py::return_internal_reference<>()))
         .add_property("input", py::make_function(+[](const Robot &r){ return r.input().get(); }, py::return_internal_reference<>()))
-        .def("init", +[](Robot &r) {
-            // Set the python name for the context thread
-            r.context()->sig_thread.connect([](auto started) {
-                if (started) {
-                    set_python_thread_name("RobotContext");
-                }
-            });
-            r.init();
-        })
+        .def("init", &Robot::init)
         .def("cleanup", &Robot::cleanup)
         ;
 

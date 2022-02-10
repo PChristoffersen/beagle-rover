@@ -10,9 +10,9 @@ namespace Robot {
         public:
             using guard = std::lock_guard<MUTEX>;
 
-            void lock() { m_mutex.lock(); }
-            void unlock() { m_mutex.unlock(); }
-            void trylock() { m_mutex.trylock(); }
+            void mutex_lock() { m_mutex.lock(); }
+            void mutex_unlock() { m_mutex.unlock(); }
+            void mytex_trylock() { m_mutex.trylock(); }
 
             MUTEX &getMutex() { return m_mutex; }
         protected:

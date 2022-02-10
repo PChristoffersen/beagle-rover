@@ -32,11 +32,11 @@ namespace Robot::Motor {
             void setValue(const Value value);
             Value getValue() const { return m_value; }
 
-            void setLimits(std::uint32_t lmin, std::uint32_t lmax);
-            void setLimitMin(std::uint32_t limit);
-            std::uint32_t getLimitMin() const { return m_limit_min; }
-            void setLimitMax(std::uint32_t limit);
-            std::uint32_t getLimitMax() const { return m_limit_max; }
+            void setLimits(const Value lmin, const Value lmax);
+            void setLimitMin(const Value limit);
+            Value getLimitMin() const { return m_limit_min; }
+            void setLimitMax(const Value limit);
+            Value getLimitMax() const { return m_limit_max; }
 
         protected:
             void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
@@ -54,8 +54,8 @@ namespace Robot::Motor {
             bool m_enabled;
             Value m_value;
 
-            std::uint32_t m_limit_min;
-            std::uint32_t m_limit_max;
+            Value m_limit_min;
+            Value m_limit_max;
             std::int32_t  m_trim;
 
             Robot::Telemetry::EventServo m_event;
@@ -64,7 +64,7 @@ namespace Robot::Motor {
 
             friend std::ostream &operator<<(std::ostream &os, const Servo &self)
             {
-                return os << "Motor::Servo[" << self.m_index << "]";
+                return os << "Robot::Motor::Servo[" << self.m_index << "]";
             }
 
     };
