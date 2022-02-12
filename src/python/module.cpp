@@ -13,9 +13,10 @@ namespace Robot::Python {
     void export_rcreceiver();
     void export_led();
     void export_kinematic();
-    void export_robot();
     void export_input();
-};
+    void export_system();
+    void export_robot();
+}
 
 
 BOOST_PYTHON_MODULE(robotsystem) 
@@ -29,5 +30,6 @@ BOOST_PYTHON_MODULE(robotsystem)
     export_led();
     export_kinematic();
     export_input();
+    export_system();
     export_robot();
 }

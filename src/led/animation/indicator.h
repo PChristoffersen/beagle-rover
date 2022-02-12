@@ -31,6 +31,6 @@ namespace Robot::LED {
             void stopTimer();
     };
 
-};
+}
 
 #endif

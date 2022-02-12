@@ -37,7 +37,7 @@ namespace Robot::Input {
 
     };
 
-};
+}
 
 #endif
 

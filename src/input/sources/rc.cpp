@@ -111,6 +111,6 @@ void RCSource::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const 
 }
 
 
-};
+}
 
 #endif

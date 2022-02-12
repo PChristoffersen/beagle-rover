@@ -20,6 +20,6 @@ namespace Robot::Input {
     static constexpr auto THROTTLE_MAX {  1.0f };
 
     using Value = ::Robot::Value;
-};
+}
 
 #endif

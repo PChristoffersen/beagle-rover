@@ -286,7 +286,7 @@ void ControlSchemeBalancing::onMPUData(const Robot::Telemetry::MPUData &mpu_data
     if (!m_initialized) 
         return;
 
-
+#if 0
     auto &motors = m_motor_control->getMotors();
     auto &left_motor = motors[MotorPosition::REAR_LEFT];
     auto &right_motor = motors[MotorPosition::REAR_RIGHT];
@@ -397,9 +397,10 @@ void ControlSchemeBalancing::onMPUData(const Robot::Telemetry::MPUData &mpu_data
 	
     //rc_motor_set(MOTOR_CHANNEL_L, MOTOR_POLARITY_L * dutyL);
 	//rc_motor_set(MOTOR_CHANNEL_R, MOTOR_POLARITY_R * dutyR);
+    #endif
 }
 
 
-};
+}
 
 #endif

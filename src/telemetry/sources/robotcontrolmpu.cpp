@@ -42,8 +42,8 @@ RobotControlMPU::RobotControlMPU(const std::shared_ptr<Robot::Context> &context)
     AbstractSource { context },
     m_initialized { false },
     m_timer { context->io() },
-    m_saved_data_count { 0 },
     m_data_count { 0 },
+    m_saved_data_count { 0 },
     m_event { SOURCE_NAME }
 {
 
@@ -233,6 +233,6 @@ void RobotControlMPU::data_callback()
     }
 }
 
-};
+}
 
 #endif

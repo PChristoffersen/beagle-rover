@@ -71,7 +71,7 @@ Motor::~Motor()
 
 void Motor::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry) 
 {
-    Robot:Telemetry::Source::init(telemetry);
+    Robot::Telemetry::Source::init(telemetry);
 
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_ext_encoder_read(encoderChannel());
@@ -105,7 +105,7 @@ void Motor::cleanup()
 
     setEnabled(false);
 
-    Robot:Telemetry::Source::cleanup();
+    Robot::Telemetry::Source::cleanup();
 }
 
 
@@ -295,4 +295,4 @@ inline uint Motor::motorChannel() const {
 }
 
 
-};
+}

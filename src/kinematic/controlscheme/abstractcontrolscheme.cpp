@@ -40,4 +40,4 @@ void AbstractControlScheme::updateOrientation(Orientation orientation)
 }
 
 
-};
+}

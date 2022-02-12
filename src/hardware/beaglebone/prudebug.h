@@ -1,18 +1,19 @@
-#ifndef _ROBOT_SYSTEM_PRUDEBUG_H_
-#define _ROBOT_SYSTEM_PRUDEBUG_H_
+#ifndef _ROBOT_HARDWARE_BEAGLEBONE_PRUDEBUG_H_
+#define _ROBOT_HARDWARE_BEAGLEBONE_PRUDEBUG_H_
+
+#include <robotconfig.h>
+
+#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
 
 #include <memory>
 #include <chrono>
 #include <mutex>
 #include <boost/asio.hpp>
 
-#include <robotconfig.h>
 #include <robottypes.h>
 #include <common/withmutex.h>
 
-#if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-
-namespace Robot::System {
+namespace Robot::Hardware::Beaglebone {
 
     class PRUDebug : public std::enable_shared_from_this<PRUDebug>, public WithMutex<std::mutex> {
         public:
@@ -34,8 +35,7 @@ namespace Robot::System {
             void timer(boost::system::error_code error);
     };
 
-};
+}
 
 #endif
-
 #endif

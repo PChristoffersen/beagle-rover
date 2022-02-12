@@ -1,6 +1,9 @@
 #ifndef _RC_EXT_PRU_H_
 #define _RC_EXT_PRU_H_
 
+#include <stdint.h>
+#include <stddef.h> 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,7 +11,6 @@ extern "C" {
 typedef struct {
     uint8_t type;
     uint8_t _reserved[3];
-    uint8_t data[];
 } __attribute__((__packed__)) message_t;
 
 

@@ -7,15 +7,15 @@ namespace Robot::Math {
 
 PID::PID(float kp, float ki, float kd, float Ts, float ema_alpha) : 
     m_Ts(Ts), 
+    m_min_output { std::numeric_limits<float>::min() },
+    m_max_output { std::numeric_limits<float>::max() },
     m_kp { 0.0f },
     m_ki_Ts { 0.0f },
     m_kd_Ts { 0.0f },
     m_ema_alpha { ema_alpha },
     m_prev_input { 0.0f },
     m_integral { 0.0f },
-    m_setpoint { 0.0f },
-    m_min_output { std::numeric_limits<float>::min() },
-    m_max_output { std::numeric_limits<float>::max() }
+    m_setpoint { 0.0f }
 {
     setKp(kp);
     setKi(ki);
@@ -67,4 +67,4 @@ float PID::update(float input)
     return output;
 }
 
-};
+}

@@ -1,3 +1,5 @@
+#include "rc_ext_pru.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -7,8 +9,6 @@
 #include <pthread.h>
 
 #include <robotcontrol.h>
-
-#include "rc_ext_pru.h"
 
 #define EXT_PRU_CH		0 // PRU0
 #define EXT_PRU_FW		"am335x-pru0-rc-ext-fbus-fw"
@@ -67,6 +67,9 @@ int rc_ext_pru_init(void) {
             if (set_pinmux("/sys/devices/platform/ocp/ocp:P2_09_pinmux/state", "pru_uart")!=0) return -1;
             if (set_pinmux("/sys/devices/platform/ocp/ocp:P2_11_pinmux/state", "pru_uart")!=0) return -1;
             break;
+        default:
+    		fprintf(stderr,"ERROR in rc_ext_pru_init, failed to start PRU%d  unsupported model %d\n", EXT_PRU_CH, rc_model());
+            return -1;
     }
 
 	// start pru

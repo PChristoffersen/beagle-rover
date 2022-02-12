@@ -49,7 +49,7 @@ Servo::~Servo()
 
 void Servo::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
 {
-    Robot:Telemetry::Source::init(telemetry);
+    Robot::Telemetry::Source::init(telemetry);
 
     m_value = Value::CENTER;
     m_initialized = true;
@@ -66,7 +66,7 @@ void Servo::cleanup()
     m_initialized = false;
     setEnabled(false);
 
-    Robot:Telemetry::Source::cleanup();
+    Robot::Telemetry::Source::cleanup();
 }
 
 
@@ -139,4 +139,4 @@ void Servo::update()
     }
 }
 
-};
+}

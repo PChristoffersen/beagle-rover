@@ -41,4 +41,4 @@ void EventMPU::update(ValueMap &map) const
 }
 
 
-};
+}

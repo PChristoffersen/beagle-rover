@@ -21,6 +21,6 @@ namespace Robot::Input {
             const Signals &m_signals;
     };
 
-};
+}
 
 #endif

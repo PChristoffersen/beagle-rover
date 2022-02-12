@@ -50,9 +50,22 @@ namespace Robot::Telemetry {
 
     class EventBattery : public Event {
         public:
-            EventBattery(const std::string &name) : Event { name } {}
+            EventBattery(const std::string &name) : 
+                Event { name },
+                battery_id { 0x00 },
+                charging { false },
+                on_battery { true },
+                jack_voltage { 0.0f },
+                percent { 0.0f },
+                voltage { 0.0f }
+            { 
+            }
             std::uint8_t battery_id;
-            float voltage;
+            bool charging; // Is the battery charging
+            bool on_battery; // Is the robot running on battery
+            float jack_voltage; // Voltage of the power supply
+            float percent; // Pattery charge percent
+            float voltage; // Total battery voltage
             std::vector<float> cell_voltage;
             virtual void update(ValueMap &map) const;
     };
@@ -74,7 +87,7 @@ namespace Robot::Telemetry {
             virtual void update(ValueMap &map) const;
     };
 
-};
+}
 
 
 #endif

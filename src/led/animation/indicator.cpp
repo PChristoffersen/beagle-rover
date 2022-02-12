@@ -115,4 +115,4 @@ void Indicator::update(ColorLayer &layer)
 }
 
 
-};
+}

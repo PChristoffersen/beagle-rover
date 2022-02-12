@@ -18,6 +18,6 @@ namespace Robot::Kinematic {
             virtual void setMotors(float left, float right) override;
     };
 
-};
+}
 
 #endif

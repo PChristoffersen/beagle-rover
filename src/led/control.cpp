@@ -285,4 +285,4 @@ void Control::removeLayer(const std::shared_ptr<ColorLayer> &layer)
 }
 
 
-};
+}

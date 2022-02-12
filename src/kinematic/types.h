@@ -72,6 +72,6 @@ namespace Robot::Kinematic {
         { 1, false } 
     }};
 
-};
+}
 
 #endif

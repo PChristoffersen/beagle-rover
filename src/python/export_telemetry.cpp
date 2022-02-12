@@ -108,7 +108,7 @@ void export_telemetry()
             return vals; 
         })
         .add_property("values_version", &Telemetry::valuesVersion)
-        //.def("subscribe", +[](Telemetry &telemetry) { return notify_subscribe<Telemetry>(telemetry); })
+        //.def("subscribe", +[](Telemetry &telemetry) { return notify_subscribe<>(telemetry); })
         ;
 
 }

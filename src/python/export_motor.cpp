@@ -60,8 +60,8 @@ void export_motor()
         .add_property("limit_min", +[](const Servo &servo) { return servo.getLimitMin().asAngle(); }, +[](Servo &servo, float value) { servo.setLimitMin(Value::fromAngle(value)); })
         .add_property("limit_max", +[](const Servo &servo) { return servo.getLimitMax().asAngle(); }, +[](Servo &servo, float value) { servo.setLimitMax(Value::fromAngle(value)); })
         .def("set_limits", +[](Servo &servo, float min, float max) { servo.setLimits(Value::fromAngle(min), Value::fromAngle(max)); })
-        .def("subscribe", +[](Servo &servo) { return notify_subscribe<Servo>(servo); })
-        .def("subscribe_attach", +[](Servo &servo, NotifySubscription<Servo::NotifyType> &sub, int offset) { return notify_attach<Servo>(sub, servo, offset); })
+        .def("subscribe", +[](Servo &servo) { return notify_subscribe<>(servo); })
+        .def("subscribe_attach", +[](Servo &servo, NotifySubscription<Servo::NotifyType> &sub, int offset) { return notify_attach<>(sub, servo, offset); })
         .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
 
@@ -96,4 +96,4 @@ void export_motor()
 
 }
 
-};
+}

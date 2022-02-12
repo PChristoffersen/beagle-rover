@@ -20,6 +20,6 @@ namespace Robot::LED {
             void update(ColorLayer &layer);
     };
 
-};
+}
 
 #endif

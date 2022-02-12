@@ -40,4 +40,4 @@ void Rainbow::update(ColorLayer &layer)
 }
 
 
-};
+}

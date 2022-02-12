@@ -31,9 +31,8 @@ namespace Robot {
             const std::shared_ptr<class Telemetry::Telemetry> &telemetry() const { return m_telemetry; }
             const std::shared_ptr<class Kinematic::Kinematic> &kinematic() const { return m_kinematic; }
             const std::shared_ptr<class Input::Control> &input() const { return m_input; }
-            #if ROBOT_HAVE_WIFI
-            const std::shared_ptr<class System::WiFi> &wifi() const { return m_wifi; }
-            #endif
+            const std::shared_ptr<class System::Network> &network() const { return m_network; }
+            const std::shared_ptr<class System::Power> &power() const { return m_power; }
 
             uint heartbeat() const { return m_heartbeat; }
 
@@ -47,10 +46,10 @@ namespace Robot {
             bool m_initialized;
             LogConfig m_log_config;
             std::shared_ptr<Context> m_context;
-            boost::asio::high_resolution_timer m_timer;
 
-            uint m_heartbeat;
-
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+            std::shared_ptr<class Hardware::Beaglebone::PRUDebug> m_pru_debug;
+            #endif
             #if ROBOT_HAVE_RC
             std::shared_ptr<class RC::Receiver> m_rc_receiver;
             #endif
@@ -59,17 +58,16 @@ namespace Robot {
             std::shared_ptr<class Telemetry::Telemetry> m_telemetry;
             std::shared_ptr<class Kinematic::Kinematic> m_kinematic;
             std::shared_ptr<class Input::Control> m_input;
-            #if ROBOT_HAVE_WIFI
-            std::shared_ptr<class System::WiFi> m_wifi;
-            #endif
-            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-            std::shared_ptr<class System::PRUDebug> m_pru_debug;
-            #endif
+            std::shared_ptr<class System::Network> m_network;
+            std::shared_ptr<class System::Power> m_power;
+
+            boost::asio::high_resolution_timer m_timer;
+            uint m_heartbeat;
 
             void timerSetup();
             void timer();
     };
 
-};
+}
 
 #endif

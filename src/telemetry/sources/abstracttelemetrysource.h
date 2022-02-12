@@ -18,6 +18,6 @@ namespace Robot::Telemetry {
 
     };
 
-};
+}
 
 #endif

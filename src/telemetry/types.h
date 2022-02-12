@@ -27,6 +27,6 @@ namespace Robot::Telemetry {
     using Value = std::variant<std::string, bool, double, float, std::uint32_t>;
     using ValueMap = std::map<std::string, Value>;
 
-};
+}
 
 #endif

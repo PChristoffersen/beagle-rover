@@ -1,5 +1,5 @@
-#ifndef _ROBOT_SYSTEM_WIFI_H_
-#define _ROBOT_SYSTEM_WIFI_H_
+#ifndef _ROBOT_SYSTEM_NETWORK_H_
+#define _ROBOT_SYSTEM_NETWORK_H_
 
 #include <memory>
 #include <mutex>
@@ -8,16 +8,14 @@
 #include <robottypes.h>
 #include <common/withmutex.h>
 
-#if ROBOT_HAVE_WIFI
-
 namespace Robot::System {
 
-    class WiFi : public std::enable_shared_from_this<WiFi>, public WithMutex<std::mutex> {
+    class Network : public std::enable_shared_from_this<Network>, public WithMutex<std::mutex> {
         public:
-            explicit WiFi(const std::shared_ptr<::Robot::Context> &context);
-            WiFi(const WiFi&) = delete; // No copy constructor
-            WiFi(WiFi&&) = delete; // No move constructor
-            virtual ~WiFi();
+            explicit Network(const std::shared_ptr<::Robot::Context> &context);
+            Network(const Network&) = delete; // No copy constructor
+            Network(Network&&) = delete; // No move constructor
+            virtual ~Network();
 
             void init();
             void cleanup();
@@ -33,8 +31,6 @@ namespace Robot::System {
             std::string calculateMAC() const;
     };
 
-};
+}
 
-
-#endif
 #endif

@@ -68,6 +68,6 @@ namespace Robot {
             void setPowerEnabled(std::shared_ptr<::Robot::Hardware::AbstractPower> &power, PowerSignal &sig_power, bool enabled, bool &state, const char *name);
     };
 
-};
+}
 
 #endif

@@ -95,7 +95,7 @@ namespace Robot::LED {
 
     };
 
-};
+}
 
 
 #endif

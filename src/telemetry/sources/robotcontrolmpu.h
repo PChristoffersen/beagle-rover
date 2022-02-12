@@ -44,8 +44,8 @@ namespace Robot::Telemetry {
 
             // Context thread data
             std::mutex m_data_mutex;
-            std::uint32_t m_saved_data_count;
             rc_mpu_data_t m_saved_data;
+            std::uint32_t m_saved_data_count;
 
             EventMPU m_event;
 
@@ -59,7 +59,7 @@ namespace Robot::Telemetry {
     };
 
         
-};
+}
 
 #endif
 #endif

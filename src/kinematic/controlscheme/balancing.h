@@ -76,7 +76,7 @@ namespace Robot::Kinematic {
             void onMPUData(const Robot::Telemetry::MPUData &data);
     };
 
-};
+}
 
 #endif
 #endif

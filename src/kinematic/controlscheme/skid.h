@@ -25,6 +25,6 @@ namespace Robot::Kinematic {
             void resetMotors();
     };
 
-};
+}
 
 #endif

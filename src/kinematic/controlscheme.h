@@ -18,6 +18,6 @@ namespace Robot::Kinematic {
             virtual void steer(float steering, float throttle, float aux_x, float aux_y) = 0;
     };
 
-};
+}
 
 #endif

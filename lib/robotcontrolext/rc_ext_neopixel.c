@@ -20,7 +20,7 @@ typedef struct {
 
 static int clear_strip() {
     uint32_t pixels[RC_EXT_NEOPIXEL_COUNT];
-    for (int i=0; i<RC_EXT_NEOPIXEL_COUNT; i++) {
+    for (size_t i=0; i<RC_EXT_NEOPIXEL_COUNT; i++) {
         pixels[i] = 0x00000000;
     }
     return rc_ext_neopixel_set(pixels);
@@ -45,7 +45,7 @@ int rc_ext_neopixel_set(uint32_t pixels[RC_EXT_NEOPIXEL_COUNT]) {
     // Reorder pixels in a way that makes more sense
     // [0-8]  = "Front" led strip left to right
     // [9-15] = "Back"  led strip left to right
-    for (int i=0; i<RC_EXT_NEOPIXEL_COUNT/2; ++i) {
+    for (size_t i=0; i<RC_EXT_NEOPIXEL_COUNT/2; ++i) {
         // Front
         msg.pixels[RC_EXT_NEOPIXEL_COUNT/2-i-1] = pixels[i+RC_EXT_NEOPIXEL_COUNT/2];
         // Back

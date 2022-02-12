@@ -23,6 +23,6 @@ namespace Robot::Kinematic {
 
     };
 
-};
+}
 
 #endif

@@ -69,6 +69,6 @@ namespace Robot::Motor {
 
     };
 
-};
+}
 
 #endif

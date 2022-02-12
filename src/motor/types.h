@@ -17,6 +17,6 @@ namespace Robot::Motor {
     using clock_type = std::chrono::high_resolution_clock;
     inline constexpr auto MOTOR_TIMER_INTERVAL { std::chrono::milliseconds(20) };
     inline constexpr auto SERVO_TIMER_INTERVAL { std::chrono::milliseconds(20) };
-};
+}
 
 #endif

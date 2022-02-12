@@ -71,4 +71,4 @@ void Police::update(ColorLayer &layer)
 }
 
 
-};
+}

@@ -39,8 +39,8 @@ void export_kinematic()
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(Kinematic::NOTIFY_DEFAULT))
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
-        .def("subscribe", +[](Kinematic &kinematic) { return notify_subscribe<Kinematic>(kinematic); })
-        .def("subscribe_attach", +[](Kinematic &kinematic, NotifySubscription<Kinematic::NotifyType> &sub, int offset) { return notify_attach<Kinematic>(sub, kinematic, offset); })
+        .def("subscribe", +[](Kinematic &kinematic) { return notify_subscribe<>(kinematic); })
+        .def("subscribe_attach", +[](Kinematic &kinematic, NotifySubscription<Kinematic::NotifyType> &sub, int offset) { return notify_attach<>(sub, kinematic, offset); })
         .def("__enter__", +[](Kinematic &kinematic) {
             kinematic.mutex_lock();
             return kinematic.shared_from_this();
@@ -51,4 +51,4 @@ void export_kinematic()
         ;
 }
 
-};
+}

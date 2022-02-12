@@ -68,4 +68,4 @@ void Construction::update(ColorLayer &layer)
 }
 
 
-};
+}

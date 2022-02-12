@@ -23,8 +23,9 @@
 #include <led/control.h>
 #include <telemetry/telemetry.h>
 #include <kinematic/kinematic.h>
-#include <system/prudebug.h>
-#include <system/wifi.h>
+#include <system/network.h>
+#include <system/power.h>
+#include <hardware/beaglebone/prudebug.h>
 
 using namespace std::literals;
 
@@ -42,6 +43,9 @@ Robot::Robot() :
     m_initialized { false },
     m_log_config {},
     m_context { std::make_shared<Context>() },
+    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+    m_pru_debug { std::make_shared<Hardware::Beaglebone::PRUDebug>(m_context) },
+    #endif
     #if ROBOT_HAVE_RC
     m_rc_receiver { std::make_shared<RC::Receiver>(m_context) },
     #endif
@@ -50,12 +54,10 @@ Robot::Robot() :
     m_telemetry { std::make_shared<Telemetry::Telemetry>(m_context) },
     m_kinematic { std::make_shared<Kinematic::Kinematic>(m_context) },
     m_input { std::make_shared<Input::Control>(m_context) },
-    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-    m_pru_debug { std::make_shared<System::PRUDebug>(m_context) },
-    #endif
     #if ROBOT_HAVE_WIFI
     m_wifi { std::make_shared<System::WiFi>(m_context) },
     #endif
+    m_power { std::make_shared<System::Power>(m_context) },
     m_timer { m_context->io() },
     m_heartbeat { 0u }
 {
@@ -97,7 +99,10 @@ void Robot::init()
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug->init();
     #endif
-    //m_wifi->init();
+    #if ROBOT_HAVE_WIFI
+    m_wifi->init();
+    #endif
+    m_power->init(m_telemetry);
 
     m_heartbeat = 0u;
     m_timer.expires_after(0s);
@@ -120,7 +125,10 @@ void Robot::cleanup()
 
     m_context->stop();
 
-    //m_wifi->cleanup();
+    m_power->cleanup();
+    #if ROBOT_HAVE_WIFI
+    m_wifi->cleanup();
+    #endif
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug->cleanup();
     #endif
@@ -202,7 +210,7 @@ Robot::LogConfig::LogConfig()
 }
 
 
-};
+}
 
 
 

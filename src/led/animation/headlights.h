@@ -15,6 +15,6 @@ namespace Robot::LED {
             void cleanup();
     };
 
-};
+}
 
 #endif

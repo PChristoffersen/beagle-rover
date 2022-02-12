@@ -34,7 +34,7 @@ namespace Robot::Input {
             void onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const ::Robot::RC::ChannelList &channels);
     };
 
-};
+}
 
 #endif
 #endif

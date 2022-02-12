@@ -94,7 +94,7 @@ namespace Robot::RC {
     using SignalRSSI = boost::signals2::signal<void(RSSI)>;
     using SignalData = boost::signals2::signal<void(Flags flags, RSSI rssi, const ChannelList &channels)>;
 
-};
+}
 
 
 #endif

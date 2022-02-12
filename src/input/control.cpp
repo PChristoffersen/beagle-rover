@@ -179,4 +179,4 @@ Source *Control::findSource(InputSource input)
 
 }
 
-};
+}

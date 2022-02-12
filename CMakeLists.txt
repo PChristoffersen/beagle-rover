@@ -11,6 +11,8 @@ set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
 add_compile_definitions(BOOST_BIND_GLOBAL_PLACEHOLDERS)
+add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-unused-parameter)
+
 
 find_package(Python3 3.7 COMPONENTS Development)
 find_package(PythonLibs 3.7 REQUIRED)
@@ -59,7 +61,7 @@ set(SRC
     src/led/animation/rainbow.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/events.cpp
-    src/telemetry/sources/adcbattery.cpp
+    src/telemetry/sources/robotcontrolbattery.cpp
     src/telemetry/sources/robotcontrolmpu.cpp
     src/kinematic/kinematic.cpp
     src/kinematic/controlscheme/abstractcontrolscheme.cpp
@@ -76,11 +78,12 @@ set(SRC
     src/input/sources/software.cpp
     src/input/sources/rc.cpp
     src/input/sources/gamepad.cpp
-    src/system/prudebug.cpp
-    src/system/wifi.cpp
+    src/system/network.cpp
+    src/system/power.cpp
     src/hardware/abstractpower.cpp
     src/hardware/beaglebone/servopower.cpp
     src/hardware/beaglebone/motorpower.cpp
+    src/hardware/beaglebone/prudebug.cpp
     src/math/pid.cpp
 )
 include_directories(BEFORE SYSTEM src)
@@ -95,13 +98,13 @@ add_library(robotsystem MODULE
     ${SRC}
     src/python/module.cpp
     src/python/util.cpp
-    src/python/subscription.cpp
     src/python/export_motor.cpp
     src/python/export_telemetry.cpp
     src/python/export_rcreceiver.cpp
     src/python/export_led.cpp
     src/python/export_kinematic.cpp
     src/python/export_input.cpp
+    src/python/export_system.cpp
     src/python/export_robot.cpp
     src/python/export_misc.cpp
 )

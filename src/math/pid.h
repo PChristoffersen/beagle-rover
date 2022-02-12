@@ -60,7 +60,7 @@ class PID {
 
 };
 
-};
+}
 
 #endif
 

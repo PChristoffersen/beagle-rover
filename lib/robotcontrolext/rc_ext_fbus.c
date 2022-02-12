@@ -1,3 +1,5 @@
+#include "rc_ext_fbus.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -6,7 +8,6 @@
 
 #include <robotcontrol.h>
 
-#include "rc_ext_fbus.h"
 #include "rc_ext_pru.h"
 
 #define FBUS_SHM_OFFSET (0x0080/sizeof(uint32_t))
@@ -44,15 +45,6 @@ typedef struct {
 } __attribute__((__packed__)) telemetry_msg_t;
 
 
-
-
-static int send_telemetry(uint16_t app_id, uint32_t data) {
-    telemetry_msg_t msg;
-    msg.msg.type = MSG_TYPE_FBUS_TELEMERTY;
-    msg.app_id = app_id;
-    msg.data = data;
-    return rc_ext_pru_send_message(&msg, sizeof(msg));
-}
 
 
 int rc_ext_fbus_init(void) {

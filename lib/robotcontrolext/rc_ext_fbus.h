@@ -1,6 +1,7 @@
 #ifndef _RC_EXT_FBUS_H_
 #define _RC_EXT_FBUS_H_
 
+#include <stdint.h>
 #include <rc/servo.h>
 
 #ifdef __cplusplus

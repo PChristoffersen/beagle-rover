@@ -22,7 +22,6 @@ using Robot::LED::Color, Robot::LED::ColorLayer;
 
 namespace Robot::Python {
 
-
 static Color tuple2color(const py::tuple & value) 
 {
     if (py::len(value)==3) {
@@ -127,6 +126,10 @@ void export_led()
             checkIndex(segment, index);
             segment[index] = str2color(value);
         })
+        .def("__setitem__", +[](ColorLayer::Segment &segment, uint index, const py::tuple &value) {
+            checkIndex(segment, index);
+            segment[index] = tuple2color(value);
+        })
         .def("__len__", &ColorLayer::Segment::size)
         ;
 
@@ -158,6 +161,10 @@ void export_led()
             checkIndex(l, index);
             l[index] = str2color(value);
         })
+        .def("__setitem__", +[](ColorLayer &l, uint index, const py::tuple &value) {
+            checkIndex(l, index);
+            l[index] = tuple2color(value);
+        })
         .def("__len__", &ColorLayer::size)
         .def("__enter__", +[](ColorLayer &l) {
             l.lock();
@@ -182,8 +189,8 @@ void export_led()
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("show", &Control::show)
-        .def("subscribe", +[](Control &control) { return notify_subscribe<Control>(control); })
-        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach<Control>(sub, control, offset); })
+        .def("subscribe", +[](Control &control) { return notify_subscribe<>(control); })
+        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach<>(sub, control, offset); })
         .def("__enter__", +[](Control &ctl) {
             ctl.mutex_lock();
             return ctl.shared_from_this();
@@ -194,4 +201,4 @@ void export_led()
         ;
 }
 
-};
+}

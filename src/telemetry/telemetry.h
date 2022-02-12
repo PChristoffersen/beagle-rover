@@ -53,6 +53,6 @@ namespace Robot::Telemetry {
             ValueMap m_values;
     };
         
-};
+}
 
 #endif

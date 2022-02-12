@@ -105,7 +105,7 @@ namespace Robot::Motor {
             }
     };
 
-};
+}
 
 #endif 
 

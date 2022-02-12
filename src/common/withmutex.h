@@ -19,6 +19,6 @@ namespace Robot {
             MUTEX m_mutex;
     };
     
-};
+}
 
 #endif

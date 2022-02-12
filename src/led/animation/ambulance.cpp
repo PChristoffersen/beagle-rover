@@ -69,4 +69,4 @@ void Ambulance::update(ColorLayer &layer)
 }
 
 
-};
+}

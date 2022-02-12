@@ -21,6 +21,6 @@ namespace Robot::LED {
             std::shared_ptr<ColorLayer> m_layer;
     };
 
-};
+}
 
 #endif

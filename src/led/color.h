@@ -70,7 +70,7 @@ namespace Robot::LED {
     constexpr Color Color::GREEN       { 0x00, 0xFF, 0x00 };
     constexpr Color Color::BLUE        { 0x00, 0x00, 0xFF };
 
-};
+}
 
 
 

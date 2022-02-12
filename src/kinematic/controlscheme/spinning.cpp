@@ -62,4 +62,4 @@ void ControlSchemeSpinning::steer(float steering, float throttle, float aux_x, f
 }
 
 
-};
+}

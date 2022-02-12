@@ -74,7 +74,7 @@ namespace Robot::RC {
 
    };
  
-};
+}
 
 
 #endif 

@@ -6,7 +6,7 @@
 #include <robotconfig.h>
 #include <robotcontext.h>
 #include "types.h"
-#include "sources/adcbattery.h"
+#include "sources/robotcontrolbattery.h"
 #include "sources/robotcontrolmpu.h"
 
 
@@ -18,8 +18,8 @@ Telemetry::Telemetry(const std::shared_ptr<Robot::Context> &context) :
     m_values_version { 0 }
 {
 
-    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-    m_sources.push_back(std::make_shared<ADCBattery>(context));
+    #if ROBOT_HAVE_ROBOTCONTROL_BATTERY
+    m_sources.push_back(std::make_shared<RobotControlBattery>(context));
     #endif
     #if ROBOT_HAVE_ROBOTCONTROL_MPU
     m_sources.push_back(std::make_shared<RobotControlMPU>(context));
@@ -72,4 +72,4 @@ void Telemetry::process(const MPUData &data)
 }
 #endif
     
-};
+}

@@ -9,7 +9,7 @@ namespace Robot::Input {
             virtual void steer(float steer, float throttle, float aux_x=0.0f, float aux_y=0.0f) = 0;
     };
 
-};
+}
 
 
 #endif

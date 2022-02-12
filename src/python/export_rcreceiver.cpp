@@ -33,8 +33,8 @@ void export_rcreceiver()
         .add_property("connected", &Receiver::isConnected)
         .add_property("flags", &Receiver::getFlags)
         .add_property("rssi", &Receiver::getRSSI)
-        .def("subscribe", +[](Receiver &receiver) { return notify_subscribe<Receiver>(receiver); })
-        .def("subscribe_attach", +[](Receiver &receiver, NotifySubscription<Receiver::NotifyType> &sub, int offset) { return notify_attach<Receiver>(sub, receiver, offset); })
+        .def("subscribe", +[](Receiver &receiver) { return notify_subscribe<>(receiver); })
+        .def("subscribe_attach", +[](Receiver &receiver, NotifySubscription<Receiver::NotifyType> &sub, int offset) { return notify_attach<>(sub, receiver, offset); })
         .def("__enter__", +[](Receiver &rc) {
             rc.mutex_lock();
             return rc.shared_from_this();

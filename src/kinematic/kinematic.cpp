@@ -145,4 +145,4 @@ void Kinematic::onSteer(float steering, float throttle, float aux_x, float aux_y
 }
 
 
-};
+}

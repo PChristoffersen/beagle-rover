@@ -69,7 +69,6 @@ void AbstractWheelSteering::updateOrientation(Orientation orientation)
 
 void AbstractWheelSteering::resetMotors()
 {
-    const auto &motors = m_motor_control->getMotors();
     motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0);
     motorSet(FRONT_RIGHT,Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
     motorSet(REAR_LEFT,  Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
@@ -83,7 +82,6 @@ void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, f
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "  steering="<<steering;
 
     const auto asteering = abs(steering);
-    const auto &motors = m_motor_control->getMotors();
     
     // Just go straight (to avoid infinite numbers for turning radius)
     if (asteering < 0.01) {
@@ -109,4 +107,4 @@ void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, f
 }
 
 
-};
+}

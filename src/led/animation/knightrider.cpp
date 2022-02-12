@@ -62,4 +62,4 @@ void KnightRider::update(ColorLayer &layer)
 }
 
 
-};
+}

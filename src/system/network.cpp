@@ -1,4 +1,4 @@
-#include "wifi.h"
+#include "network.h"
 
 #include <sys/ioctl.h>
 #include <algorithm>
@@ -7,14 +7,12 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp> 
 
-#if ROBOT_HAVE_WIFI
-
 namespace Robot::System {
 
 static constexpr auto IFNAME { "wlan0" };
 
 
-WiFi::WiFi(const std::shared_ptr<Robot::Context> &context) :
+Network::Network(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_sockfd { -1 }
 {
@@ -22,29 +20,31 @@ WiFi::WiFi(const std::shared_ptr<Robot::Context> &context) :
 }
 
 
-WiFi::~WiFi() 
+Network::~Network() 
 {
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     cleanup();
 }
 
 
-void WiFi::init()
+void Network::init()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     m_initialized = true;
 
+    #if 0
     m_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (m_sockfd<0) {
-        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing WiFi"));
+        BOOST_THROW_EXCEPTION(std::runtime_error("Error initializing Network"));
     }
 
     m_mac = calculateMAC();
     update();
+    #endif
 }
 
-void WiFi::cleanup()
+void Network::cleanup()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
     BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
@@ -57,7 +57,7 @@ void WiFi::cleanup()
 }
 
 
-void WiFi::update()
+void Network::update()
 {
     iwreq req;
     strcpy(req.ifr_name, IFNAME);
@@ -103,7 +103,7 @@ void WiFi::update()
 
 }
 
-std::string WiFi::calculateMAC() const {
+std::string Network::calculateMAC() const {
     //SIOCGIFHWADDR for mac addr
     ifreq req2;
     strcpy(req2.ifr_name, IFNAME);
@@ -128,6 +128,5 @@ std::string WiFi::calculateMAC() const {
 }
 
 
-};
+}
 
-#endif

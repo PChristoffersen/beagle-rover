@@ -18,6 +18,6 @@ void ServoPower::disable()
 }
 
 
-};
+}
 
 #endif

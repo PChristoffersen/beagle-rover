@@ -12,6 +12,8 @@
 #include <led/control.h>
 #include <kinematic/kinematic.h>
 #include <input/control.h>
+#include <system/power.h>
+#include <system/network.h>
 
 #include "util.h"
 #include "subscription.h"
@@ -38,6 +40,8 @@ void export_robot()
         .add_property("telemetry", py::make_function(+[](const Robot &r){ return r.telemetry().get(); }, py::return_internal_reference<>()))
         .add_property("kinematic", py::make_function(+[](const Robot &r){ return r.kinematic().get(); }, py::return_internal_reference<>()))
         .add_property("input", py::make_function(+[](const Robot &r){ return r.input().get(); }, py::return_internal_reference<>()))
+        .add_property("power", py::make_function(+[](const Robot &r){ return r.power().get(); }, py::return_internal_reference<>()))
+        .add_property("network", py::make_function(+[](const Robot &r){ return r.network().get(); }, py::return_internal_reference<>()))
         .def("init", &Robot::init)
         .def("cleanup", &Robot::cleanup)
         ;
@@ -46,4 +50,4 @@ void export_robot()
         ;
 }
 
-};
+}

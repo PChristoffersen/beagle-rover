@@ -44,11 +44,11 @@ Receiver::Receiver(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_enabled { false },
     m_timer { context->io() },
-    m_rssi { 0 },
+    m_last_counter { std::numeric_limits<uint32_t>::max() },
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus { nullptr },
     #endif
-    m_last_counter { std::numeric_limits<uint32_t>::max() }
+    m_rssi { 0 }
 {
 }
 
@@ -271,6 +271,6 @@ void Receiver::sendTelemetry(uint16_t appId, uint32_t data)
 }
 
 
-};
+}
 
 #endif

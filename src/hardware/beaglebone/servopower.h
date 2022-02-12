@@ -1,12 +1,12 @@
 #ifndef _ROBOT_HARDWARE_BEAGLEBONE_SERVOPOWER_H_
 #define _ROBOT_HARDWARE_BEAGLEBONE_SERVOPOWER_H_
 
-#include <boost/log/trivial.hpp>
-#include "../abstractpower.h"
-
 #include <robotconfig.h>
 
 #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+
+#include <boost/log/trivial.hpp>
+#include "../abstractpower.h"
 
 namespace Robot::Hardware::Beaglebone {
 
@@ -16,7 +16,7 @@ namespace Robot::Hardware::Beaglebone {
             virtual void disable() override;
     };
 
-};
+}
 
 #endif
 #endif

@@ -25,17 +25,23 @@ namespace Robot::Python {
 
             static constexpr size_t QUEUE_SIZE { 128 };
 
-            NotifySubscription(const std::string &name) :
+            NotifySubscription(const std::string &name, bool nonblocking=true) :
                 m_name { name },
                 m_queue { QUEUE_SIZE }
             {
                 BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
-                m_fd = eventfd(0, EFD_CLOEXEC|EFD_NONBLOCK);
-                //m_fd = eventfd(0, EFD_CLOEXEC);
+                
+                int flags = EFD_CLOEXEC;
+                if (nonblocking) {
+                    flags |= EFD_NONBLOCK;
+                }
+
+                m_fd = eventfd(0, flags);
                 if (m_fd==-1) {
                     BOOST_THROW_EXCEPTION(std::system_error(errno, std::generic_category(), "Error creating eventfd"));
                 }
             }
+
 
             ~NotifySubscription()
             {
@@ -47,6 +53,9 @@ namespace Robot::Python {
                 }
             }
 
+            /**
+             * @brief Disconnect all added connections
+             */
             void unsubscribe()
             {
                 BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
@@ -56,16 +65,47 @@ namespace Robot::Python {
                 m_connections.clear();
             }
 
+
+            /**
+             * @brief Clear the queue from any events
+             */
+            void clear() 
+            {
+                read();                
+            }
+
+            /**
+             * @brief Addd a connection to this subscription
+             * 
+             * @param connection the connection to add
+             */
             void add_connection(boost::signals2::connection &&connection) 
             {
                 m_connections.push_back(connection);
             }
 
+
+            /**
+             * @brief The name of the subscription
+             * 
+             * @return const std::string& 
+             */
             const std::string &get_name() const { return m_name; }
 
+
+            /**
+             * @brief Get the subscription filedescriptor for polling do not read directly from it.
+             * 
+             * @return int filedescriptor
+             */
             int get_fd() const { return m_fd; }
 
-            
+
+            /**
+             * @brief Read the set of events written since last read.
+             * 
+             * @return result_set_t A set of events returned from this event
+             */
             result_set_t read() {
                 result_set_t result;
                 uint64_t cnt { 0ULL };
@@ -79,7 +119,7 @@ namespace Robot::Python {
                 //BOOST_LOG_TRIVIAL(info) << __PRETTY_FUNCTION__ << " queue=" << cnt;
 
                 int value;
-                for (auto i=0; i<cnt; i++) {
+                for (auto i=0u; i<cnt; i++) {
                     if (m_queue.pop(value)) {
                         BOOST_LOG_TRIVIAL(trace) << m_name << " READ ()=" << value;
                         result.insert(value);
@@ -91,6 +131,14 @@ namespace Robot::Python {
                 return result;
             }
 
+
+            /**
+             * @brief Write an event to the subscription
+             * 
+             * @param value Event
+             * @return true Success
+             * @return false Event queue is full
+             */
             bool write(T value) 
             {
                 static constexpr uint64_t COUNTER { 1ULL };
@@ -119,6 +167,13 @@ namespace Robot::Python {
     using NotifySubscriptionDefault = NotifySubscription<WithNotifyDefault::NotifyType>;
 
 
+    /**
+     * @brief Create a subscription on object that listens for notify signals
+     * 
+     * @tparam T Object type
+     * @param obj Object to subscribe 
+     * @return std::shared_ptr<NotifySubscription<typename T::NotifyType>> 
+     */
     template<typename T>
     std::shared_ptr<NotifySubscription<typename T::NotifyType>> notify_subscribe(T &obj)
     {
@@ -135,6 +190,15 @@ namespace Robot::Python {
         return sub;
     }
 
+
+    /**
+     * @brief Adds a subscription 
+     * 
+     * @tparam T 
+     * @param sub 
+     * @param obj 
+     * @param offset 
+     */
     template<typename T>
     void notify_attach(NotifySubscription<typename T::NotifyType> &sub, T &obj, int offset)
     {

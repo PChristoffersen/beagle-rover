@@ -45,4 +45,4 @@ void GamepadSource::setEnabled(bool enabled)
 }
 
 
-};
+}

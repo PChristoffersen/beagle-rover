@@ -87,4 +87,4 @@ RawColorArray &operator<<(RawColorArray &dst, const ColorLayer &layer) {
 }
 
 
-};
+}

@@ -11,7 +11,7 @@
 
 using namespace std::literals;
 
-namespace Robot::System {
+namespace Robot::Hardware::Beaglebone {
 //#define DEBUG_ENABLED
 
 static constexpr auto TIMER_INTERVAL { 100ms };
@@ -75,7 +75,7 @@ void PRUDebug::timer(boost::system::error_code error)
     }
 
     volatile const char *msg = nullptr;
-    while (msg=rc_ext_debug_next()) {
+    while ( (msg=rc_ext_debug_next()) ) {
         BOOST_LOG_TRIVIAL(debug) << msg;
     }
 
@@ -83,6 +83,6 @@ void PRUDebug::timer(boost::system::error_code error)
 }
 
     
-};
+}
 
 #endif

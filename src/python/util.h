@@ -29,7 +29,7 @@ namespace Robot::Python {
         return obj;
     }
 
-};
+}
 
 
 #endif

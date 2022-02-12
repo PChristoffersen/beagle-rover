@@ -32,6 +32,6 @@ namespace Robot::Kinematic {
             const float m_wheel_base_factor;
     };
 
-};
+}
 
 #endif

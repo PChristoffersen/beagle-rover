@@ -32,9 +32,18 @@ namespace Robot {
         class Color;
     };
     namespace System {
-        class WiFi;
-        class PRUDebug;
+        class Network;
+        class Power;
     };
+
+    namespace Hardware {
+        #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+        namespace Beaglebone {
+            class PRUDebug;
+        };
+        #endif
+    };
+
 };
 
 #endif
