@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 project(robotsystem VERSION 1.0)
+enable_testing()
 
 set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
@@ -45,7 +46,10 @@ include_directories("${PROJECT_BINARY_DIR}")
 set(SRC 
     src/robot.cpp
     src/robotcontext.cpp
+    src/logging.cpp
     src/rc/receiver.cpp
+    src/rc/mappings/taranis_x9d.cpp
+    src/common/asyncsignal.cpp
     src/motor/motor.cpp
     src/motor/servo.cpp
     src/motor/control.cpp
@@ -90,11 +94,26 @@ include_directories(BEFORE SYSTEM src)
 
 
 # -----------------------------------------------
+# C++ Library
+# -----------------------------------------------
+add_library(robotsystem SHARED 
+    ${SRC}
+)
+set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(robotsystem PRIVATE ${Boost_LIBRARIES})
+if(ROBOTCONTROL)
+target_link_libraries(robotsystem PRIVATE robotcontrolext)
+endif()
+
+
+
+# -----------------------------------------------
 # Python module
 # -----------------------------------------------
 # Without this, any build libraries automatically have names "lib{x}.so"
 set(CMAKE_SHARED_MODULE_PREFIX "")
-add_library(robotsystem MODULE 
+add_library(robotsystem_python MODULE 
     ${SRC}
     src/python/module.cpp
     src/python/util.cpp
@@ -108,22 +127,45 @@ add_library(robotsystem MODULE
     src/python/export_robot.cpp
     src/python/export_misc.cpp
 )
-set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(robotsystem PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+set_property(TARGET robotsystem_python PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_target_properties(robotsystem_python PROPERTIES OUTPUT_NAME "robotsystem")
+target_include_directories(robotsystem_python PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(robotsystem_python PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 if(ROBOTCONTROL)
-target_link_libraries(robotsystem PRIVATE robotcontrolext)
+target_link_libraries(robotsystem_python PRIVATE robotcontrolext)
 endif()
+
+
+
 
 # -----------------------------------------------
 # Standalone executable
 # -----------------------------------------------
-add_executable(test_robot
-    ${SRC}
-    main.cpp
-)
+add_executable(example_robot examples/example_robot.cpp )
+target_include_directories(example_robot PRIVATE src)
+target_link_libraries(example_robot robotsystem ${Boost_LOG_LIBRARIES})
+
+
+
+# -----------------------------------------------
+# Tests
+# -----------------------------------------------
+add_executable(test_robot test/test_robot.cpp )
 target_include_directories(test_robot PRIVATE src)
-target_link_libraries(test_robot ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-if(ROBOTCONTROL)
-target_link_libraries(test_robot robotcontrolext)
-endif()
+target_link_libraries(test_robot robotsystem ${Boost_LOG_LIBRARIES})
+add_test(NAME Robot COMMAND test_robot)
+
+add_executable(test_leds test/test_leds.cpp )
+target_include_directories(test_leds PRIVATE src)
+target_link_libraries(test_leds robotsystem ${Boost_LOG_LIBRARIES})
+add_test(NAME LEDS COMMAND test_leds)
+
+add_executable(test_value test/test_value.cpp )
+target_include_directories(test_value PRIVATE src)
+target_link_libraries(test_value robotsystem ${Boost_LOG_LIBRARIES})
+add_test(NAME Value COMMAND test_value)
+
+add_executable(test_asyncsignal test/test_asyncsignal.cpp )
+target_include_directories(test_asyncsignal PRIVATE src)
+target_link_libraries(test_asyncsignal robotsystem ${Boost_LOG_LIBRARIES})
+add_test(NAME ASyncSignal COMMAND test_asyncsignal)

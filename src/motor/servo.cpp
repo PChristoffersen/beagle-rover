@@ -131,7 +131,7 @@ inline uint Servo::servoChannel() const {
 
 void Servo::update() 
 {
-    if (m_enabled && m_value) {
+    if (m_enabled) {
         //BOOST_LOG_TRIVIAL(info) << "Pulse";
         #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
         rc_servo_send_pulse_us(servoChannel(), m_value.asServoPulse()+m_trim);

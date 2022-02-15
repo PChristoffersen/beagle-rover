@@ -3,8 +3,12 @@
 
 #include <memory>
 #include <iostream>
+#include <shared_mutex>
+#include <boost/signals2.hpp>
 
 #include <robotconfig.h>
+#include <common/withmutex.h>
+#include <common/asyncsignal.h>
 #include "color.h"
 
 namespace Robot::LED {
@@ -19,7 +23,7 @@ namespace Robot::LED {
     using ColorArray = std::array<Color, PIXEL_COUNT>;
     using RawColorArray = std::array<Color::raw_type, PIXEL_COUNT>;
 
-    class ColorLayer : public ColorArray, public std::enable_shared_from_this<ColorLayer> {
+    class ColorLayer : public ColorArray, public WithMutex<std::recursive_mutex>, public std::enable_shared_from_this<ColorLayer> {
         public:
             class Segment {
                 public:
@@ -48,28 +52,23 @@ namespace Robot::LED {
             uint depth() const { return m_depth; }
             bool visible() const { return m_visible; }
             
-            void detach();
-
-            void lock();
-            void unlock();
-
-            const std::weak_ptr<class Control> &control() const { return m_control; }
-
             SegmentArray &segments() { return m_segments; }
 
         protected:
             friend class Control;
 
-            void setControl(const std::shared_ptr<class Control> &control);
+            void setSignal(const std::shared_ptr<::Robot::ASyncSignal> &sig);
+            void clearSignal();
 
         private:
             const uint m_depth;
             bool m_visible;
             SegmentArray m_segments;
+            std::shared_ptr<::Robot::ASyncSignal> m_show_sig;
 
             std::weak_ptr<class Control> m_control;
 
-            friend RawColorArray &operator<<(RawColorArray &dst, const ColorLayer &layer);
+            friend RawColorArray &operator<<(RawColorArray &dst, ColorLayer &layer);
 
 
             friend std::ostream &operator<<(std::ostream &os, const ColorLayer &self)
@@ -78,22 +77,6 @@ namespace Robot::LED {
             }
 
     };
-
-    class ColorLayerLock {
-        public:
-            ColorLayerLock(const std::shared_ptr<ColorLayer> &layer) : 
-                m_layer { layer }
-            {
-                m_layer->lock();
-            }
-            ~ColorLayerLock() 
-            {
-                m_layer->unlock();
-            }
-        private:
-            const std::shared_ptr<ColorLayer> &m_layer;
-    };
-
 
 }
 

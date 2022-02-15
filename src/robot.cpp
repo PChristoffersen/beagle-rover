@@ -3,17 +3,7 @@
 #include <iostream>
 #include <exception>
 #include <chrono>
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sinks/sync_frontend.hpp>
-#include <boost/log/sinks/text_ostream_backend.hpp>
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/support/date_time.hpp>
 #include <boost/log/trivial.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/utility/setup/console.hpp>
-
 
 #include <robottypes.h>
 #include <robotcontext.h>
@@ -37,11 +27,9 @@ Robot *Robot::m_instance { nullptr };
 
 
 
-
-
 Robot::Robot() : 
+    m_log_init { boost::log::trivial::debug },
     m_initialized { false },
-    m_log_config {},
     m_context { std::make_shared<Context>() },
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug { std::make_shared<Hardware::Beaglebone::PRUDebug>(m_context) },
@@ -54,9 +42,7 @@ Robot::Robot() :
     m_telemetry { std::make_shared<Telemetry::Telemetry>(m_context) },
     m_kinematic { std::make_shared<Kinematic::Kinematic>(m_context) },
     m_input { std::make_shared<Input::Control>(m_context) },
-    #if ROBOT_HAVE_WIFI
-    m_wifi { std::make_shared<System::WiFi>(m_context) },
-    #endif
+    m_network { std::make_shared<System::Network>(m_context) },
     m_power { std::make_shared<System::Power>(m_context) },
     m_timer { m_context->io() },
     m_heartbeat { 0u }
@@ -89,20 +75,16 @@ void Robot::init()
     m_telemetry->init();
     m_motor_control->init(m_telemetry);
     m_led_control->init();
-    #if ROBOT_HAVE_RC
-    m_rc_receiver->init(m_telemetry);
+    if (m_rc_receiver) {
+        m_rc_receiver->init(m_telemetry);
+    }
     m_input->init(m_rc_receiver);
-    #else
-    m_input->init();
-    #endif
     m_kinematic->init(m_motor_control, m_led_control, m_telemetry, m_input);
+    m_network->init();
+    m_power->init(m_telemetry);
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug->init();
     #endif
-    #if ROBOT_HAVE_WIFI
-    m_wifi->init();
-    #endif
-    m_power->init(m_telemetry);
 
     m_heartbeat = 0u;
     m_timer.expires_after(0s);
@@ -125,18 +107,16 @@ void Robot::cleanup()
 
     m_context->stop();
 
-    m_power->cleanup();
-    #if ROBOT_HAVE_WIFI
-    m_wifi->cleanup();
-    #endif
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_pru_debug->cleanup();
     #endif
+    m_power->cleanup();
+    m_network->cleanup();
     m_kinematic->cleanup();
     m_input->cleanup();
-    #if ROBOT_HAVE_RC
-    m_rc_receiver->cleanup();
-    #endif
+    if (m_rc_receiver) {
+        m_rc_receiver->cleanup();
+    }
     m_led_control->cleanup();
     m_motor_control->cleanup();
     m_telemetry->cleanup();
@@ -169,44 +149,6 @@ void Robot::timer()
 {
     ++m_heartbeat;
     timerSetup();
-}
-
-
-Robot::LogConfig::LogConfig() 
-{
-    namespace logging = boost::log;
-    namespace keywords = boost::log::keywords;
-    namespace expr = boost::log::expressions;
- 
-    logging::add_common_attributes();
-
-    auto sink = logging::add_console_log();
-    auto formatter =
-            expr::stream
-            << "["
-            << expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%H:%M:%S.%f")
-            << "] ["
-            << expr::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID") 
-            << "] ["
-            << boost::log::trivial::severity
-            << "]  "
-            << expr::message;
-
-    sink->set_formatter(formatter);
-    sink->locked_backend()->auto_flush(true);
-
-    #if 0
-    constexpr auto level = logging::trivial::trace;
-    #else
-    constexpr auto level = logging::trivial::debug;
-    #endif
-
-    logging::core::get()->set_filter(
-        logging::trivial::severity >= level
-    );
-
-
-    BOOST_LOG_TRIVIAL(info) << "Logging initialized";
 }
 
 

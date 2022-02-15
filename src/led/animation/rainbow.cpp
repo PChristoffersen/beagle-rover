@@ -18,10 +18,12 @@ Rainbow::Rainbow(const std::shared_ptr<Robot::Context> &context) :
 }
 
 
-void Rainbow::init()
+void Rainbow::init(const std::shared_ptr<ColorLayer> &layer)
 {
+    m_layer = layer;
     m_timer.expires_after(TIMER_INTERVAL);
     timerSetup();
+    m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
 }
 
@@ -30,13 +32,15 @@ void Rainbow::cleanup()
 {
     m_timer.cancel();
     m_layer->setVisible(false);
+    m_layer = nullptr;
 }
 
 
-void Rainbow::update(ColorLayer &layer) 
+void Rainbow::update() 
 {
-    layer.fill(Color::TRANSPARENT);
-    layer.show();
+    const ColorLayer::guard lock(m_layer->mutex());
+    m_layer->fill(Color::TRANSPARENT);
+    m_layer->show();
 }
 
 

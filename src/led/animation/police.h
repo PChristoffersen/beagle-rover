@@ -12,13 +12,14 @@ namespace Robot::LED {
         public:
             Police(const std::shared_ptr<Robot::Context> &context);
 
-            void init();
-            void cleanup();
+            void init(const std::shared_ptr<ColorLayer> &layer) override;
+            void cleanup() override;
 
         private:
             bool m_state;
+            std::shared_ptr<ColorLayer> m_layer;
 
-            void update(ColorLayer &layer);
+            void update() override;
     };
 
 }

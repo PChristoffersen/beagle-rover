@@ -7,6 +7,7 @@
 
 #include <robotconfig.h>
 #include <robottypes.h>
+#include <logging.h>
 
 namespace Robot {
 
@@ -37,14 +38,9 @@ namespace Robot {
             uint heartbeat() const { return m_heartbeat; }
 
         private:
-            class LogConfig {
-                public:
-                    LogConfig();
-            };
-
             static class Robot *m_instance;
+            ::Robot::Logging::LogInit m_log_init;
             bool m_initialized;
-            LogConfig m_log_config;
             std::shared_ptr<Context> m_context;
 
             #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE

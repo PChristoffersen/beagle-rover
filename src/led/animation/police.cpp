@@ -22,8 +22,9 @@ Police::Police(const std::shared_ptr<Robot::Context> &context) :
 }
 
 
-void Police::init()
+void Police::init(const std::shared_ptr<ColorLayer> &layer)
 {
+    m_layer = layer;
     m_timer.expires_after(TIMER_INTERVAL);
     timerSetup();
     m_layer->setVisible(true);
@@ -34,13 +35,15 @@ void Police::cleanup()
 {
     m_timer.cancel();
     m_layer->setVisible(false);
+    m_layer = nullptr;
 }
 
 
-void Police::update(ColorLayer &layer) 
+void Police::update() 
 {
-    auto &front { layer.segments()[0] };
-    auto &back { layer.segments()[1] };
+    const ColorLayer::guard lock(m_layer->mutex());
+    auto &front { m_layer->segments()[0] };
+    auto &back { m_layer->segments()[1] };
 
     if (m_state) {
         front[0] = LED_COLOR1;
@@ -65,7 +68,7 @@ void Police::update(ColorLayer &layer)
         back[7] = LED_COLOR1;
     }
 
-    layer.show();
+    m_layer->show();
 
     m_state = !m_state;
 }

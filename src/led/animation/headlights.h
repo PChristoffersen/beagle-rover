@@ -11,8 +11,8 @@ namespace Robot::LED {
         public:
             Headlights(const std::shared_ptr<Robot::Context> &context);
 
-            void init();
-            void cleanup();
+            void init(const std::shared_ptr<ColorLayer> &layer) override;
+            void cleanup() override;
     };
 
 }

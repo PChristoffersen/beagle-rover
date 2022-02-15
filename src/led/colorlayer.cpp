@@ -23,62 +23,44 @@ ColorLayer::ColorLayer(uint depth) :
 ColorLayer::~ColorLayer() 
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
-    if (auto control = m_control.lock()) {
-        control->removeLayer(nullptr);
-    }
 }
 
 
 void ColorLayer::setVisible(bool visible) 
 {
+    const guard lock(m_mutex);
     if (m_visible!=visible) {
         m_visible = visible;
+        show();
     }
 }
 
 
 void ColorLayer::show()
 {
-    if (auto control = m_control.lock()) {
-        control->show();
+    const guard lock(m_mutex);
+    if (m_show_sig) {
+        (*m_show_sig)();
     }
 }
 
 
-void ColorLayer::detach() 
+void ColorLayer::setSignal(const std::shared_ptr<::Robot::ASyncSignal> &sig)
 {
-    if (auto control = m_control.lock()) {
-        const auto &self = shared_from_this();
-        control->removeLayer(self);
-    }
-    m_control.reset();
+    const guard lock(m_mutex);
+    m_show_sig = sig;
 }
 
-
-void ColorLayer::lock() 
+void ColorLayer::clearSignal()
 {
-    if (auto control = m_control.lock()) {
-        control->mutex_lock();
-    }
-}
-
-
-void ColorLayer::unlock() 
-{
-    if (auto control = m_control.lock()) {
-        control->mutex_unlock();
-    }
-}
-
-
-void ColorLayer::setControl(const std::shared_ptr<Control> &control) 
-{
-    m_control = control;
+    const guard lock(m_mutex);
+    m_show_sig = nullptr;
 }
 
 
 
-RawColorArray &operator<<(RawColorArray &dst, const ColorLayer &layer) {
+RawColorArray &operator<<(RawColorArray &dst, ColorLayer &layer) {
+    const ColorLayer::guard lock(layer.mutex());
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " <<  layer=" << layer.depth();
     if (layer.visible()) {
         std::transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), [](auto &&dst, auto &&src){ return dst<<src; });

@@ -15,9 +15,6 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_led_source { InputSource::MANUAL },
     m_manual_source { std::make_unique<SoftwareSource>("Manual", signals) },
     m_web_source { std::make_unique<SoftwareSource>("WEB", signals) },
-    #if ROBOT_HAVE_RC
-    m_rc_source { std::make_unique<RCSource>(signals) },
-    #endif
     m_gamepad_source { std::make_unique<GamepadSource>(context, signals) }
 {
 }
@@ -38,20 +35,18 @@ SoftwareInterface *Control::web() const
     return m_web_source.get();
 }
 
-#if ROBOT_HAVE_RC
 void Control::init(const std::shared_ptr<Robot::RC::Receiver> &receiver)
-#else
-void Control::init()
-#endif
 {
     const guard lock(m_mutex);
     m_initialized = true;
 
     m_manual_source->init();
     m_web_source->init();
-    #if ROBOT_HAVE_RC
-    m_rc_source->init(receiver);
-    #endif
+
+    if (receiver) {
+        m_rc_source = std::make_unique<RCSource>(signals);
+        m_rc_source->init(receiver);
+    }
     m_gamepad_source->init();
 
     m_manual_source->setEnabled(true);
@@ -73,9 +68,10 @@ void Control::cleanup()
 
     m_manual_source->cleanup();
     m_web_source->cleanup();
-    #if ROBOT_HAVE_RC
-    m_rc_source->cleanup();
-    #endif
+    if (m_rc_source) {
+        m_rc_source->cleanup();
+        m_rc_source.reset();
+    }
     m_gamepad_source->cleanup();
 }
 
@@ -94,7 +90,7 @@ void Control::setSource(InputSource input)
             m_source = input;
             newSource->setEnabled(true);
         }
-        else {
+        else if (newSource!=nullptr) {
             m_source = input;
         }
 
@@ -117,7 +113,7 @@ void Control::setKinematicSource(InputSource input)
             m_kinematic_source = input;
             newSource->setEnabled(true);
         }
-        else {
+        else if (newSource!=nullptr) {
             m_kinematic_source = input;
         }
         #else
@@ -143,7 +139,7 @@ void Control::setLedSource(InputSource input)
             m_led_source = input;
             newSource->setEnabled(true);
         }
-        else {
+        else if (newSource!=nullptr) {
             m_led_source = input;
         }
         #else
@@ -159,11 +155,9 @@ void Control::setLedSource(InputSource input)
 Source *Control::findSource(InputSource input)
 {
     switch (input) {
-    #if ROBOT_HAVE_RC
     case InputSource::RC:
         return m_rc_source.get();
         break;
-    #endif
     case InputSource::WEB:
         return m_web_source.get();
         break;

@@ -92,10 +92,10 @@ void RCSource::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const 
     const auto &vrudder = channels[Channel::RUDDER];
     const auto &velevator = channels[Channel::ELEVATOR];
 
-    auto throttle = vthrotle.asPercent();
-    auto steering = vaileron.asPercent();
-    auto aux_x = vrudder.asPercent();
-    auto aux_y = velevator.asPercent();
+    auto throttle = vthrotle.asFloat();
+    auto steering = vaileron.asFloat();
+    auto aux_x = vrudder.asFloat();
+    auto aux_y = velevator.asFloat();
 
     #if 0
     static chrono::high_resolution_clock::time_point last_update;

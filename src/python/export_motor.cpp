@@ -45,8 +45,8 @@ void export_motor()
         .def("brake", &Motor::brake)
         .def("free_spin", &Motor::freeSpin)
         .def("reset_odometer", &Motor::resetOdometer)
-        .def("subscribe", +[](Motor &motor) { return notify_subscribe<Motor>(motor); })
-        .def("subscribe_attach", +[](Motor &motor, NotifySubscription<Motor::NotifyType> &sub, int offset) { return notify_attach<Motor>(sub, motor, offset); })
+        .def("subscribe", +[](Motor &motor) { return notify_subscribe(motor); })
+        .def("subscribe_attach", +[](Motor &motor, NotifySubscription<Motor::NotifyType> &sub, int offset) { return notify_attach(sub, motor, offset); })
         .def("__str__", +[](const Motor &m) { return (boost::format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
 
@@ -60,8 +60,8 @@ void export_motor()
         .add_property("limit_min", +[](const Servo &servo) { return servo.getLimitMin().asAngle(); }, +[](Servo &servo, float value) { servo.setLimitMin(Value::fromAngle(value)); })
         .add_property("limit_max", +[](const Servo &servo) { return servo.getLimitMax().asAngle(); }, +[](Servo &servo, float value) { servo.setLimitMax(Value::fromAngle(value)); })
         .def("set_limits", +[](Servo &servo, float min, float max) { servo.setLimits(Value::fromAngle(min), Value::fromAngle(max)); })
-        .def("subscribe", +[](Servo &servo) { return notify_subscribe<>(servo); })
-        .def("subscribe_attach", +[](Servo &servo, NotifySubscription<Servo::NotifyType> &sub, int offset) { return notify_attach<>(sub, servo, offset); })
+        .def("subscribe", +[](Servo &servo) { return notify_subscribe(servo); })
+        .def("subscribe_attach", +[](Servo &servo, NotifySubscription<Servo::NotifyType> &sub, int offset) { return notify_attach(sub, servo, offset); })
         .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
 

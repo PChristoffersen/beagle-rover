@@ -40,8 +40,8 @@ void export_input()
         .add_property("led_source", &Control::getLedSource, &Control::setLedSource)
         .add_property("manual", py::make_function(&Control::manual, py::return_internal_reference<>() ))
         .add_property("web", py::make_function(&Control::web, py::return_internal_reference<>() ))
-        .def("subscribe", +[](Control &control) { return notify_subscribe<>(control); })
-        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach<>(sub, control, offset); })
+        .def("subscribe", +[](Control &control) { return notify_subscribe(control); })
+        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach(sub, control, offset); })
         .def("__enter__", +[](Control &ctl) {
             ctl.mutex_lock();
             return ctl.shared_from_this();

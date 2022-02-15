@@ -101,14 +101,14 @@ void export_telemetry()
   
     py::class_<Telemetry, std::shared_ptr<Telemetry>, boost::noncopyable>("Telemetry", py::no_init)
         .add_property("values", +[](Telemetry &telemetry){ 
-            Telemetry::guard(telemetry.getMutex());
+            Telemetry::guard(telemetry.mutex());
             py::dict vals;
             map2dict(vals, telemetry.valuesUnlocked());
             vals["version"] = telemetry.valuesVersion();
             return vals; 
         })
         .add_property("values_version", &Telemetry::valuesVersion)
-        //.def("subscribe", +[](Telemetry &telemetry) { return notify_subscribe<>(telemetry); })
+        //.def("subscribe", +[](Telemetry &telemetry) { return notify_subscribe(telemetry); })
         ;
 
 }

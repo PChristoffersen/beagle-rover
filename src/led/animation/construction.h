@@ -13,13 +13,14 @@ namespace Robot::LED {
         public:
             Construction(const std::shared_ptr<Robot::Context> &context);
 
-            void init();
-            void cleanup();
+            void init(const std::shared_ptr<ColorLayer> &layer) override;
+            void cleanup() override;
 
         private:
+            std::shared_ptr<ColorLayer> m_layer;
             bool m_state;
 
-            void update(ColorLayer &layer);
+            void update() override;
     };
 
 }

@@ -5,6 +5,7 @@
 #include <memory>
 #include <array>
 #include <mutex>
+#include <shared_mutex>
 #include <list>
 #include <chrono>
 #include <boost/asio.hpp>
@@ -12,8 +13,10 @@
 #include <robotconfig.h>
 #include <common/withmutex.h>
 #include <common/withnotify.h>
+#include <common/asyncsignal.h>
 #include <robottypes.h>
 #include "color.h"
+#include "colorlayer.h"
 
 namespace Robot::LED {
 
@@ -37,7 +40,6 @@ namespace Robot::LED {
 
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
-            using clock_type = std::chrono::high_resolution_clock;
             using LayerList = std::list<std::weak_ptr<ColorLayer>>;
 
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
@@ -67,26 +69,26 @@ namespace Robot::LED {
             void detachLayer(const std::shared_ptr<ColorLayer> &layer);
             const LayerList &layers() const { return m_layers; }
 
-        protected:
-            friend class ColorLayer;
-            void removeLayer(const std::shared_ptr<ColorLayer> &layer);
-
         private:
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
+            std::shared_ptr<::Robot::ASyncSignal> m_show_signal;
+            boost::signals2::connection m_show_connection;
 
             Color m_background;
             LayerList m_layers;
 
             AnimationMode m_animation_mode;
+            std::shared_ptr<class ColorLayer> m_animation_layer;
             std::shared_ptr<class Animation> m_animation;
 
             IndicatorMode m_indicator_mode;
+            std::shared_ptr<class ColorLayer> m_indicator_layer;
             std::shared_ptr<class Indicator> m_indicator;
 
-            clock_type::time_point m_last_show;
-
             void clear(const Color &color);
+            void updatePixels();
+            void showPixels(const RawColorArray &pixels);
 
             friend std::ostream &operator<<(std::ostream &os, const Control &self)
             {

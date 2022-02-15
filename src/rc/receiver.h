@@ -16,8 +16,6 @@
 #include <telemetry/types.h>
 #include "types.h"
 
-#if ROBOT_HAVE_RC
-
 namespace Robot::RC {
 
     class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
@@ -56,8 +54,13 @@ namespace Robot::RC {
             #endif
 
             ChannelList m_channels;
+            #ifdef HAVE_ROBOTCONTROL
+            rc_filter_t m_rssi_filter;
+            #endif
             RSSI m_rssi;
             Flags m_flags;
+
+            std::unique_ptr<class Mappings::Mapping> m_mapping;
 
             boost::signals2::connection m_telemetry_connection;
 
@@ -76,6 +79,4 @@ namespace Robot::RC {
  
 }
 
-
-#endif 
 #endif 

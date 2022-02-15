@@ -13,11 +13,21 @@
 
 namespace Robot::Python {
 
+    /**
+     * @brief Extracts the text from the current raised python exception
+     * 
+     * @return std::string Error string
+     */
     std::string parse_python_exception();
 
-    class DummyComponent { 
-    };
-
+    
+    /**
+     * @brief Converts a c++ container to a python tuple
+     * 
+     * @tparam T Container type
+     * @param container Any container that can be iterated through range-based for loop
+     * @return boost::python::tuple Python tuple
+     */
     template<typename T>
     boost::python::tuple container_to_tuple(const T &container) {
         boost::python::tuple obj { boost::python::handle<>(PyTuple_New(container.size())) };

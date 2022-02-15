@@ -9,8 +9,8 @@
 #include <robotconfig.h>
 #include <robotcontext.h>
 #include <telemetry/telemetry.h>
-
-#if ROBOT_HAVE_RC
+#include "mappings/mapping.h"
+#include "mappings/taranis_x9d.h"
 
 using namespace std::literals;
 
@@ -18,7 +18,8 @@ namespace Robot::RC {
 
 static constexpr uint16_t TELEMETRY_BATTERY { 0x0300 };
 
-
+static constexpr auto FILTER_SAMPLES { 10 };
+static constexpr auto FILTER_RESET_THRES { 15.0 };
 /*
 flags = 
 bit7 = ch17 = digital channel (0x80)
@@ -48,6 +49,9 @@ Receiver::Receiver(const std::shared_ptr<Robot::Context> &context) :
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus { nullptr },
     #endif
+    #ifdef HAVE_ROBOTCONTROL
+    m_rssi_filter { rc_filter_empty() },
+    #endif
     m_rssi { 0 }
 {
 }
@@ -57,6 +61,9 @@ Receiver::~Receiver()
 {
     cleanup();
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    #ifdef HAVE_ROBOTCONTROL
+    rc_filter_free(&m_rssi_filter);
+    #endif
 }
 
 
@@ -64,8 +71,19 @@ void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetr
 {    
     const guard lock(m_mutex);
 
+    m_mapping = std::make_unique<Mappings::TaranisX9D>();
+
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus = rc_ext_fbus_get_shm();
+    m_rssi = m_fbus->rssi;
+    #endif
+    #ifdef HAVE_ROBOTCONTROL
+    std::chrono::duration<double> dur { TIMER_INTERVAL };
+    if (rc_filter_moving_average(&m_rssi_filter, FILTER_SAMPLES, dur.count())) {
+        BOOST_THROW_EXCEPTION(std::runtime_error("Failed to create RSSI filter"));
+	}
+    rc_filter_prefill_outputs(&m_rssi_filter, m_rssi);
+	rc_filter_prefill_inputs(&m_rssi_filter, m_rssi);
     #endif
 
     m_telemetry_connection = telemetry->sig_event.connect([&](const auto &e){ telemetryEvent(e); });
@@ -86,6 +104,8 @@ void Receiver::cleanup()
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus = nullptr;
     #endif
+
+    m_mapping = nullptr;
 }
 
 
@@ -148,8 +168,13 @@ void Receiver::timer()
             sig_flags = true;
         }
 
-        if (m_fbus->rssi != m_rssi) {
-            m_rssi = m_fbus->rssi;
+        if (std::abs((int)m_rssi-(int)m_fbus->rssi)>FILTER_RESET_THRES) {
+    	    rc_filter_prefill_outputs(&m_rssi_filter, m_fbus->rssi);
+	    	rc_filter_prefill_inputs(&m_rssi_filter, m_fbus->rssi);
+        }
+        RSSI rssi = rc_filter_march(&m_rssi_filter, m_fbus->rssi);
+        if (rssi != m_rssi) {
+            m_rssi = rssi;
             sig_rssi = true;
         }
 
@@ -174,7 +199,7 @@ void Receiver::timer()
             notify(NOTIFY_DEFAULT);
 
         // Print data
-#if 1
+#if 0
         static std::chrono::high_resolution_clock::time_point last_update;
         auto time { std::chrono::high_resolution_clock::now() };
         
@@ -273,4 +298,3 @@ void Receiver::sendTelemetry(uint16_t appId, uint32_t data)
 
 }
 
-#endif

@@ -23,10 +23,12 @@ KnightRider::KnightRider(const std::shared_ptr<Robot::Context> &context) :
 }
 
 
-void KnightRider::init()
+void KnightRider::init(const std::shared_ptr<ColorLayer> &layer)
 {
+    m_layer = layer;
     m_timer.expires_after(TIMER_INTERVAL);
     timerSetup();
+    m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
 }
 
@@ -35,29 +37,33 @@ void KnightRider::cleanup()
 {
     m_timer.cancel();
     m_layer->setVisible(false);
+    m_layer = nullptr;
 }
 
 
-void KnightRider::update(ColorLayer &layer) 
+void KnightRider::update() 
 {
-    layer.fill(Color::TRANSPARENT);
+    const ColorLayer::guard lock(m_layer->mutex());
+    auto &front { m_layer->segments()[0] };
+    
+    m_layer->fill(Color::TRANSPARENT);
 
     if (m_pos<=0) {
-        layer[m_pos] = LED_COLOR1;
+        front[m_pos] = LED_COLOR1;
         m_dir = 1;
     }
-    else if (m_pos>=7) {
-        layer[m_pos] = LED_COLOR1;
+    else if (m_pos>=front.size()-1) {
+        front[m_pos] = LED_COLOR1;
         m_dir = -1;
     }
     else {
-        layer[m_pos] = LED_COLOR1;
-        layer[m_pos-m_dir] = LED_COLOR2;
+        front[m_pos] = LED_COLOR1;
+        front[m_pos-m_dir] = LED_COLOR2;
     }
 
     m_pos += m_dir;
 
-    layer.show();
+    m_layer->show();
 
 }
 

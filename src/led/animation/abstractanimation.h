@@ -30,12 +30,6 @@ namespace Robot::LED {
                 m_timer_interval { timer_interval }
             {
             }
-            AbstractAnimation(const std::shared_ptr<Robot::Context> &context, int depth, timer_type::duration timer_interval) :
-                Animation { depth },
-                m_timer { context->io() },
-                m_timer_interval { timer_interval }
-            {
-            }
 
 
             void timerSetup() 
@@ -43,25 +37,24 @@ namespace Robot::LED {
                 m_timer.expires_at(m_timer.expiry() + m_timer_interval);
                 m_timer.async_wait(
                     [self_ptr=this->weak_from_this()] (boost::system::error_code error) {
+                        if (error!=boost::system::errc::success) {
+                            return;
+                        }
                         if (auto self = self_ptr.lock()) { 
-                            self->timer(error); 
+                            self->timer(); 
                         }
                     }
                 );
             }
 
 
-            virtual void update(ColorLayer &layer) {}
+            virtual void update() {}
 
         private:
 
-            void timer(boost::system::error_code error) 
+            void timer() 
             {
-                const ColorLayerLock lock { m_layer };
-                if (error!=boost::system::errc::success) {
-                    return;
-                }
-                update(*m_layer);
+                update();
                 timerSetup();
             }
 

@@ -12,15 +12,17 @@ static constexpr auto TIMER_INTERVAL { 500ms };
 static constexpr Color INDICATOR_COLOR { 0xEE, 0xBE, 0x00 };
 
 Indicator::Indicator(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context, LAYER_DEPTH_INDICATORS, TIMER_INTERVAL },
+    AbstractAnimation { context, TIMER_INTERVAL },
     m_state { false },
     m_timer_active { false }
 {
 }
 
 
-void Indicator::init()
+void Indicator::init(const std::shared_ptr<ColorLayer> &layer)
 {
+    m_layer = layer;
+    m_layer->setVisible(false);
     m_layer->fill(Color::TRANSPARENT);
 }
 
@@ -30,12 +32,13 @@ void Indicator::cleanup()
     m_timer.cancel();
     m_timer_active = false;
     m_layer->setVisible(false);
+    m_layer = nullptr;
 }
 
 
 void Indicator::none()
 {
-    const ColorLayerLock lock { m_layer };
+    const ColorLayer::guard lock { m_layer->mutex() };
     m_timer.cancel();
     m_timer_active = false;
     m_layer->fill(Color::TRANSPARENT);
@@ -46,7 +49,7 @@ void Indicator::none()
 
 void Indicator::left()
 {
-    const ColorLayerLock lock { m_layer };
+    const ColorLayer::guard lock { m_layer->mutex() };
     auto &front { m_layer->segments()[0] };
     auto &back { m_layer->segments()[1] };
 
@@ -60,7 +63,7 @@ void Indicator::left()
 
 void Indicator::right() 
 {
-    const ColorLayerLock lock { m_layer };
+    const ColorLayer::guard lock { m_layer->mutex() };
     auto &front { m_layer->segments()[0] };
     auto &back { m_layer->segments()[1] };
 
@@ -74,7 +77,7 @@ void Indicator::right()
 
 void Indicator::hazard()
 {
-    const ColorLayerLock lock { m_layer };
+    const ColorLayer::guard lock { m_layer->mutex() };
     auto &front { m_layer->segments()[0] };
     auto &back { m_layer->segments()[1] };
 
@@ -107,11 +110,11 @@ void Indicator::stopTimer()
     }
 }
 
-void Indicator::update(ColorLayer &layer) 
+void Indicator::update() 
 {
     m_state = !m_state;
-    layer.setVisible(m_state);
-    layer.show();
+    m_layer->setVisible(m_state);
+    m_layer->show();
 }
 
 

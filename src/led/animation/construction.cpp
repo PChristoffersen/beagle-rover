@@ -19,10 +19,12 @@ Construction::Construction(const std::shared_ptr<Robot::Context> &context) :
 }
 
 
-void Construction::init()
+void Construction::init(const std::shared_ptr<ColorLayer> &layer)
 {
+    m_layer = layer;
     m_timer.expires_after(TIMER_INTERVAL);
     timerSetup();
+    m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
 }
 
@@ -31,13 +33,15 @@ void Construction::cleanup()
 {
     m_timer.cancel();
     m_layer->setVisible(false);
+    m_layer = nullptr;
 }
 
 
-void Construction::update(ColorLayer &layer) 
+void Construction::update() 
 {
-    auto &front { layer.segments()[0] };
-    auto &back { layer.segments()[1] };
+    const ColorLayer::guard lock(m_layer->mutex());
+    auto &front { m_layer->segments()[0] };
+    auto &back { m_layer->segments()[1] };
 
     if (m_state) {
         front[0] = LED_COLOR;
@@ -62,7 +66,7 @@ void Construction::update(ColorLayer &layer)
         back[7] = Color::TRANSPARENT;
     }
 
-    layer.show();
+    m_layer->show();
 
     m_state = !m_state;
 }

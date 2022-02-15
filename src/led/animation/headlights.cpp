@@ -14,11 +14,12 @@ Headlights::Headlights(const std::shared_ptr<Robot::Context> &context) :
 }
 
 
-void Headlights::init()
+void Headlights::init(const std::shared_ptr<ColorLayer> &layer)
 {
-    auto &layer { *m_layer };
-    auto &front { layer.segments()[0] };
-    auto &back { layer.segments()[1] };
+    auto &front { layer->segments()[0] };
+    auto &back { layer->segments()[1] };
+
+    layer->fill(Color::TRANSPARENT);
 
     // Front
     front[0] = FRONT_COLOR;
@@ -32,14 +33,13 @@ void Headlights::init()
     //back[6] = REAR_COLOR;
     back[7] = REAR_COLOR;
 
-    layer.setVisible(true);
-    layer.show();
+    layer->setVisible(true);
+    layer->show();
 }
 
 
 void Headlights::cleanup()
 {
-    m_layer->setVisible(false);
 }
 
 

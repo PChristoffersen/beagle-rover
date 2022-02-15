@@ -62,9 +62,11 @@ void RobotControlBattery::init(const std::shared_ptr<Telemetry> &telemetry)
 
     m_initialized = true;
 
+    std::chrono::duration<double> dur { TIMER_INTERVAL };
+
     // Initialized battery filter
     m_pack_voltage = rc_adc_batt();
-    if(rc_filter_moving_average(&m_pack_filter, FILTER_SAMPLES, std::chrono::duration_cast<std::chrono::seconds>(TIMER_INTERVAL).count())){
+    if (rc_filter_moving_average(&m_pack_filter, FILTER_SAMPLES, dur.count())) {
         BOOST_THROW_EXCEPTION(std::runtime_error("Failed to create battery filter"));
 	}
     rc_filter_prefill_outputs(&m_pack_filter, m_pack_voltage);
@@ -72,7 +74,7 @@ void RobotControlBattery::init(const std::shared_ptr<Telemetry> &telemetry)
 
     // Initialized dc jack filter
     m_jack_voltage = rc_adc_dc_jack();
-	if(rc_filter_moving_average(&m_jack_filter, FILTER_SAMPLES, std::chrono::duration_cast<std::chrono::seconds>(TIMER_INTERVAL).count())){
+	if (rc_filter_moving_average(&m_jack_filter, FILTER_SAMPLES, dur.count())){
         BOOST_THROW_EXCEPTION(std::runtime_error("Failed to create DC filter"));
 	}
 	rc_filter_prefill_outputs(&m_jack_filter, m_jack_voltage);
@@ -114,17 +116,8 @@ void RobotControlBattery::timer(boost::system::error_code error)
         return;
     }
 
-    #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     auto v_pack = rc_adc_batt();
     auto v_jack = rc_adc_dc_jack();
-    #else
-    auto v_pack = 0.0;
-    auto v_jack = 0.0;
-    #endif
-
-    if (v_pack < 0.0 || v_jack < 0.0) {
-        return;
-    }
 
     // if there is a sudden jump due to connection or disconnection
 	// reset the filters

@@ -135,7 +135,7 @@ void Motor::freeSpin()
 
 
 void Motor::setValue(const Value value) {
-    setDuty(value.asPercent());
+    setDuty(value.asFloat());
 }
 
 

@@ -148,7 +148,6 @@ void export_led()
         .add_property("depth", &ColorLayer::depth)
         .add_property("visible", &ColorLayer::visible, &ColorLayer::setVisible)
         .add_property("segments", py::make_function(+[](ColorLayer &l){ return &l.segments(); }, py::return_internal_reference<>()))
-        .def("detach", &ColorLayer::detach)
         .def("show", &ColorLayer::show)
         .def("fill", +[](ColorLayer &l, const std::string &value) { 
             l.fill(str2color(value)); 
@@ -167,11 +166,11 @@ void export_led()
         })
         .def("__len__", &ColorLayer::size)
         .def("__enter__", +[](ColorLayer &l) {
-            l.lock();
+            //l.mutex_lock();
             return l.shared_from_this();
         })
         .def("__exit__", +[](ColorLayer &l, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            l.unlock();
+            //l.mutex_unlock();
         })
         ;
 
@@ -189,8 +188,8 @@ void export_led()
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("show", &Control::show)
-        .def("subscribe", +[](Control &control) { return notify_subscribe<>(control); })
-        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach<>(sub, control, offset); })
+        .def("subscribe", +[](Control &control) { return notify_subscribe(control); })
+        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach(sub, control, offset); })
         .def("__enter__", +[](Control &ctl) {
             ctl.mutex_lock();
             return ctl.shared_from_this();

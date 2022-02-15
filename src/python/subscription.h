@@ -172,7 +172,7 @@ namespace Robot::Python {
      * 
      * @tparam T Object type
      * @param obj Object to subscribe 
-     * @return std::shared_ptr<NotifySubscription<typename T::NotifyType>> 
+     * @return std::shared_ptr<NotifySubscription<typename T::NotifyType>> New subscription
      */
     template<typename T>
     std::shared_ptr<NotifySubscription<typename T::NotifyType>> notify_subscribe(T &obj)
@@ -194,13 +194,13 @@ namespace Robot::Python {
     /**
      * @brief Adds a subscription 
      * 
-     * @tparam T 
-     * @param sub 
-     * @param obj 
-     * @param offset 
+     * @tparam T Object type 
+     * @param sub Add to this subscription
+     * @param obj Object to subscribe
+     * @param offset Offset added to notify argument before adding to queue
      */
     template<typename T>
-    void notify_attach(NotifySubscription<typename T::NotifyType> &sub, T &obj, int offset)
+    void notify_attach(NotifySubscription<typename T::NotifyType> &sub, T &obj, typename T::NotifyType offset)
     {
         sub.add_connection(obj.subscribe(
             [sub_ptr=sub.weak_from_this(),offset] (typename T::NotifyType arg) {

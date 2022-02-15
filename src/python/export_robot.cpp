@@ -28,13 +28,7 @@ void export_robot()
 
     py::class_<Robot, std::shared_ptr<Robot>, boost::noncopyable>("Robot")
         .add_property("heartbeat", &Robot::Robot::heartbeat)
-        .add_property("rc_receiver", py::make_function(+[](const Robot &r){ 
-            #if ROBOT_HAVE_RC
-            return r.rcReceiver().get(); 
-            #else
-            return (DummyComponent*)nullptr;
-            #endif
-        }, py::return_internal_reference<>()))
+        .add_property("rc_receiver", py::make_function(+[](const Robot &r){ return r.rcReceiver().get(); }, py::return_internal_reference<>()))
         .add_property("motor_control", py::make_function(+[](const Robot &r){ return r.motorControl().get(); }, py::return_internal_reference<>()))
         .add_property("led_control", py::make_function(+[](const Robot &r){ return r.ledControl().get(); }, py::return_internal_reference<>()))
         .add_property("telemetry", py::make_function(+[](const Robot &r){ return r.telemetry().get(); }, py::return_internal_reference<>()))
@@ -46,8 +40,6 @@ void export_robot()
         .def("cleanup", &Robot::cleanup)
         ;
 
-    py::class_<DummyComponent>("DummyComponent")
-        ;
 }
 
 }

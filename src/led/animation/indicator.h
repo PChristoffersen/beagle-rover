@@ -13,8 +13,8 @@ namespace Robot::LED {
         public:
             Indicator(const std::shared_ptr<Robot::Context> &context);
 
-            void init();
-            void cleanup();
+            void init(const std::shared_ptr<ColorLayer> &layer) override;
+            void cleanup() override;
 
             void none();
             void left();
@@ -24,8 +24,9 @@ namespace Robot::LED {
         private:
             bool m_state;
             bool m_timer_active;
+            std::shared_ptr<ColorLayer> m_layer;
 
-            void update(ColorLayer &layer);
+            void update() override;
 
             void startTimer();
             void stopTimer();

@@ -80,7 +80,7 @@ namespace Robot::RC {
             void setCount(std::size_t count) 
             {
                 if (m_count!=count) {
-                    std::fill(begin()+count, end(), Value::UNSET_VALUE);
+                    std::fill(begin()+count, end(), Value::CENTER);
                     m_count = count;
                 }
             }
@@ -94,6 +94,10 @@ namespace Robot::RC {
     using SignalRSSI = boost::signals2::signal<void(RSSI)>;
     using SignalData = boost::signals2::signal<void(Flags flags, RSSI rssi, const ChannelList &channels)>;
 
+
+    namespace Mappings {
+        class Mapping;
+    }
 }
 
 

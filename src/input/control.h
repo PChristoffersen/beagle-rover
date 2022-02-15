@@ -28,11 +28,7 @@ namespace Robot::Input {
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();
         
-            #if ROBOT_HAVE_RC
             void init(const std::shared_ptr<::Robot::RC::Receiver> &receiver);
-            #else
-            void init();
-            #endif
             void cleanup();
 
             void setSource(InputSource input);
