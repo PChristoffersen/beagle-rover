@@ -20,13 +20,11 @@ namespace Robot::Kinematic {
 ControlSchemeSkid::ControlSchemeSkid(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 ControlSchemeSkid::~ControlSchemeSkid() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

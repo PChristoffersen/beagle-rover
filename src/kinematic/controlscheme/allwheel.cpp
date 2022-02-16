@@ -19,13 +19,11 @@ namespace Robot::Kinematic {
 ControlSchemeAllWheel::ControlSchemeAllWheel(std::shared_ptr<Kinematic> kinematic) :
     AbstractWheelSteering { kinematic, WHEEL_BASE_MM }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 ControlSchemeAllWheel::~ControlSchemeAllWheel() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

@@ -28,6 +28,7 @@ void Police::init(const std::shared_ptr<ColorLayer> &layer)
     m_timer.expires_after(TIMER_INTERVAL);
     timerSetup();
     m_layer->setVisible(true);
+    m_layer->update();
 }
 
 
@@ -68,7 +69,7 @@ void Police::update()
         back[7] = LED_COLOR1;
     }
 
-    m_layer->show();
+    m_layer->update();
 
     m_state = !m_state;
 }

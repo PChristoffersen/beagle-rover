@@ -5,9 +5,9 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
+#include <common/notifysubscription.h>
 #include <kinematic/kinematic.h>
 #include "util.h"
-#include "subscription.h"
 
 namespace py = boost::python;
 
@@ -39,14 +39,14 @@ void export_kinematic()
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(Kinematic::NOTIFY_DEFAULT))
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
-        .def("subscribe", +[](Kinematic &kinematic) { return notify_subscribe(kinematic); })
-        .def("subscribe_attach", +[](Kinematic &kinematic, NotifySubscription<Kinematic::NotifyType> &sub, int offset) { return notify_attach(sub, kinematic, offset); })
-        .def("__enter__", +[](Kinematic &kinematic) {
-            kinematic.mutex_lock();
-            return kinematic.shared_from_this();
+        .def("subscribe", +[](Kinematic &self) { return notify_subscribe(self); })
+        .def("subscribe", +[](Kinematic &self, std::shared_ptr<NotifySubscription<Kinematic::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
+        .def("__enter__", +[](Kinematic &self) {
+            self.mutex_lock();
+            return self.shared_from_this();
         })
-        .def("__exit__", +[](Kinematic &kinematic, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            kinematic.mutex_unlock();
+        .def("__exit__", +[](Kinematic &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
+            self.mutex_unlock();
         })
         ;
 }

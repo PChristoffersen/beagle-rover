@@ -13,13 +13,11 @@ namespace Robot::Kinematic {
 ControlSchemeSpinning::ControlSchemeSpinning(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 ControlSchemeSpinning::~ControlSchemeSpinning() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

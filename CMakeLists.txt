@@ -169,3 +169,8 @@ add_executable(test_asyncsignal test/test_asyncsignal.cpp )
 target_include_directories(test_asyncsignal PRIVATE src)
 target_link_libraries(test_asyncsignal robotsystem ${Boost_LOG_LIBRARIES})
 add_test(NAME ASyncSignal COMMAND test_asyncsignal)
+
+
+add_test(NAME PythonSubscription COMMAND test_subscription.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+add_test(NAME PythonLEDS COMMAND test_leds.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+

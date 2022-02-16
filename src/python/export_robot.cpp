@@ -4,6 +4,7 @@
 #include <boost/python.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
+#include <common/notifysubscription.h>
 #include <robot.h>
 #include <robotcontext.h>
 #include <rc/receiver.h>
@@ -16,7 +17,6 @@
 #include <system/network.h>
 
 #include "util.h"
-#include "subscription.h"
 
 namespace Robot::Python {
 

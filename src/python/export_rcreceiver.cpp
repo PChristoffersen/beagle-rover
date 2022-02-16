@@ -6,9 +6,9 @@
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include <robotconfig.h>
+#include <common/notifysubscription.h>
 #include <rc/receiver.h>
 #include "util.h"
-#include "subscription.h"
 
 namespace py = boost::python;
 
@@ -33,14 +33,14 @@ void export_rcreceiver()
         .add_property("connected", &Receiver::isConnected)
         .add_property("flags", &Receiver::getFlags)
         .add_property("rssi", &Receiver::getRSSI)
-        .def("subscribe", +[](Receiver &receiver) { return notify_subscribe(receiver); })
-        .def("subscribe_attach", +[](Receiver &receiver, NotifySubscription<Receiver::NotifyType> &sub, int offset) { return notify_attach(sub, receiver, offset); })
-        .def("__enter__", +[](Receiver &rc) {
-            rc.mutex_lock();
-            return rc.shared_from_this();
+        .def("subscribe", +[](Receiver &self) { return notify_subscribe(self); })
+        .def("subscribe", +[](Receiver &self, std::shared_ptr<NotifySubscription<Receiver::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
+        .def("__enter__", +[](Receiver &self) {
+            self.mutex_lock();
+            return self.shared_from_this();
         })
-        .def("__exit__", +[](Receiver &rc, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            rc.mutex_unlock();
+        .def("__exit__", +[](Receiver &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
+            self.mutex_unlock();
         })
         ;
     

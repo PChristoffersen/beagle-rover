@@ -18,6 +18,8 @@ namespace Robot::LED {
         private:
             std::shared_ptr<ColorLayer> m_layer;
 
+            uint16_t m_hue;
+
             void update() override;
     };
 

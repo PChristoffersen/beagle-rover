@@ -43,7 +43,7 @@ void Indicator::none()
     m_timer_active = false;
     m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(false);
-    m_layer->show();
+    m_layer->update();
     stopTimer();
 }
 
@@ -114,7 +114,7 @@ void Indicator::update()
 {
     m_state = !m_state;
     m_layer->setVisible(m_state);
-    m_layer->show();
+    m_layer->update();
 }
 
 

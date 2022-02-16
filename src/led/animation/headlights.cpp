@@ -34,7 +34,7 @@ void Headlights::init(const std::shared_ptr<ColorLayer> &layer)
     back[7] = REAR_COLOR;
 
     layer->setVisible(true);
-    layer->show();
+    layer->update();
 }
 
 

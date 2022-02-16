@@ -15,13 +15,11 @@ namespace Robot::Kinematic {
 ControlSchemePassthrough::ControlSchemePassthrough(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 ControlSchemePassthrough::~ControlSchemePassthrough() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

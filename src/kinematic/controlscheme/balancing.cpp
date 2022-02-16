@@ -92,15 +92,12 @@ ControlSchemeBalancing::ControlSchemeBalancing(std::shared_ptr<Kinematic> kinema
     m_armed { false },
     m_inner_saturation_counter { 0 }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
 ControlSchemeBalancing::~ControlSchemeBalancing() 
 {
     cleanup();
-
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

@@ -40,7 +40,9 @@ namespace Robot::LED {
 
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
-            using LayerList = std::list<std::weak_ptr<ColorLayer>>;
+            static constexpr NotifyType NOTIFY_UPDATE { 1 };
+       
+            using LayerList = std::list<std::shared_ptr<ColorLayer>>;
 
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
@@ -63,18 +65,21 @@ namespace Robot::LED {
             void setIndicators(IndicatorMode mode);
             IndicatorMode getIndicators() const { return m_indicator_mode; }
 
-            void show();
+            void update();
 
             void attachLayer(const std::shared_ptr<ColorLayer> &layer);
             void detachLayer(const std::shared_ptr<ColorLayer> &layer);
-            const LayerList &layers() const { return m_layers; }
+
+            LayerList layers();
+            RawColorArray pixels();
 
         private:
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
-            std::shared_ptr<::Robot::ASyncSignal> m_show_signal;
-            boost::signals2::connection m_show_connection;
+            std::shared_ptr<::Robot::ASyncSignal> m_update_signal;
+            boost::signals2::connection m_update_connection;
 
+            RawColorArray m_pixels;
             Color m_background;
             LayerList m_layers;
 
@@ -88,7 +93,7 @@ namespace Robot::LED {
 
             void clear(const Color &color);
             void updatePixels();
-            void showPixels(const RawColorArray &pixels);
+            void showPixels();
 
             friend std::ostream &operator<<(std::ostream &os, const Control &self)
             {

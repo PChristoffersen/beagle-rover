@@ -5,10 +5,10 @@
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include <robotconfig.h>
+#include <common/notifysubscription.h>
 #include <system/network.h>
 #include <system/power.h>
 #include "util.h"
-#include "subscription.h"
 
 namespace py = boost::python;
 
@@ -21,8 +21,8 @@ void export_system()
 
     py::class_<Network, std::shared_ptr<Network>, boost::noncopyable>("Network", py::no_init)
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(Network::NOTIFY_DEFAULT))
-        .def("subscribe", +[](Network &network) { return notify_subscribe(network); })
-        .def("subscribe_attach", +[](Network &network, NotifySubscription<Network::NotifyType> &sub, int offset) { return notify_attach(sub, network, offset); })
+        .def("subscribe", +[](Network &self) { return notify_subscribe(self); })
+        .def("subscribe", +[](Network &self, std::shared_ptr<NotifySubscription<Network::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         ;
 
 
@@ -57,9 +57,9 @@ void export_system()
 
     py::class_<Power, std::shared_ptr<Power>, boost::noncopyable>("Power", py::no_init)
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(Power::NOTIFY_DEFAULT))
-        .add_property("system", py::make_function(+[](const Power &p){ return p.system().get(); }, py::return_internal_reference<>()))
-        .def("subscribe", +[](Power &power) { return notify_subscribe(power); })
-        .def("subscribe_attach", +[](Power &power, NotifySubscription<Power::NotifyType> &sub, int offset) { return notify_attach(sub, power, offset); })
+        .add_property("system", py::make_function(+[](const Power &self){ return self.system().get(); }, py::return_internal_reference<>()))
+        .def("subscribe", +[](Power &self) { return notify_subscribe(self); })
+        .def("subscribe", +[](Power &self, std::shared_ptr<NotifySubscription<Power::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         ;
 
 }

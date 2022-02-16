@@ -27,6 +27,7 @@ void Ambulance::init(const std::shared_ptr<ColorLayer> &layer)
     timerSetup();
     m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
+    m_layer->update();
 }
 
 
@@ -67,7 +68,7 @@ void Ambulance::update()
         back[7] = Color::TRANSPARENT;
     }
 
-    m_layer->show();
+    m_layer->update();
 
     m_state = !m_state;
 }

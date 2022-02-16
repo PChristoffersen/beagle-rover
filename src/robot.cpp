@@ -47,16 +47,13 @@ Robot::Robot() :
     m_timer { m_context->io() },
     m_heartbeat { 0u }
 {
-
-//    m_context = std::make_shared<Context>();
-
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 Robot::~Robot() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

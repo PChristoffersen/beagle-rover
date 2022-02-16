@@ -30,6 +30,7 @@ void KnightRider::init(const std::shared_ptr<ColorLayer> &layer)
     timerSetup();
     m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
+    m_layer->update();
 }
 
 
@@ -63,7 +64,7 @@ void KnightRider::update()
 
     m_pos += m_dir;
 
-    m_layer->show();
+    m_layer->update();
 
 }
 

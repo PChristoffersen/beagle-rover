@@ -6,10 +6,10 @@
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
 
+#include <common/notifysubscription.h>
 #include <input/control.h>
 #include <input/softwareinterface.h>
 #include "util.h"
-#include "subscription.h"
 
 namespace py = boost::python;
 
@@ -40,14 +40,14 @@ void export_input()
         .add_property("led_source", &Control::getLedSource, &Control::setLedSource)
         .add_property("manual", py::make_function(&Control::manual, py::return_internal_reference<>() ))
         .add_property("web", py::make_function(&Control::web, py::return_internal_reference<>() ))
-        .def("subscribe", +[](Control &control) { return notify_subscribe(control); })
-        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach(sub, control, offset); })
-        .def("__enter__", +[](Control &ctl) {
-            ctl.mutex_lock();
-            return ctl.shared_from_this();
+        .def("subscribe", +[](Control &self) { return notify_subscribe(self); })
+        .def("subscribe", +[](Control &self, std::shared_ptr<NotifySubscription<Control::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
+        .def("__enter__", +[](Control &self) {
+            self.mutex_lock();
+            return self.shared_from_this();
         })
-        .def("__exit__", +[](Control &ctl, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            ctl.mutex_unlock();
+        .def("__exit__", +[](Control &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
+            self.mutex_unlock();
         })
         ;
 

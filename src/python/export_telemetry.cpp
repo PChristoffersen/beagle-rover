@@ -8,7 +8,7 @@
 #include <boost/python/dict.hpp>
 
 #include "util.h"
-#include "subscription.h"
+#include <common/notifysubscription.h>
 #include <telemetry/telemetry.h>
 
 namespace py = boost::python;
@@ -100,15 +100,14 @@ void export_telemetry()
 
   
     py::class_<Telemetry, std::shared_ptr<Telemetry>, boost::noncopyable>("Telemetry", py::no_init)
-        .add_property("values", +[](Telemetry &telemetry){ 
-            Telemetry::guard(telemetry.mutex());
+        .add_property("values", +[](Telemetry &self){ 
+            Telemetry::guard(self.mutex());
             py::dict vals;
-            map2dict(vals, telemetry.valuesUnlocked());
-            vals["version"] = telemetry.valuesVersion();
+            map2dict(vals, self.valuesUnlocked());
+            vals["version"] = self.valuesVersion();
             return vals; 
         })
         .add_property("values_version", &Telemetry::valuesVersion)
-        //.def("subscribe", +[](Telemetry &telemetry) { return notify_subscribe(telemetry); })
         ;
 
 }

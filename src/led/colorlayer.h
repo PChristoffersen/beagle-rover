@@ -27,7 +27,8 @@ namespace Robot::LED {
         public:
             class Segment {
                 public:
-                    Segment(ColorLayer *parent, size_type offset, size_type size) : m_offset { offset }, m_size { size }, m_parent { parent } { }
+                    Segment(ColorLayer *parent, const std::string &name, size_type offset, size_type size) : m_offset { offset }, m_size { size }, m_parent { parent } { }
+                    const std::string &name() const { return m_name; }
                     Color &operator[](size_type pos) {
                         return (*m_parent)[m_offset+pos];
                     }
@@ -36,19 +37,23 @@ namespace Robot::LED {
                     }
                     size_type size() const { return m_size; }
                 private:
+                    const std::string m_name;
                     const size_type m_offset;
                     const size_type m_size;
                     ColorLayer *m_parent;
             };
             using SegmentArray = std::array<Segment, SEGMENT_COUNT>;
 
-            explicit ColorLayer(uint depth);
+            ColorLayer(const std::string &name, uint depth) : ColorLayer(name, depth, false) {}
+            ColorLayer(const std::string &name, uint depth, bool internal);
             virtual ~ColorLayer();
 
             void setVisible(bool visible);
 
-            void show();
+            void update();
 
+            const std::string &name() const { return m_name; }
+            bool internal() const { return m_internal; }
             uint depth() const { return m_depth; }
             bool visible() const { return m_visible; }
             
@@ -61,7 +66,9 @@ namespace Robot::LED {
             void clearSignal();
 
         private:
+            const std::string m_name;
             const uint m_depth;
+            const bool m_internal;
             bool m_visible;
             SegmentArray m_segments;
             std::shared_ptr<::Robot::ASyncSignal> m_show_sig;

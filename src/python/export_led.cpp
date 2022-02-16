@@ -7,18 +7,19 @@
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/python/object.hpp>
+#include <boost/python/list.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 
+#include <common/notifysubscription.h>
 #include <led/control.h>
 #include <led/color.h>
 #include <led/colorlayer.h>
 #include "util.h"
-#include "subscription.h"
 
 namespace py = boost::python;
 
-using Robot::LED::Color, Robot::LED::ColorLayer;
+using Robot::LED::Color, Robot::LED::ColorLayer, Robot::LED::RawColorArray;
 
 namespace Robot::Python {
 
@@ -75,8 +76,26 @@ static std::string color2str(const Color &color)
     return stream.str();
 }
 
+static std::string color2rgbstr(const Color &color)
+{
+    std::stringstream stream;
+    stream << boost::format("#%+02x%+02x%+02x") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
+    return stream.str();
+}
 
-void checkIndex(const ColorLayer &l, uint index) 
+
+boost::python::tuple rawcolor2tuple(const RawColorArray &array) {
+    boost::python::tuple obj { boost::python::handle<>(PyTuple_New(array.size())) };
+    int idx = 0;
+    for (auto &v : array) {
+        PyTuple_SET_ITEM(obj.ptr(), idx, boost::python::incref(boost::python::object(color2rgbstr(Color(v))).ptr()));
+        idx++;
+    }
+    return obj;
+}
+
+
+static inline void checkIndex(const ColorLayer &l, uint index) 
 {
     if (index >= l.size()) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
@@ -84,7 +103,7 @@ void checkIndex(const ColorLayer &l, uint index)
     }
 }
 
-void checkIndex(const ColorLayer::Segment &l, uint index) 
+static inline void checkIndex(const ColorLayer::Segment &l, uint index) 
 {
     if (index >= l.size()) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
@@ -92,6 +111,13 @@ void checkIndex(const ColorLayer::Segment &l, uint index)
     }
 }
 
+static inline void checkInternal(const ColorLayer &l) 
+{
+    if (l.internal()) {
+        PyErr_SetString(PyExc_AttributeError, "Invalid operation on internal layer");
+        py::throw_error_already_set();
+    }
+}
 
 
 void export_led() 
@@ -118,6 +144,7 @@ void export_led()
 
 
    py::class_<ColorLayer::Segment, boost::noncopyable>("LEDSegment", py::no_init)
+        .add_property("name", +[](const ColorLayer::Segment &s) { return s.name(); })
         .def("__getitem__", +[](const ColorLayer::Segment &segment, uint index){
             checkIndex(segment, index);
             return color2str(segment[index]);
@@ -144,12 +171,15 @@ void export_led()
         .def("__len__", &ColorLayer::SegmentArray::size)
         ;
 
-   py::class_<ColorLayer, std::shared_ptr<ColorLayer>, boost::noncopyable>("LEDColorLayer", py::init<int>())
+   py::class_<ColorLayer, std::shared_ptr<ColorLayer>, boost::noncopyable>("LEDColorLayer", py::init<const std::string&, uint>())
+        .add_property("name", +[](const ColorLayer &l) { return l.name(); })
+        .add_property("internal", &ColorLayer::internal)
         .add_property("depth", &ColorLayer::depth)
         .add_property("visible", &ColorLayer::visible, &ColorLayer::setVisible)
         .add_property("segments", py::make_function(+[](ColorLayer &l){ return &l.segments(); }, py::return_internal_reference<>()))
-        .def("show", &ColorLayer::show)
+        .def("update", &ColorLayer::update)
         .def("fill", +[](ColorLayer &l, const std::string &value) { 
+            checkInternal(l);
             l.fill(str2color(value)); 
         })
         .def("__getitem__", +[](const ColorLayer &l, uint index){
@@ -157,45 +187,49 @@ void export_led()
             return color2str(l[index]);
         })
         .def("__setitem__", +[](ColorLayer &l, uint index, const std::string &value) {
+            checkInternal(l);
             checkIndex(l, index);
             l[index] = str2color(value);
         })
         .def("__setitem__", +[](ColorLayer &l, uint index, const py::tuple &value) {
+            checkInternal(l);
             checkIndex(l, index);
             l[index] = tuple2color(value);
         })
         .def("__len__", &ColorLayer::size)
         .def("__enter__", +[](ColorLayer &l) {
-            //l.mutex_lock();
+            l.mutex_lock();
             return l.shared_from_this();
         })
         .def("__exit__", +[](ColorLayer &l, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            //l.mutex_unlock();
+            l.mutex_unlock();
         })
         ;
 
     py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("LEDControl", py::no_init)
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(Control::NOTIFY_DEFAULT))
+        .add_static_property("NOTIFY_UPDATE", py::make_getter(Control::NOTIFY_UPDATE))
         .add_property("background", 
-            +[](const Control &ctl) {
-                return color2str(ctl.getBackground());
+            +[](const Control &self) {
+                return color2rgbstr(self.getBackground());
             },
-            +[](Control &ctl, const std::string &value) {
-                ctl.setBackground(str2color(value));
+            +[](Control &self, const std::string &value) {
+                self.setBackground(str2color(value));
             })
         .add_property("animation", &Control::getAnimation, &Control::setAnimation)
         .add_property("indicators", &Control::getIndicators, &Control::setIndicators)
+        .add_property("pixels", +[](Control &self) { return rawcolor2tuple(self.pixels()); })
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
-        .def("show", &Control::show)
-        .def("subscribe", +[](Control &control) { return notify_subscribe(control); })
-        .def("subscribe_attach", +[](Control &control, NotifySubscription<Control::NotifyType> &sub, int offset) { return notify_attach(sub, control, offset); })
-        .def("__enter__", +[](Control &ctl) {
-            ctl.mutex_lock();
-            return ctl.shared_from_this();
+        .def("update", &Control::update)
+        .def("subscribe", +[](Control &self) { return notify_subscribe(self); })
+        .def("subscribe", +[](Control &self, std::shared_ptr<NotifySubscription<Control::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
+        .def("__enter__", +[](Control &self) {
+            self.mutex_lock();
+            return self.shared_from_this();
         })
-        .def("__exit__", +[](Control &ctl, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            ctl.mutex_unlock();
+        .def("__exit__", +[](Control &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
+            self.mutex_unlock();
         })
         ;
 }

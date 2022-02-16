@@ -24,8 +24,11 @@ namespace Robot::LED {
             constexpr Color() : Color(TRANSPARENT) {}
             constexpr Color(std::uint8_t r, std::uint8_t g, std::uint8_t b) : m_data { raw_argb(0xFF, r, g, b) } {}
             constexpr Color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint32_t a) : m_data { raw_argb(a, r, g, b) } {}
+            constexpr explicit Color(raw_type raw) : m_data{ raw } {}
             constexpr Color(const Color &color) : m_data{ color.m_data } {}
             constexpr Color(const Color &&color) : m_data{ color.m_data } {}
+
+            static Color fromHSV(uint16_t h, uint8_t s, uint8_t v);
 
             inline std::uint8_t red() const { return (m_data >> RED_SHIFT) & 0xFF; }
             inline std::uint8_t green() const { return (m_data >> GREEN_SHIFT) & 0xFF; }
@@ -61,8 +64,7 @@ namespace Robot::LED {
             friend raw_type &operator<<(raw_type &value, const Color &color);
             friend std::ostream &operator<<(std::ostream &os, const Color &color);
     };
-
-
+    
     constexpr Color Color::TRANSPARENT { 0x00, 0x00, 0x00, 0x00 };
     constexpr Color Color::BLACK       { 0x00, 0x00, 0x00 };
     constexpr Color Color::WHITE       { 0xFF, 0xFF, 0xFF };

@@ -1,22 +1,19 @@
-#ifndef _ROBOT_PYTHON_SUBSCRIPTION_H_
-#define _ROBOT_PYTHON_SUBSCRIPTION_H_
+#ifndef _ROBOT_NOTIFYSUBSCRIPTION_H_
+#define _ROBOT_NOTIFYSUBSCRIPTION_H_
 
 #include <memory>
 #include <vector>
+#include <chrono>
 #include <unordered_set>
-#include <boost/log/trivial.hpp> 
+#include <poll.h>
+#include <sys/eventfd.h>
 #include <boost/signals2.hpp>
 #include <boost/lockfree/queue.hpp>
-#include <sys/eventfd.h>
+#include <boost/log/trivial.hpp> 
 
-#define BOOST_ALLOW_DEPRECATED_HEADERS
-#include <boost/python.hpp>
-#undef BOOST_ALLOW_DEPRECATED_HEADERS
+#include "withnotify.h"
 
-#include <common/withnotify.h>
-#include "util.h"
-
-namespace Robot::Python {
+namespace Robot {
 
     template<typename T>
     class NotifySubscription : public std::enable_shared_from_this<NotifySubscription<T>> {
@@ -29,7 +26,7 @@ namespace Robot::Python {
                 m_name { name },
                 m_queue { QUEUE_SIZE }
             {
-                BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+                BOOST_LOG_TRIVIAL(trace) << m_name << " " << __FUNCTION__;
                 
                 int flags = EFD_CLOEXEC;
                 if (nonblocking) {
@@ -45,7 +42,7 @@ namespace Robot::Python {
 
             ~NotifySubscription()
             {
-                BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+                BOOST_LOG_TRIVIAL(trace) << m_name << " " << __FUNCTION__;
                 unsubscribe();
                 if (m_fd>=0) {
                     close(m_fd);
@@ -58,7 +55,7 @@ namespace Robot::Python {
              */
             void unsubscribe()
             {
-                BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+                BOOST_LOG_TRIVIAL(trace) << m_name << " " << __FUNCTION__;
                 for (auto &connection : m_connections) {
                     connection.disconnect();
                 }
@@ -121,7 +118,7 @@ namespace Robot::Python {
                 int value;
                 for (auto i=0u; i<cnt; i++) {
                     if (m_queue.pop(value)) {
-                        BOOST_LOG_TRIVIAL(trace) << m_name << " READ ()=" << value;
+                        BOOST_LOG_TRIVIAL(trace) <<  " READ ()=" << value;
                         result.insert(value);
                     }
                     else {
@@ -131,6 +128,24 @@ namespace Robot::Python {
                 return result;
             }
 
+
+            /**
+             * @brief Wait for event with timeout
+             * 
+             * @param timeout Timeout
+             * @return result_set_t A set of events returned from this event
+             */
+            result_set_t read(std::chrono::milliseconds timeout) 
+            {
+                struct pollfd pfd;
+                pfd.fd = m_fd;
+                pfd.events = POLLIN;
+                pfd.revents = 0;
+                if (poll(&pfd, 1, timeout.count())<1) {
+                    return result_set_t();
+                }
+                return read();
+            }
 
             /**
              * @brief Write an event to the subscription

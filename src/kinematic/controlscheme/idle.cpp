@@ -20,14 +20,12 @@ ControlSchemeIdle::ControlSchemeIdle(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }, 
     m_timer { m_context->io() }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
 ControlSchemeIdle::~ControlSchemeIdle() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

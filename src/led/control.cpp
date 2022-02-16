@@ -19,7 +19,7 @@ using namespace std::literals;
 
 namespace Robot::LED {
 
-static constexpr auto LED_UPDATE_INTERVAL { 60ms };
+static constexpr auto LED_UPDATE_INTERVAL { 30ms };
 
 
 Control::Control(const std::shared_ptr<Robot::Context> &context) :
@@ -47,16 +47,16 @@ void Control::init()
     m_initialized = true;
     clear(Color::BLACK);
 
-    m_show_signal = std::make_shared<::Robot::ASyncSignal>(m_context->io(), LED_UPDATE_INTERVAL);
-    m_show_connection = m_show_signal->connect([self_ptr=this->weak_from_this()](auto cnt) {
+    m_update_signal = std::make_shared<::Robot::ASyncSignal>(m_context->io(), LED_UPDATE_INTERVAL);
+    m_update_connection = m_update_signal->connect([self_ptr=this->weak_from_this()](auto cnt) {
         if (auto self = self_ptr.lock()) { 
             self->updatePixels(); 
         }
     });
-    m_show_signal->async_wait();
+    m_update_signal->async_wait();
 
-    m_indicator_layer = std::make_shared<ColorLayer>(LAYER_DEPTH_INDICATORS);
-    m_animation_layer = std::make_shared<ColorLayer>(LAYER_DEPTH_ANIMATION);
+    m_indicator_layer = std::make_shared<ColorLayer>("Indicators", LAYER_DEPTH_INDICATORS, true);
+    m_animation_layer = std::make_shared<ColorLayer>("Animation", LAYER_DEPTH_ANIMATION, true);
     
     attachLayer(m_indicator_layer);
     attachLayer(m_animation_layer);
@@ -74,9 +74,9 @@ void Control::cleanup()
         return;
     m_initialized = false;
 
-    m_show_connection.disconnect();
-    m_show_signal->cancel();
-    m_show_signal = nullptr;
+    m_update_connection.disconnect();
+    m_update_signal->cancel();
+    m_update_signal = nullptr;
 
     if (m_animation) {
         m_animation->cleanup();
@@ -87,10 +87,8 @@ void Control::cleanup()
         m_indicator = nullptr;
     }
 
-    for (auto &ptr : m_layers) {
-        if (const auto &l = ptr.lock()) {
-            l->clearSignal();
-        }
+    for (auto &l : m_layers) {
+        l->clearSignal();
     }
     m_layers.clear();
     m_indicator_layer = nullptr;
@@ -114,14 +112,12 @@ void Control::clear(const Color &color)
 {
     const guard lock(m_mutex);
 
-    RawColorArray pixels;
-    pixels.fill(color);
-
-    showPixels(pixels);
+    m_pixels.fill(color);
+    showPixels();
 }
 
 
-void Control::showPixels(const RawColorArray &pixels)
+void Control::showPixels()
 {
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     if (rc_ext_neopixel_set(pixels.data())!=0) {
@@ -130,7 +126,7 @@ void Control::showPixels(const RawColorArray &pixels)
     #endif
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
     std::stringstream sstream;
-    for (auto &pixel : pixels) {
+    for (auto &pixel : m_pixels) {
         sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)Color::rawRed(pixel) % (uint32_t)Color::rawGreen(pixel) % (uint32_t)Color::rawBlue(pixel);
     }
     BOOST_LOG_TRIVIAL(info) << *this << " " << sstream.str();
@@ -143,6 +139,7 @@ void Control::setBackground(const Color &color)
     const guard lock(m_mutex);
     if (m_background!=color) {
         m_background = color;
+        update();
         notify(NOTIFY_DEFAULT);
     }
 }
@@ -191,7 +188,7 @@ void Control::setAnimation(AnimationMode mode)
         else {
             m_animation_layer->fill(Color::TRANSPARENT);
             m_animation_layer->setVisible(false);
-            show();
+            update();
         }
 
         notify(NOTIFY_DEFAULT);
@@ -224,15 +221,30 @@ void Control::setIndicators(IndicatorMode mode)
 }
 
 
-void Control::show()
+void Control::update()
 {
     const guard lock(m_mutex);
     if (!m_initialized)
         return;
-    if (m_show_signal) {
-        (*m_show_signal)();
+    if (m_update_signal) {
+        (*m_update_signal)();
     }
 }
+
+
+Control::LayerList Control::layers()
+{
+    const guard lock(m_mutex);
+    return m_layers;
+}
+
+
+RawColorArray Control::pixels()
+{
+    const guard lock(m_mutex);
+    return m_pixels;
+}
+
 
 void Control::updatePixels()
 {
@@ -243,16 +255,14 @@ void Control::updatePixels()
     
     BOOST_LOG_TRIVIAL(trace) << "Control::Show()";
 
-    RawColorArray pixels;
-    pixels.fill(m_background);
+    m_pixels.fill(m_background);
 
-    for (const auto &ptr : m_layers) {
-        if (const auto &layer = ptr.lock()) {
-            pixels << *layer;
-        }
+    for (const auto &layer : m_layers) {
+        m_pixels << *layer;
     }
 
-    showPixels(pixels);
+    showPixels();
+    notify(NOTIFY_UPDATE);
 
     BOOST_LOG_TRIVIAL(trace) << "Show << ";
 }
@@ -263,22 +273,16 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
     BOOST_LOG_TRIVIAL(trace) << "Attach Layer >> " << *layer;
     const guard lock(m_mutex);
 
-    for (auto &ptr : m_layers) {
-        if (auto l = ptr.lock()) {
-            if (l==layer) {
-                BOOST_LOG_TRIVIAL(warning) << "Layer " << layer->depth() << " already attached";
-                return;
-            }
+    for (auto &l : m_layers) {
+        if (l==layer) {
+            BOOST_LOG_TRIVIAL(warning) << "Layer " << layer->depth() << " already attached";
+            return;
         }
     }
 
     bool inserted = false;
     for (auto ith=m_layers.begin(); ith!=m_layers.end(); ++ith) {
-        const auto &ptr = *ith;
-        const auto &l = ptr.lock();
-        if (!l) {
-            continue;
-        }
+        const auto &l = *ith;
         if (l->depth() > layer->depth()) {
             m_layers.insert(ith, layer);
             inserted = true;
@@ -288,12 +292,12 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
     if (!inserted) {
         m_layers.push_back(layer);
     }
-    layer->setSignal(m_show_signal);
+    layer->setSignal(m_update_signal);
     if (layer->visible()) {
-        show();
+        update();
     }
     notify(NOTIFY_DEFAULT);
-    BOOST_LOG_TRIVIAL(info) << "Attach Layer << " << *layer;
+    BOOST_LOG_TRIVIAL(trace) << "Attach Layer << " << *layer;
 }
 
 
@@ -302,23 +306,16 @@ void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer)
     BOOST_LOG_TRIVIAL(trace) << "Detach Layer >> " << *layer;
     const guard lock(m_mutex);
     bool updated = false;
-    m_layers.remove_if([layer, &updated](const auto &ptr) {
-        if (const auto &l = ptr.lock()) {
-            if (l==layer) {
-                updated |= true;
-                layer->clearSignal();
-                return true;
-            }
-        }
-        else {
-            // Stale layer
-            updated = true;
+    m_layers.remove_if([layer, &updated](const auto &l) {
+        if (l==layer) {
+            updated |= true;
+            layer->clearSignal();
             return true;
         }
         return false;
     });
     if (updated) {
-        show();
+        update();
         notify(NOTIFY_DEFAULT);
     }
     BOOST_LOG_TRIVIAL(info) << "Detach Layer << " << *layer;
