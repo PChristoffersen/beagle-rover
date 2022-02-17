@@ -38,6 +38,7 @@ namespace Robot::LED {
     };
 
 
+
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
             static constexpr NotifyType NOTIFY_UPDATE { 1 };
@@ -56,6 +57,12 @@ namespace Robot::LED {
             void setLED(rc_led_t led, bool state);
             #endif
 
+            void setBrightness(Color::brightness_type brightness);
+            Color::brightness_type getBrightness() const { return m_brightness; }
+
+            void setColorCorrection(Color::Correction correction);
+            Color::Correction getColorCorrection() const { return m_color_correction; }
+
             Color getBackground() const { return m_background; }
             void setBackground(const Color &color);
 
@@ -71,7 +78,7 @@ namespace Robot::LED {
             void detachLayer(const std::shared_ptr<ColorLayer> &layer);
 
             LayerList layers();
-            RawColorArray pixels();
+            ColorLayer::array_type pixels();
 
         private:
             std::shared_ptr<::Robot::Context> m_context;
@@ -79,8 +86,11 @@ namespace Robot::LED {
             std::shared_ptr<::Robot::ASyncSignal> m_update_signal;
             boost::signals2::connection m_update_connection;
 
-            RawColorArray m_pixels;
+            Color::brightness_type m_brightness;
+            Color::Correction m_color_correction;
             Color m_background;
+
+            ColorLayer::array_type m_pixels;
             LayerList m_layers;
 
             AnimationMode m_animation_mode;

@@ -25,6 +25,8 @@ static constexpr auto LED_UPDATE_INTERVAL { 30ms };
 Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
     m_initialized { false },
+    m_brightness { Color::BRIGHTNESS_DEFAULT },
+    m_color_correction { Color::Correction::TypicalLEDStrip },
     m_background { Color::BLACK },
     m_animation_mode { AnimationMode::NONE },
     m_indicator_mode { IndicatorMode::NONE }
@@ -119,18 +121,56 @@ void Control::clear(const Color &color)
 
 void Control::showPixels()
 {
+    // Apply color correction and brightness
+    ColorArray pixels { m_pixels };
+    pixels *= m_color_correction;
+    pixels *= m_brightness;
+
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-    if (rc_ext_neopixel_set(pixels.data())!=0) {
+    if (rc_ext_neopixel_set(RawColorArray(pixels).data())!=0) {
         BOOST_THROW_EXCEPTION(std::runtime_error("Error updating pixels"));
     }
     #endif
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
     std::stringstream sstream;
-    for (auto &pixel : m_pixels) {
-        sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)Color::rawRed(pixel) % (uint32_t)Color::rawGreen(pixel) % (uint32_t)Color::rawBlue(pixel);
+    #if 0
+    for (auto &color : pixels) {
+        sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
     }
-    BOOST_LOG_TRIVIAL(info) << *this << " " << sstream.str();
+    #else
+    for (auto &color : m_pixels) {
+        sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
+    }
     #endif
+    BOOST_LOG_TRIVIAL(info) << *this << " (" << pixels.size() << ") " << sstream.str();
+    #endif
+}
+
+
+void Control::setBrightness(Color::brightness_type brightness)
+{
+    const guard lock(m_mutex);
+    brightness = Color::clampBrightness(brightness);
+    if (m_brightness!=brightness) {
+        m_brightness = brightness;
+        if (m_initialized) {
+            update();
+            notify(NOTIFY_DEFAULT);
+        }
+    }
+}
+
+
+void Control::setColorCorrection(Color::Correction correction)
+{
+    const guard lock(m_mutex);
+    if (m_color_correction!=correction) {
+        m_color_correction = correction;
+        if (m_initialized) {
+            update();
+            notify(NOTIFY_DEFAULT);
+        }
+    }
 }
 
 
@@ -139,8 +179,10 @@ void Control::setBackground(const Color &color)
     const guard lock(m_mutex);
     if (m_background!=color) {
         m_background = color;
-        update();
-        notify(NOTIFY_DEFAULT);
+        if (m_initialized) {
+            update();
+            notify(NOTIFY_DEFAULT);
+        }
     }
 }
 
@@ -239,7 +281,7 @@ Control::LayerList Control::layers()
 }
 
 
-RawColorArray Control::pixels()
+ColorLayer::array_type Control::pixels()
 {
     const guard lock(m_mutex);
     return m_pixels;
@@ -248,12 +290,11 @@ RawColorArray Control::pixels()
 
 void Control::updatePixels()
 {
-    BOOST_LOG_TRIVIAL(trace) << "Show >> ";
     const guard lock(m_mutex);
     if (!m_initialized)
         return;
     
-    BOOST_LOG_TRIVIAL(trace) << "Control::Show()";
+    //BOOST_LOG_TRIVIAL(trace) << "Control::Show()";
 
     m_pixels.fill(m_background);
 
@@ -263,14 +304,12 @@ void Control::updatePixels()
 
     showPixels();
     notify(NOTIFY_UPDATE);
-
-    BOOST_LOG_TRIVIAL(trace) << "Show << ";
 }
 
 
 void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
 {
-    BOOST_LOG_TRIVIAL(trace) << "Attach Layer >> " << *layer;
+    BOOST_LOG_TRIVIAL(trace) << "Attach Layer " << *layer;
     const guard lock(m_mutex);
 
     for (auto &l : m_layers) {
@@ -297,13 +336,12 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
         update();
     }
     notify(NOTIFY_DEFAULT);
-    BOOST_LOG_TRIVIAL(trace) << "Attach Layer << " << *layer;
 }
 
 
 void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer) 
 {
-    BOOST_LOG_TRIVIAL(trace) << "Detach Layer >> " << *layer;
+    BOOST_LOG_TRIVIAL(trace) << "Detach Layer " << *layer;
     const guard lock(m_mutex);
     bool updated = false;
     m_layers.remove_if([layer, &updated](const auto &l) {
@@ -318,7 +356,6 @@ void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer)
         update();
         notify(NOTIFY_DEFAULT);
     }
-    BOOST_LOG_TRIVIAL(info) << "Detach Layer << " << *layer;
 }
 
 

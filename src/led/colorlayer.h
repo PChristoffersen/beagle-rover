@@ -20,11 +20,11 @@ namespace Robot::LED {
     constexpr auto LAYER_DEPTH_INDICATORS { 20 };
     constexpr auto LAYER_RC_INDICATORS { 100 };
 
-    using ColorArray = std::array<Color, PIXEL_COUNT>;
-    using RawColorArray = std::array<Color::raw_type, PIXEL_COUNT>;
-
-    class ColorLayer : public ColorArray, public WithMutex<std::recursive_mutex>, public std::enable_shared_from_this<ColorLayer> {
+    class ColorLayer : public ColorArray<PIXEL_COUNT>, public WithMutex<std::recursive_mutex>, public std::enable_shared_from_this<ColorLayer> {
         public:
+            using array_type = ColorArray<PIXEL_COUNT>;
+            using raw_array_type = RawColorArray<PIXEL_COUNT>;
+
             class Segment {
                 public:
                     Segment(ColorLayer *parent, const std::string &name, size_type offset, size_type size) : m_offset { offset }, m_size { size }, m_parent { parent } { }
@@ -75,15 +75,15 @@ namespace Robot::LED {
 
             std::weak_ptr<class Control> m_control;
 
-            friend RawColorArray &operator<<(RawColorArray &dst, ColorLayer &layer);
-
+            friend array_type &operator<<(array_type &dst, ColorLayer &layer);
 
             friend std::ostream &operator<<(std::ostream &os, const ColorLayer &self)
             {
-                return os << "LED::ColorLayer<" << self.m_depth << ">";
+                return os << "LED::ColorLayer<" << self.m_depth << "," << self.m_name << ">";
             }
 
     };
+
 
 }
 

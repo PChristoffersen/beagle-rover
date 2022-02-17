@@ -162,10 +162,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED.data(), "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN.data(), "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE.data(), "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK.data(), "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
+            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
+            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
+            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
         }
 
         BOOST_TEST_MESSAGE("Hide layer 1");
@@ -174,10 +174,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::BLACK.data(), "Expected pixel 0 to be BLACK");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::BLACK.data(), "Expected pixel 1 to be BLACK");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLACK.data(), "Expected pixel 2 to be BLACK");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK.data(), "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[0] == Color::BLACK, "Expected pixel 0 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[1] == Color::BLACK, "Expected pixel 1 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLACK, "Expected pixel 2 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
         }
 
         BOOST_TEST_MESSAGE("Show layer 1");
@@ -186,10 +186,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED.data(), "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN.data(), "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE.data(), "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK.data(), "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
+            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
+            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
+            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
         }
 
         BOOST_TEST_MESSAGE("Change background");
@@ -199,10 +199,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED.data(), "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN.data(), "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE.data(), "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == bgcolor.data(), "Expected pixel 3 to be Background color");
+            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
+            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
+            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
+            BOOST_CHECK_MESSAGE(pixels[3] == bgcolor, "Expected pixel 3 to be Background color");
         }
 
         BOOST_TEST_MESSAGE("Change background");
@@ -211,10 +211,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED.data(), "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN.data(), "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE.data(), "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK.data(), "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
+            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
+            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
+            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
         }
 
 
@@ -224,10 +224,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED.data(), "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN.data(), "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE.data(), "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK.data(), "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
+            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
+            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
+            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
         }
 
         BOOST_TEST_MESSAGE("Update layer 2");
@@ -241,10 +241,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::BLUE.data(), "Expected pixel 0 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::RED.data(), "Expected pixel 1 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::GREEN.data(), "Expected pixel 2 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK.data(), "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_MESSAGE(pixels[0] == Color::BLUE, "Expected pixel 0 to be BLUE");
+            BOOST_CHECK_MESSAGE(pixels[1] == Color::RED, "Expected pixel 1 to be RED");
+            BOOST_CHECK_MESSAGE(pixels[2] == Color::GREEN, "Expected pixel 2 to be GREEN");
+            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
         }
 
         BOOST_TEST_MESSAGE("Update layer 2 alpha");
@@ -263,10 +263,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color(0x7f, 0x80, 0x00, 0xFF).data(), "Unexpected pixel 0: " << Color { pixels[0] });
-            BOOST_CHECK_MESSAGE(pixels[1] == Color(0x00, 0x7f, 0x80, 0xFF).data(), "Unexpected pixel 1: " << Color { pixels[1] });
-            BOOST_CHECK_MESSAGE(pixels[2] == Color(0x80, 0x00, 0x7f, 0xFF).data(), "Unexpected pixel 2: " << Color { pixels[2] });
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK.data(),                  "Unexpected pixel 3: " << Color { pixels[3] });
+            BOOST_CHECK_MESSAGE(pixels[0] == Color(0x80, 0x80, 0x00, 0xFF), "Unexpected pixel 0: " << Color { pixels[0] });
+            BOOST_CHECK_MESSAGE(pixels[1] == Color(0x00, 0x80, 0x80, 0xFF), "Unexpected pixel 1: " << Color { pixels[1] });
+            BOOST_CHECK_MESSAGE(pixels[2] == Color(0x80, 0x00, 0x80, 0xFF), "Unexpected pixel 2: " << Color { pixels[2] });
+            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK,                  "Unexpected pixel 3: " << Color { pixels[3] });
         }
 
 

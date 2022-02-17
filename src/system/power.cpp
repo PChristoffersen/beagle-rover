@@ -53,22 +53,18 @@ Power::Power(const std::shared_ptr<Robot::Context> &context) :
     m_system_power { std::make_unique<PowerSourceUnknown>("system")}
     #endif
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 
 Power::~Power() 
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     cleanup();
-
 }
 
 
 void Power::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry)
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     m_initialized = true;
 
     #if ROBOT_HAVE_BATTERY
@@ -80,7 +76,6 @@ void Power::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry
 void Power::cleanup()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     if (!m_initialized)
         return;
     m_initialized = false;

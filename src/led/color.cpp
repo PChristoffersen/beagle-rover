@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <algorithm>
-#include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
 
 
@@ -10,40 +9,89 @@
 namespace Robot::LED {
 
 
-
-Color::raw_type &operator<<(Color::raw_type &dst, const Color &src_color) {
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " " << src_color;
-    Color::raw_type src_a = src_color.alpha();
-    if (src_a==0x00) {
-        return dst;
+Color Color::operator*(brightness_type brightness) const
+{
+    raw_type scale = std::clamp<raw_type>(brightness*static_cast<brightness_type>(CHANNEL_MAX)+0.5f, CHANNEL_MIN, CHANNEL_MAX);
+    if (scale == CHANNEL_MAX) {
+        return *this;
+    }
+    if (scale == CHANNEL_MIN) {
+        return Color { m_data & ALPHA_MASK };
     }
 
-    Color::raw_type src = src_color.data();
+    raw_type red   = ( (m_data & RED_MASK)   * scale / CHANNEL_MAX ) & RED_MASK;
+    raw_type green = ( (m_data & GREEN_MASK) * scale / CHANNEL_MAX ) & GREEN_MASK;
+    raw_type blue  = ( (m_data & BLUE_MASK)  * scale / CHANNEL_MAX ) & BLUE_MASK;
+    raw_type alpha = m_data & ALPHA_MASK;
 
-    //res.r = dst.r * (1 - src.a) + src.r * src.a
-    //res.g = dst.g * (1 - src.a) + src.g * src.a
-    //res.b = dst.b * (1 - src.a) + src.b * src.a
-    //res.a = dst.a * (1 - src.a) + src.a
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" R %+08x (%+02x)-> %+08x") % (m_data & Color::RED_MASK) % static_cast<uint32_t>(brightness) % (red);
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" G %+08x (%+02x)-> %+08x") % (m_data & Color::GREEN_MASK) % static_cast<uint32_t>(brightness) % (green);
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" B %+08x (%+02x)-> %+08x") % (m_data & Color::BLUE_MASK) % static_cast<uint32_t>(brightness) % (blue);
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" A %+08x (%+02x)-> %+08x") % (m_data & Color::ALPHA_MASK) % static_cast<uint32_t>(brightness) % (alpha);
 
-    Color::raw_type red   = ( (dst & Color::RED_MASK)*(0xFF-src_a)/0xFF   + (src & Color::RED_MASK)*src_a/0xFF   ) & Color::RED_MASK;
-    Color::raw_type green = ( (dst & Color::GREEN_MASK)*(0xFF-src_a)/0xFF + (src & Color::GREEN_MASK)*src_a/0xFF ) & Color::GREEN_MASK;
-    Color::raw_type blue  = ( (dst & Color::BLUE_MASK)*(0xFF-src_a)/0xFF  + (src & Color::BLUE_MASK)*src_a/0xFF  ) & Color::BLUE_MASK;
-    Color::raw_type alpha = 0xFF << Color::ALPHA_SHIFT;
+    return Color { alpha | red | green | blue };
+}
+
+
+Color &Color::operator*=(brightness_type brightness)
+{
+    *this = *this * brightness;
+    return *this;
+}
+
+
+
+Color Color::operator*(const Correction correction) const
+{
+    raw_type red   = ( (m_data & RED_MASK)   * rawRed(static_cast<raw_type>(correction))   / CHANNEL_MAX ) & RED_MASK;
+    raw_type green = ( (m_data & GREEN_MASK) * rawGreen(static_cast<raw_type>(correction)) / CHANNEL_MAX ) & GREEN_MASK;
+    raw_type blue  = ( (m_data & BLUE_MASK)  * rawBlue(static_cast<raw_type>(correction))  / CHANNEL_MAX ) & BLUE_MASK;
+    raw_type alpha = m_data & ALPHA_MASK;
+
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" R %+08x -> %+08x") % (m_data & Color::RED_MASK) % (red);
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" G %+08x -> %+08x") % (m_data & Color::GREEN_MASK) % (green);
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" B %+08x -> %+08x") % (m_data & Color::BLUE_MASK) % (blue);
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" A %+08x -> %+08x") % (m_data & Color::ALPHA_MASK) % (alpha);
+
+    return Color { alpha | red | green | blue };
+}
+
+
+
+Color &Color::operator*=(const Correction correction) 
+{
+    *this = *this * correction;
+    return *this;
+}
+
+
+Color &Color::operator<<(const Color &src_color) {
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " " << src_color;
+    Color::raw_type src_a = src_color.alpha();
+    auto src = src_color.raw();
+
+    if (src_a==CHANNEL_MIN) {
+        return *this;
+    }
+    if (src_a==CHANNEL_MAX) {
+        m_data = src;
+        return *this;
+    }
+
+
+    Color::raw_type red   = ( (m_data & Color::RED_MASK)   * (CHANNEL_MAX-src_a+1) / CHANNEL_MAX  +  (src & Color::RED_MASK)   * src_a / CHANNEL_MAX ) & Color::RED_MASK;
+    Color::raw_type green = ( (m_data & Color::GREEN_MASK) * (CHANNEL_MAX-src_a+1) / CHANNEL_MAX  +  (src & Color::GREEN_MASK) * src_a / CHANNEL_MAX ) & Color::GREEN_MASK;
+    Color::raw_type blue  = ( (m_data & Color::BLUE_MASK)  * (CHANNEL_MAX-src_a+1) / CHANNEL_MAX  +  (src & Color::BLUE_MASK)  * src_a / CHANNEL_MAX ) & Color::BLUE_MASK;
+    Color::raw_type alpha = CHANNEL_MAX << Color::ALPHA_SHIFT;
 
     //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("RedD  %+08x -> %+08x") % (uint32_t)(dst & Color::RED_MASK) % ((dst & Color::RED_MASK)*(0xFF-src_a)/0xFF);
     //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("RedS  %+08x -> %+08x") % (uint32_t)(src & Color::RED_MASK) % ((src & Color::RED_MASK)*src_a/0xFF);
     //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format("  %+08x + %+08x = %+08x   red=%+08x green=%+08x blue=%+08x") % dst % (uint32_t)src % (alpha | red | green | blue) % red % green % blue;
 
-    dst = alpha | red | green | blue;
+    m_data = alpha | red | green | blue;
 
-    return dst;
+    return *this;
 }
-
-
-std::ostream &operator<<(std::ostream &os, const Color &color) {
-    return os << boost::format("%+02x%+02x%+02x%+02x") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue() % (uint32_t)color.alpha();
-}
-
 
 
 Color Color::fromHSV(uint16_t hue, uint8_t sat, uint8_t val)
@@ -106,5 +154,6 @@ Color Color::fromHSV(uint16_t hue, uint8_t sat, uint8_t val)
     //BOOST_LOG_TRIVIAL(info) << "B : " << blue;
     return Color { red, green, blue };
 }
+
 
 }

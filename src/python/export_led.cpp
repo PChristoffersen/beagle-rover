@@ -19,7 +19,7 @@
 
 namespace py = boost::python;
 
-using Robot::LED::Color, Robot::LED::ColorLayer, Robot::LED::RawColorArray;
+using Robot::LED::Color, Robot::LED::ColorLayer, Robot::LED::ColorArray;
 
 namespace Robot::Python {
 
@@ -84,11 +84,11 @@ static std::string color2rgbstr(const Color &color)
 }
 
 
-boost::python::tuple rawcolor2tuple(const RawColorArray &array) {
+boost::python::tuple colors2tuple(const ColorLayer::array_type &array) {
     boost::python::tuple obj { boost::python::handle<>(PyTuple_New(array.size())) };
     int idx = 0;
-    for (auto &v : array) {
-        PyTuple_SET_ITEM(obj.ptr(), idx, boost::python::incref(boost::python::object(color2rgbstr(Color(v))).ptr()));
+    for (auto &c : array) {
+        PyTuple_SET_ITEM(obj.ptr(), idx, boost::python::incref(boost::python::object(color2rgbstr(c)).ptr()));
         idx++;
     }
     return obj;
@@ -140,6 +140,14 @@ void export_led()
         .value("LEFT", IndicatorMode::LEFT)
         .value("RIGHT", IndicatorMode::RIGHT)
         .value("HAZARD", IndicatorMode::HAZARD)
+        ;
+
+    py::enum_<Color::Correction>("LEDColorCorrection")
+        .value("TypicalSMD5050", Color::Correction::TypicalSMD5050)
+        .value("TypicalLEDStrip", Color::Correction::TypicalLEDStrip)
+        .value("Typical8mmPixel", Color::Correction::Typical8mmPixel)
+        .value("TypicalPixelString", Color::Correction::TypicalPixelString)
+        .value("UncorrectedColor", Color::Correction::UncorrectedColor)
         ;
 
 
@@ -206,9 +214,22 @@ void export_led()
         })
         ;
 
+
+    py::class_<Control::LayerList>("LEDColorLayerList", py::no_init)
+        .def("__iter__", py::iterator<Control::LayerList>())
+        .def("find", +[](const Control::LayerList &self, const std::string &name) {
+            auto res = std::find_if(self.begin(), self.end(), [&name](const auto &l) {
+                return l->name() == name;
+            });
+            return res != self.end() ? *res : nullptr;
+        })
+        ;
+
     py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("LEDControl", py::no_init)
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(Control::NOTIFY_DEFAULT))
         .add_static_property("NOTIFY_UPDATE", py::make_getter(Control::NOTIFY_UPDATE))
+        .add_property("brightness", &Control::getBrightness, &Control::setBrightness)
+        .add_property("color_correction", &Control::getColorCorrection, &Control::setColorCorrection)
         .add_property("background", 
             +[](const Control &self) {
                 return color2rgbstr(self.getBackground());
@@ -218,7 +239,8 @@ void export_led()
             })
         .add_property("animation", &Control::getAnimation, &Control::setAnimation)
         .add_property("indicators", &Control::getIndicators, &Control::setIndicators)
-        .add_property("pixels", +[](Control &self) { return rawcolor2tuple(self.pixels()); })
+        .add_property("pixels", +[](Control &self) { return colors2tuple(self.pixels()); })
+        .add_property("layers", &Control::layers)
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("update", &Control::update)

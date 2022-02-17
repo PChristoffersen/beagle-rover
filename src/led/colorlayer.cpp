@@ -18,13 +18,13 @@ ColorLayer::ColorLayer(const std::string &name, uint depth, bool internal) :
         Segment { this, "back", PIXEL_COUNT/2, PIXEL_COUNT/2 }, 
     }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
 ColorLayer::~ColorLayer() 
 {
-    BOOST_LOG_TRIVIAL(trace) << *this << " " << __FUNCTION__ ;
+    //BOOST_LOG_TRIVIAL(trace) << *this << " " << __FUNCTION__ ;
 }
 
 
@@ -61,14 +61,15 @@ void ColorLayer::clearSignal()
 
 
 
-RawColorArray &operator<<(RawColorArray &dst, ColorLayer &layer) {
+ColorLayer::array_type &operator<<(ColorLayer::array_type &dst, ColorLayer &layer) {
     const ColorLayer::guard lock(layer.mutex());
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " <<  layer=" << layer.depth();
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " <<  layer=" << layer.depth();
     if (layer.visible()) {
         std::transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), [](auto &&dst, auto &&src){ return dst<<src; });
     }
     return dst;
 }
+
 
 
 }

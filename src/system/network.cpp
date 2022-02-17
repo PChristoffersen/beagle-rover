@@ -23,13 +23,11 @@ Network::Network(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_sockfd { -1 }
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 
 Network::~Network() 
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     cleanup();
 }
 
@@ -77,7 +75,7 @@ std::string flags2str(short flags)
 void Network::init()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     m_initialized = true;
 
     m_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -166,7 +164,7 @@ std::vector<std::string> Network::listInterfaces()
 void Network::cleanup()
 {
     const guard lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
     if (!m_initialized)
         return;
     m_initialized = false;

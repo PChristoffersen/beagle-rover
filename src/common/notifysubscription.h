@@ -26,8 +26,6 @@ namespace Robot {
                 m_name { name },
                 m_queue { QUEUE_SIZE }
             {
-                BOOST_LOG_TRIVIAL(trace) << m_name << " " << __FUNCTION__;
-                
                 int flags = EFD_CLOEXEC;
                 if (nonblocking) {
                     flags |= EFD_NONBLOCK;
@@ -42,7 +40,6 @@ namespace Robot {
 
             ~NotifySubscription()
             {
-                BOOST_LOG_TRIVIAL(trace) << m_name << " " << __FUNCTION__;
                 unsubscribe();
                 if (m_fd>=0) {
                     close(m_fd);
@@ -55,7 +52,6 @@ namespace Robot {
              */
             void unsubscribe()
             {
-                BOOST_LOG_TRIVIAL(trace) << m_name << " " << __FUNCTION__;
                 for (auto &connection : m_connections) {
                     connection.disconnect();
                 }
@@ -118,7 +114,6 @@ namespace Robot {
                 int value;
                 for (auto i=0u; i<cnt; i++) {
                     if (m_queue.pop(value)) {
-                        BOOST_LOG_TRIVIAL(trace) <<  " READ ()=" << value;
                         result.insert(value);
                     }
                     else {
@@ -157,7 +152,6 @@ namespace Robot {
             bool write(T value) 
             {
                 static constexpr uint64_t COUNTER { 1ULL };
-                BOOST_LOG_TRIVIAL(trace) << m_name << " WRITE (" << value << ")";
 
                 if (m_queue.push(value)) {
                     auto res = ::write(m_fd, &COUNTER, sizeof(COUNTER));

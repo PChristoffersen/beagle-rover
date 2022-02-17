@@ -160,6 +160,11 @@ target_include_directories(test_leds PRIVATE src)
 target_link_libraries(test_leds robotsystem ${Boost_LOG_LIBRARIES})
 add_test(NAME LEDS COMMAND test_leds)
 
+add_executable(test_color test/test_color.cpp )
+target_include_directories(test_color PRIVATE src)
+target_link_libraries(test_color robotsystem ${Boost_LOG_LIBRARIES})
+add_test(NAME Color COMMAND test_color)
+
 add_executable(test_value test/test_value.cpp )
 target_include_directories(test_value PRIVATE src)
 target_link_libraries(test_value robotsystem ${Boost_LOG_LIBRARIES})
