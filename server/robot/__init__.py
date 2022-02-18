@@ -8,6 +8,7 @@ from robotsystem import Robot
 from .api import create_app as api_create_app
 from .cors_handler import cors_middleware
 
+
 logger = logging.getLogger(__name__)
 
 

@@ -83,7 +83,6 @@ class KinematicNamespace(WatchableNamespace):
 
 
 
-
 async def app_on_startup(app: Application):
     logger.info("Startup")
     ns = app["ns"]
