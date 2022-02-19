@@ -5,7 +5,8 @@
 #include <chrono>
 #include <boost/log/trivial.hpp>
 
-#include <robot.h>
+#include <robotcontext.h>
+#include <robotlogging.h>
 #include <common/notifysubscription.h>
 #include <led/control.h>
 
@@ -34,14 +35,14 @@ static constexpr std::initializer_list ALL_INDICATORS {
     Robot::LED::IndicatorMode::HAZARD
 };
 
-static void wait_for_show(std::shared_ptr<Robot::NotifySubscription<Robot::LED::Control::NotifyType>> sub, std::chrono::steady_clock::duration timeout, bool fail_on_timeout=true) {
+static void wait_for_show(std::shared_ptr<Robot::NotifySubscription<Robot::LED::Control::notify_type>> sub, std::chrono::steady_clock::duration timeout, bool fail_on_timeout=true) {
     using clock = std::chrono::steady_clock;
 
     auto start { clock::now() };
     while (clock::now()-start < timeout) {
         auto remaining_timeout { timeout - (clock::now()-start) };
         auto res { sub->read(std::chrono::duration_cast<std::chrono::milliseconds>(remaining_timeout)) };
-        if (res.contains(Robot::LED::Control::NOTIFY_UPDATE)) {
+        if (res.find(Robot::LED::Control::NOTIFY_UPDATE)!=res.end()) {
             return;
         }
     }
@@ -56,11 +57,15 @@ BOOST_AUTO_TEST_SUITE(led_suite)
 
 BOOST_AUTO_TEST_CASE(TestAnimation)
 {
-    auto robot { std::make_unique<Robot::Robot>() };
-    robot->init();
+    auto context { std::make_shared<Robot::Context>() };
+    auto control { std::make_shared<Robot::LED::Control>(context) };
+
+    context->init();
+    control->init();
+    context->start();
+
     {
-        auto control { robot->ledControl() };
-        auto sub { Robot::notify_subscribe(*control) };
+        auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
         
         // Make sure we don't have any animations running
         control->setAnimation(Robot::LED::AnimationMode::NONE);
@@ -80,16 +85,23 @@ BOOST_AUTO_TEST_CASE(TestAnimation)
         control->setAnimation(Robot::LED::AnimationMode::NONE);
         wait_for_show(sub, 250ms);
     }
-    robot->cleanup();
+
+    context->stop();
+    control->cleanup();
+    context->cleanup();
 }
 
 BOOST_AUTO_TEST_CASE(TestIndicators)
 {
-    auto robot { std::make_unique<Robot::Robot>() };
-    robot->init();
+    auto context { std::make_shared<Robot::Context>() };
+    auto control { std::make_shared<Robot::LED::Control>(context) };
+
+    context->init();
+    control->init();
+    context->start();
+
     {
-        auto control = robot->ledControl();
-        auto sub { Robot::notify_subscribe(*control) };
+        auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
         
         // Make sure we don't have any animations running
         control->setAnimation(Robot::LED::AnimationMode::NONE);
@@ -107,16 +119,23 @@ BOOST_AUTO_TEST_CASE(TestIndicators)
         }
         control->setIndicators(Robot::LED::IndicatorMode::NONE);
     }
-    robot->cleanup();
+
+    context->stop();
+    control->cleanup();
+    context->cleanup();
 }
 
 
 BOOST_AUTO_TEST_CASE(TestRapid)
 {
-    auto robot { std::make_unique<Robot::Robot>() };
-    robot->init();
+    auto context { std::make_shared<Robot::Context>() };
+    auto control { std::make_shared<Robot::LED::Control>(context) };
+
+    context->init();
+    control->init();
+    context->start();
+
     {
-        auto control = robot->ledControl();
         
         for (auto &entry : ALL_ANIMATIONS) {
             control->setAnimation(entry.anim);
@@ -126,7 +145,10 @@ BOOST_AUTO_TEST_CASE(TestRapid)
             }
         }
     }
-    robot->cleanup();
+
+    context->stop();
+    control->cleanup();
+    context->cleanup();
 }
 
 
@@ -135,13 +157,17 @@ BOOST_AUTO_TEST_CASE(TestLayers)
 {
     using namespace Robot::LED;
 
-    auto robot { std::make_unique<Robot::Robot>() };
-    robot->init();
+    auto context { std::make_shared<Robot::Context>() };
+    auto control { std::make_shared<Robot::LED::Control>(context) };
+
+    context->init();
+    control->init();
+    context->start();
+
     {
-        auto control = robot->ledControl();
         auto layer1 { std::make_shared<ColorLayer>("Layer1", 15) };
         auto layer2 { std::make_shared<ColorLayer>("Layer2", 16) };
-        auto sub { Robot::notify_subscribe(*control) };
+        auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
 
         layer1->setVisible(true);
         layer2->setVisible(true);
@@ -162,10 +188,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_EQUAL(pixels[0], Color::RED);
+            BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
+            BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
+            BOOST_CHECK_EQUAL(pixels[3], Color::BLACK);
         }
 
         BOOST_TEST_MESSAGE("Hide layer 1");
@@ -174,10 +200,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::BLACK, "Expected pixel 0 to be BLACK");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::BLACK, "Expected pixel 1 to be BLACK");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLACK, "Expected pixel 2 to be BLACK");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_EQUAL(pixels[0], Color::BLACK);
+            BOOST_CHECK_EQUAL(pixels[1], Color::BLACK);
+            BOOST_CHECK_EQUAL(pixels[2], Color::BLACK);
+            BOOST_CHECK_EQUAL(pixels[3], Color::BLACK);
         }
 
         BOOST_TEST_MESSAGE("Show layer 1");
@@ -186,10 +212,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_EQUAL(pixels[0], Color::RED);
+            BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
+            BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
+            BOOST_CHECK_EQUAL(pixels[3], Color::BLACK);
         }
 
         BOOST_TEST_MESSAGE("Change background");
@@ -199,10 +225,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == bgcolor, "Expected pixel 3 to be Background color");
+            BOOST_CHECK_EQUAL(pixels[0], Color::RED);
+            BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
+            BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
+            BOOST_CHECK_EQUAL(pixels[3], bgcolor);
         }
 
         BOOST_TEST_MESSAGE("Change background");
@@ -211,10 +237,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_EQUAL(pixels[0], Color::RED);
+            BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
+            BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
+            BOOST_CHECK_EQUAL(pixels[3], Color::BLACK);
         }
 
 
@@ -224,10 +250,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::RED, "Expected pixel 0 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::GREEN, "Expected pixel 1 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::BLUE, "Expected pixel 2 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_EQUAL(pixels[0], Color::RED);
+            BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
+            BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
+            BOOST_CHECK_EQUAL(pixels[3], Color::BLACK);
         }
 
         BOOST_TEST_MESSAGE("Update layer 2");
@@ -241,10 +267,10 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color::BLUE, "Expected pixel 0 to be BLUE");
-            BOOST_CHECK_MESSAGE(pixels[1] == Color::RED, "Expected pixel 1 to be RED");
-            BOOST_CHECK_MESSAGE(pixels[2] == Color::GREEN, "Expected pixel 2 to be GREEN");
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK, "Expected pixel 3 to be BLACK");
+            BOOST_CHECK_EQUAL(pixels[0], Color::BLUE);
+            BOOST_CHECK_EQUAL(pixels[1], Color::RED);
+            BOOST_CHECK_EQUAL(pixels[2], Color::GREEN);
+            BOOST_CHECK_EQUAL(pixels[3], Color::BLACK);
         }
 
         BOOST_TEST_MESSAGE("Update layer 2 alpha");
@@ -263,17 +289,20 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             wait_for_show(sub, 500ms);
 
             auto pixels { control->pixels() };
-            BOOST_CHECK_MESSAGE(pixels[0] == Color(0x80, 0x80, 0x00, 0xFF), "Unexpected pixel 0: " << Color { pixels[0] });
-            BOOST_CHECK_MESSAGE(pixels[1] == Color(0x00, 0x80, 0x80, 0xFF), "Unexpected pixel 1: " << Color { pixels[1] });
-            BOOST_CHECK_MESSAGE(pixels[2] == Color(0x80, 0x00, 0x80, 0xFF), "Unexpected pixel 2: " << Color { pixels[2] });
-            BOOST_CHECK_MESSAGE(pixels[3] == Color::BLACK,                  "Unexpected pixel 3: " << Color { pixels[3] });
+            BOOST_CHECK_EQUAL(pixels[0], Color(0x80, 0x80, 0x00, 0xFF));
+            BOOST_CHECK_EQUAL(pixels[1], Color(0x00, 0x80, 0x80, 0xFF));
+            BOOST_CHECK_EQUAL(pixels[2], Color(0x80, 0x00, 0x80, 0xFF));
+            BOOST_CHECK_EQUAL(pixels[3], Color::BLACK);
         }
 
 
         control->detachLayer(layer2);
         control->detachLayer(layer1);
     }
-    robot->cleanup();
+
+    context->stop();
+    control->cleanup();
+    context->cleanup();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

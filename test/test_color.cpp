@@ -4,10 +4,11 @@
 #include <thread>
 #include <chrono>
 #include <iostream>
+#include <limits>
 #include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
 
-#include <robot.h>
+#include <robotlogging.h>
 #include <led/color.h>
 #include <led/colorlayer.h>
 
@@ -18,77 +19,183 @@ static Robot::Logging::LogInit __log_init;
 using Robot::LED::Color, Robot::LED::ColorArray, Robot::LED::RawColorArray;
 
 
-static void CHECK_COLOR(const Color col1, const Color col2, std::string test_name)
-{
-    BOOST_LOG_TRIVIAL(info) << test_name << " Check " << col1 << "  ==  " << col2;
-    BOOST_CHECK_MESSAGE(col1 == col2,             test_name << " Failed color compare " << col1 << " != " << col2);
-    BOOST_CHECK_MESSAGE(col1.red() == col2.red(), test_name << " Failed red compare " << std::hex << std::setw(2) << static_cast<uint32_t>(col1.red()) << " != " << static_cast<uint32_t>(col2.red()));
-    BOOST_CHECK_MESSAGE(col1.green() == col2.green(), test_name << " Failed green compare " << std::hex << std::setw(2) << static_cast<uint32_t>(col1.green()) << " != " << static_cast<uint32_t>(col2.green()));
-    BOOST_CHECK_MESSAGE(col1.blue() == col2.blue(), test_name << " Failed blue compare " << std::hex << std::setw(2) << static_cast<uint32_t>(col1.blue()) << " != " << static_cast<uint32_t>(col2.blue()));
-    BOOST_CHECK_MESSAGE(col1.alpha() == col2.alpha(), test_name << " Failed alpha compare " << std::hex << std::setw(2) << static_cast<uint32_t>(col1.alpha()) << " != " << static_cast<uint32_t>(col2.alpha()));
-    BOOST_CHECK_MESSAGE(col1.raw() == col2.raw(), test_name << " Failed raw compare " << std::hex << std::setw(8) << col1.raw() << " != " << col2.raw());
-}
-
-
-
 BOOST_AUTO_TEST_SUITE(led_suite)
 
 BOOST_AUTO_TEST_CASE(TestColor)
 {
-    CHECK_COLOR(Color { 0xFF, 0xFF, 0xFF }, Color::WHITE, "White");
-    CHECK_COLOR(Color { 0xFF, 0xFF, 0xFF, 0xFF }, Color::WHITE, "WhiteAlpha");
-    CHECK_COLOR(Color { 0x00, 0x00, 0x00 }, Color::BLACK, "Black");
-    CHECK_COLOR(Color { 0x00, 0x00, 0x00, 0xFF }, Color::BLACK, "BlackAlpha");
-    CHECK_COLOR(Color { 0xFF, 0x00, 0x00 }, Color::RED, "Red");
-    CHECK_COLOR(Color { 0x00, 0xFF, 0x00 }, Color::GREEN, "Green");
-    CHECK_COLOR(Color { 0x00, 0x00, 0xFF }, Color::BLUE, "Blue");
-    CHECK_COLOR(Color{}, Color::TRANSPARENT, "Default");
+    BOOST_CHECK_EQUAL(Color(0xFF, 0xFF, 0xFF), Color::WHITE);
+    BOOST_CHECK_EQUAL(Color(0xFF, 0xFF, 0xFF, 0xFF), Color::WHITE);
+    BOOST_CHECK_EQUAL(Color(0x00, 0x00, 0x00), Color::BLACK);
+    BOOST_CHECK_EQUAL(Color(0x00, 0x00, 0x00, 0xFF), Color::BLACK);
+    BOOST_CHECK_EQUAL(Color(0xFF, 0x00, 0x00), Color::RED);
+    BOOST_CHECK_EQUAL(Color(0x00, 0xFF, 0x00), Color::GREEN);
+    BOOST_CHECK_EQUAL(Color(0x00, 0x00, 0xFF), Color::BLUE);
+    BOOST_CHECK_EQUAL(Color(), Color::TRANSPARENT);
 
     Color col { 0x11, 0x22, 0x33, 0x44 };
-    CHECK_COLOR(col, Color { Color::rawRGBA(0x11, 0x22, 0x33, 0x44) }, "Constructor");
+    BOOST_CHECK_EQUAL(col, Color(Color::rawRGBA(0x11, 0x22, 0x33, 0x44)));
 
     Color col2 = Color::TRANSPARENT;
-    CHECK_COLOR(col2, Color::TRANSPARENT, "Default");
+    BOOST_CHECK_EQUAL(col2, Color::TRANSPARENT);
     col2 = col;
-    CHECK_COLOR(col, col2, "Assign");
+    BOOST_CHECK_EQUAL(col, col2);
 
     Color col3 { col };
-    CHECK_COLOR(col, col3, "Copy");
+    BOOST_CHECK_EQUAL(col, col3);
 
-    BOOST_CHECK_MESSAGE(col.raw() == Color::rawRGBA(0x11, 0x22, 0x33, 0x44), "Failed raw compare " << std::hex << std::setw(8) << col.raw() << " != " << Color::rawRGBA(0x11, 0x22, 0x33, 0x44));
+    BOOST_CHECK_EQUAL(col.raw(), Color::rawRGBA(0x11, 0x22, 0x33, 0x44));
 
 }
+
+
+BOOST_AUTO_TEST_CASE(TestFloatColor)
+{
+    BOOST_CHECK_EQUAL(Color(0.0f, 0.0f, 0.0f), Color(0x00, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(0.0f, 0.0f, 0.0f, 0.0f), Color(0x00, 0x00, 0x00, 0x00));
+
+    BOOST_CHECK_EQUAL(Color(1.0f, 1.0f, 1.0f), Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color(1.0f, 1.0f, 1.0f, 1.0f), Color(0xFF, 0xFF, 0xFF, 0xFF));
+
+    BOOST_CHECK_EQUAL(Color(0.5f, 0.0f, 0.0f), Color(0x80, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(0.0f, 0.5f, 0.0f), Color(0x00, 0x80, 0x00));
+    BOOST_CHECK_EQUAL(Color(0.0f, 0.0f, 0.5f), Color(0x00, 0x00, 0x80));
+    BOOST_CHECK_EQUAL(Color(0.0f, 0.0f, 0.0f, 0.5f), Color(0x00, 0x00, 0x00, 0x80));
+
+    BOOST_CHECK_EQUAL(Color(254.5f/255.0f, 0.4999f/255.0f, 0.0f), Color(0xFF, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(254.4999f/255.0f, 0.5f/255.0f, 0.0f), Color(0xFE, 0x01, 0x00));
+
+    BOOST_CHECK_EQUAL(Color(-1.0f, 2.0f, 0.0f), Color(0x00, 0xFF, 0x00));
+    BOOST_CHECK_EQUAL(Color(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()), Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()), Color(0x00, 0x00, 0x00));
+
+}
+
+BOOST_AUTO_TEST_CASE(TestIntColor)
+{
+    BOOST_CHECK_EQUAL(Color(0, 0, 0), Color(0x00, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(0, 0, 0, 0), Color(0x00, 0x00, 0x00, 0x00));
+
+    BOOST_CHECK_EQUAL(Color(255, 255, 255), Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color(255, 255, 255, 255), Color(0xFF, 0xFF, 0xFF, 0xFF));
+
+    BOOST_CHECK_EQUAL(Color(128, 0, 0), Color(0x80, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(0, 128, 0), Color(0x00, 0x80, 0x00));
+    BOOST_CHECK_EQUAL(Color(0, 0, 128), Color(0x00, 0x00, 0x80));
+    BOOST_CHECK_EQUAL(Color(0, 0, 0, 128), Color(0x00, 0x00, 0x00, 0x80));
+
+    BOOST_CHECK_EQUAL(Color(-1, 256, 0), Color(0x00, 0xFF, 0x00));
+    BOOST_CHECK_EQUAL(Color(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color(std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), std::numeric_limits<int>::min()), Color(0x00, 0x00, 0x00));
+}
+
+BOOST_AUTO_TEST_CASE(TestUnsignedIntColor)
+{
+    BOOST_CHECK_EQUAL(Color(0u, 0u, 0u), Color(0x00, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(0u, 0u, 0u, 0u), Color(0x00, 0x00, 0x00, 0x00));
+
+    BOOST_CHECK_EQUAL(Color(255u, 255u, 255u), Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color(255u, 255u, 255u, 255u), Color(0xFF, 0xFF, 0xFF, 0xFF));
+
+    BOOST_CHECK_EQUAL(Color(128u, 0u, 0u), Color(0x80, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(0u, 128u, 0u), Color(0x00, 0x80, 0x00));
+    BOOST_CHECK_EQUAL(Color(0u, 0u, 128u), Color(0x00, 0x00, 0x80));
+    BOOST_CHECK_EQUAL(Color(0u, 0u, 0u, 128u), Color(0x00, 0x00, 0x00, 0x80));
+
+    BOOST_CHECK_EQUAL(Color(256u, 0u, 0u), Color(0xFF, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()), Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color(std::numeric_limits<unsigned int>::min(), std::numeric_limits<unsigned int>::min(), std::numeric_limits<unsigned int>::min()), Color(0x00, 0x00, 0x00));
+}
+
+
+BOOST_AUTO_TEST_CASE(TestStringColorInvalid)
+{
+    BOOST_CHECK_EQUAL(Color("#000000"),   Color(0x00, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color("#00000000"), Color(0x00, 0x00, 0x00, 0x00));
+
+    BOOST_CHECK_EQUAL(Color("#FFFFFF"),   Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color("#FFFFFFFF"), Color(0xFF, 0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color("#ffffff"),   Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color("#ffffffff"), Color(0xFF, 0xFF, 0xFF, 0xFF));
+
+    BOOST_CHECK_EQUAL(Color("#800000"), Color(0x80, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color("#008000"), Color(0x00, 0x80, 0x00));
+    BOOST_CHECK_EQUAL(Color("#000080"), Color(0x00, 0x00, 0x80));
+    BOOST_CHECK_EQUAL(Color("#00000080"), Color(0x00, 0x00, 0x00, 0x80));
+}
+
+
+BOOST_AUTO_TEST_CASE(TestColorToString)
+{
+    std::string expect;
+    Color col;
+
+    col = Color { 0x80, 0x40, 0x20 };
+    expect = "#804020";
+    BOOST_CHECK_EQUAL(col.toString(), expect);
+    BOOST_CHECK_EQUAL(col.toStringRGB(), expect);
+    BOOST_CHECK_EQUAL(static_cast<std::string>(col), expect);
+
+    col = Color { 0x80, 0x40, 0x20, 0x10 };
+    expect = "#80402010";
+    BOOST_CHECK_EQUAL(col.toString(), expect);
+    BOOST_CHECK_EQUAL(col.toStringRGBA(), expect);
+    BOOST_CHECK_EQUAL(static_cast<std::string>(col), expect);
+
+}
+
+
+BOOST_AUTO_TEST_CASE(TestStringColor)
+{
+
+    // Invalid strings
+    BOOST_CHECK_THROW(Color(""), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("Bad"), std::invalid_argument);
+
+    // Right length but invalid strings
+    BOOST_CHECK_THROW(Color("1234567"), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("123456789"), std::invalid_argument);
+
+    // Not enough values (length should be 7 or 9)
+    BOOST_CHECK_THROW(Color("#00000"), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("#0000000"), std::invalid_argument);
+
+    // Should be hex
+    BOOST_CHECK_THROW(Color("#000g00"), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("#0000000x"), std::invalid_argument);
+}
+
+
 
 BOOST_AUTO_TEST_CASE(TestBlend)
 {
     Color col { Color::TRANSPARENT };
 
     col << Color::BLACK;
-    CHECK_COLOR(col, Color::BLACK, "Blend Black");
+    BOOST_CHECK_EQUAL(col, Color::BLACK);
 
     col = Color::TRANSPARENT;
     col << Color::BLACK << Color::WHITE << Color::RED << Color::BLUE;
-    CHECK_COLOR(col, Color::BLUE, "Blend multiple opague");
+    BOOST_CHECK_EQUAL(col, Color::BLUE);
 
     col = Color::BLACK;
     col << Color(0xFF, 0x00, 0x00, 0x80);
-    CHECK_COLOR(col, Color { 0x80, 0x00, 0x00, 0xFF }, "Blend alpha");
+    BOOST_CHECK_EQUAL(col, Color(0x80, 0x00, 0x00, 0xFF));
 
     col = Color::BLACK;
     col << Color(0xFF, 0x00, 0x00, 0xFF) << Color(0x00, 0xFF, 0x00, 0x80);
-    CHECK_COLOR(col, Color { 0x80, 0x80, 0x00, 0xFF }, "Blend alpha 2");
+    BOOST_CHECK_EQUAL(col, Color(0x80, 0x80, 0x00, 0xFF));
 
     col = Color::BLACK;
     col << Color(0x00, 0xFF, 0x00, 0xFF) << Color(0x00, 0x00, 0xFF, 0x80);
-    CHECK_COLOR(col, Color { 0x00, 0x80, 0x80, 0xFF }, "Blend alpha 3");
+    BOOST_CHECK_EQUAL(col, Color(0x00, 0x80, 0x80, 0xFF));
 
     col = Color::BLACK;
     col << Color(0x00, 0x00, 0xFF, 0xFF) << Color(0xFF, 0x00, 0x00, 0x80);
-    CHECK_COLOR(col, Color { 0x80, 0x00, 0x80, 0xFF }, "Blend alpha 4");
+    BOOST_CHECK_EQUAL(col, Color(0x80, 0x00, 0x80, 0xFF));
 
     col = Color::GREEN;
     col << Color(0x00,0x00,0x00,0x80);
-    CHECK_COLOR(col, Color { 0x00, 0x80, 0x00, 0xFF }, "Blend alpha 5");
+    BOOST_CHECK_EQUAL(col, Color(0x00, 0x80, 0x00, 0xFF));
 
 }
 
@@ -102,25 +209,25 @@ BOOST_AUTO_TEST_CASE(TestBrightness)
         c2 = source;
         c2*= 0.0f;
         expected = Color::BLACK;
-        CHECK_COLOR(c, expected,  "Brightness *  0.0");
-        CHECK_COLOR(c2, expected, "Brightness *= 0.0");
+        BOOST_CHECK_EQUAL(c, expected);
+        BOOST_CHECK_EQUAL(c2, expected);
 
         b = 0.5f;
         c = source * b;
         c2 = source;
         c2*= b;
         expected = Color { static_cast<uint8_t>(source.red()?0x80:0x00), static_cast<uint8_t>(source.green()?0x80:0x00), static_cast<uint8_t>(source.blue()?0x80:0x00) };
-        CHECK_COLOR(c, expected,  "Brightness *  0.5");
-        CHECK_COLOR(c2, expected, "Brightness *= 0.5");
-        CHECK_COLOR(c, source * b,  "Brightness2 *  0.5");
-        CHECK_COLOR(c2, source * b, "Brightness2 *= 0.5");
+        BOOST_CHECK_EQUAL(c, expected);
+        BOOST_CHECK_EQUAL(c2, expected);
+        BOOST_CHECK_EQUAL(c, source * b);
+        BOOST_CHECK_EQUAL(c2, source * b);
 
         c = source * 1.0f;
         c2 = source;
         c2*= 1.0f;
         expected = source;
-        CHECK_COLOR(c, expected,  "Brightness *  1.0");
-        CHECK_COLOR(c2, expected, "Brightness *= 1.0");
+        BOOST_CHECK_EQUAL(c, expected);
+        BOOST_CHECK_EQUAL(c2, expected);
 
         // Check that we round brightness correctly
         b = 254.5f/255.0f;
@@ -128,16 +235,16 @@ BOOST_AUTO_TEST_CASE(TestBrightness)
         c2 = source;
         c2*= b;
         expected = source;
-        CHECK_COLOR(c, expected,  (boost::format("Brightness *  %.4f") % b).str());
-        CHECK_COLOR(c2, expected, (boost::format("Brightness *= %.4f") % b).str());
+        BOOST_CHECK_EQUAL(c, expected);
+        BOOST_CHECK_EQUAL(c2, expected);
 
         b = 0.4999f/255.0f;
         c = source * b;
         c2 = source;
         c2*= b;
         expected = Color::BLACK;
-        CHECK_COLOR(c, expected,  (boost::format("Brightness *  %.4f") % b).str());
-        CHECK_COLOR(c2, expected, (boost::format("Brightness *= %.4f") % b).str());
+        BOOST_CHECK_EQUAL(c, expected);
+        BOOST_CHECK_EQUAL(c2, expected);
 
     }
 
@@ -170,8 +277,8 @@ BOOST_AUTO_TEST_CASE(TestCorrect)
                 static_cast<uint8_t>((source.green()&&correctGreen)?correctGreen:0x00), 
                 static_cast<uint8_t>((source.blue()&&correctBlue)?correctBlue:0x00) 
             };
-            CHECK_COLOR(c, expected,  (boost::format("Correct *  (%+02x%+02x%+02x)") % static_cast<uint32_t>(correctRed) % static_cast<uint32_t>(correctGreen) % static_cast<uint32_t>(correctBlue)).str());
-            CHECK_COLOR(c2, expected, (boost::format("Correct *= (%+02x%+02x%+02x)") % static_cast<uint32_t>(correctRed) % static_cast<uint32_t>(correctGreen) % static_cast<uint32_t>(correctBlue)).str());
+            BOOST_CHECK_EQUAL(c, expected);
+            BOOST_CHECK_EQUAL(c2, expected);
         }
     }
 }
@@ -199,29 +306,29 @@ BOOST_AUTO_TEST_CASE(TestColorArray)
 
     // Verify array 
     for (uint i=0u; i<colors.size(); i++) {
-        CHECK_COLOR(colors[i], test_colors[i], (boost::format("Check color[%u]") % i).str());
-        CHECK_COLOR(colors2[i], test_colors[i], (boost::format("Check color2[%u]") % i).str());
-        CHECK_COLOR(colors3[i], test_colors[i], (boost::format("Check color3[%u]") % i).str());
+        BOOST_CHECK_EQUAL(colors[i], test_colors[i]);
+        BOOST_CHECK_EQUAL(colors2[i], test_colors[i]);
+        BOOST_CHECK_EQUAL(colors3[i], test_colors[i]);
     }
 
     // Check brightness
     colors2 *= 0x80;
     for (uint i=0u; i<colors.size(); i++) {
-        CHECK_COLOR(colors2[i], test_colors[i] * 0x80, (boost::format("Check brightness[%u]") % i).str());
+        BOOST_CHECK_EQUAL(colors2[i], test_colors[i] * 0x80);
     }
 
     // Check correction
     auto cor = Color::Correction::TypicalLEDStrip;
     colors3 *= cor;
     for (uint i=0u; i<colors.size(); i++) {
-        CHECK_COLOR(colors3[i], test_colors[i] * cor, (boost::format("Check correction[%u]") % i).str());
+        BOOST_CHECK_EQUAL(colors3[i], test_colors[i] * cor);
     }
 
 
     // Test ColorArray to RawColorArray conversion
     RawColorArray<ARRAY_SIZE> raw_colors { colors };
     for (uint i=0u; i<colors.size(); i++) {
-        BOOST_CHECK_MESSAGE(raw_colors[i] == colors[i].raw(), "Failed raw compare " << std::hex << std::setw(8) << raw_colors[i] << " != " << colors[i].raw());
+        BOOST_CHECK_EQUAL(raw_colors[i], colors[i].raw());
     }
 
 }

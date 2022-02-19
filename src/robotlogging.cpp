@@ -1,4 +1,4 @@
-#include "logging.h"
+#include "robotlogging.h"
 
 #include <mutex>
 #include <boost/log/trivial.hpp>

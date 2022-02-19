@@ -9,7 +9,7 @@ using namespace std::literals;
 namespace Robot::LED {
 
 
-static constexpr auto TIMER_INTERVAL { 100ms };
+static constexpr auto TIMER_INTERVAL { 80ms };
 
 
 Rainbow::Rainbow(const std::shared_ptr<Robot::Context> &context) :
@@ -40,14 +40,13 @@ void Rainbow::cleanup()
 
 void Rainbow::update() 
 {
-    // TODO
     const ColorLayer::guard lock(m_layer->mutex());
     auto &layer { *m_layer };
 
     for (auto i=0u; i<m_layer->size(); i++) {
-        layer[i] = Color::fromHSV((m_hue+i)%360, 100, 100);
+        layer[i] = Color::HSV { static_cast<std::uint8_t>(m_hue + i * 8), 255, 255 };
     }
-    m_hue = (m_hue+1) % 360;
+    m_hue += 8;
 
     m_layer->update();
 }

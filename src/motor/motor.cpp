@@ -224,7 +224,7 @@ void Motor::update()
         return;
 
     bool changed = false;
-    auto now = clock::now();
+    auto now = clock_type::now();
     auto diff = duration_cast<microseconds>(now-m_last_update);
 
 

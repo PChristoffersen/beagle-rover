@@ -33,15 +33,12 @@ void export_input()
         .def("steer", &SoftwareInterface::steer)
         ;
 
-    py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("InputControl", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Control::NOTIFY_DEFAULT))
+    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyDefault>, boost::noncopyable>("InputControl", py::no_init)
         .add_property("source", &Control::getSource, &Control::setSource)
         .add_property("kinematic_source", &Control::getKinematicSource, &Control::setKinematicSource)
         .add_property("led_source", &Control::getLedSource, &Control::setLedSource)
         .add_property("manual", py::make_function(&Control::manual, py::return_internal_reference<>() ))
         .add_property("web", py::make_function(&Control::web, py::return_internal_reference<>() ))
-        .def("subscribe", +[](Control &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Control &self, std::shared_ptr<NotifySubscription<Control::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         .def("__enter__", +[](Control &self) {
             self.mutex_lock();
             return self.shared_from_this();

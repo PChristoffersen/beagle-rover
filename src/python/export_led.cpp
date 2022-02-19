@@ -23,72 +23,11 @@ using Robot::LED::Color, Robot::LED::ColorLayer, Robot::LED::ColorArray;
 
 namespace Robot::Python {
 
-static Color tuple2color(const py::tuple & value) 
-{
-    if (py::len(value)==3) {
-        return Color { 
-            py::extract<std::uint8_t>(value[0]), 
-            py::extract<std::uint8_t>(value[1]), 
-            py::extract<std::uint8_t>(value[2]) 
-        };
-    }
-    else if (py::len(value)==4) {
-        return Color { 
-            py::extract<std::uint8_t>(value[0]), 
-            py::extract<std::uint8_t>(value[1]), 
-            py::extract<std::uint8_t>(value[2]),
-            py::extract<std::uint8_t>(value[3]) 
-        };
-    }
-
-    PyErr_SetString(PyExc_IndexError, "Invalid tuple dimensions");
-    py::throw_error_already_set();
-    throw std::runtime_error("unreachable");
-}
-
-
-static Color str2color(const std::string &value) 
-{   
-    auto len = value.length();
-    if ((len!=7 && len!=9) || value[0]!='#') {
-        PyErr_SetString(PyExc_IndexError, "Invalid color string");
-        py::throw_error_already_set();
-    }
-    uint32_t v;
-    std::size_t end = 0;
-    if (len==7) { // Without alpha
-        v = (std::stoul(value.substr(1), &end, 16) << 8 ) | 0xFF;
-    }
-    else { // With alpha
-        v = std::stoul(value.substr(1), &end, 16);
-    }
-    if (end+1!=len) {
-        PyErr_SetString(PyExc_IndexError, "Invalid color string");
-        py::throw_error_already_set();
-    }
-    return Color((v>>24) & 0xFF, (v>>16) & 0xFF, (v>>8) & 0xFF, (v) & 0xFF);
-}
-
-static std::string color2str(const Color &color)
-{
-    std::stringstream stream;
-    stream << boost::format("#%+02x%+02x%+02x%+02x") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue() % (uint32_t)color.alpha();
-    return stream.str();
-}
-
-static std::string color2rgbstr(const Color &color)
-{
-    std::stringstream stream;
-    stream << boost::format("#%+02x%+02x%+02x") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
-    return stream.str();
-}
-
-
 boost::python::tuple colors2tuple(const ColorLayer::array_type &array) {
     boost::python::tuple obj { boost::python::handle<>(PyTuple_New(array.size())) };
     int idx = 0;
     for (auto &c : array) {
-        PyTuple_SET_ITEM(obj.ptr(), idx, boost::python::incref(boost::python::object(color2rgbstr(c)).ptr()));
+        PyTuple_SET_ITEM(obj.ptr(), idx, boost::python::incref(boost::python::object(c.toString()).ptr()));
         idx++;
     }
     return obj;
@@ -155,15 +94,11 @@ void export_led()
         .add_property("name", +[](const ColorLayer::Segment &s) { return s.name(); })
         .def("__getitem__", +[](const ColorLayer::Segment &segment, uint index){
             checkIndex(segment, index);
-            return color2str(segment[index]);
+            return segment[index].toStringRGBA();
         })
         .def("__setitem__", +[](ColorLayer::Segment &segment, uint index, const std::string &value) {
             checkIndex(segment, index);
-            segment[index] = str2color(value);
-        })
-        .def("__setitem__", +[](ColorLayer::Segment &segment, uint index, const py::tuple &value) {
-            checkIndex(segment, index);
-            segment[index] = tuple2color(value);
+            segment[index] = value;
         })
         .def("__len__", &ColorLayer::Segment::size)
         ;
@@ -188,21 +123,16 @@ void export_led()
         .def("update", &ColorLayer::update)
         .def("fill", +[](ColorLayer &l, const std::string &value) { 
             checkInternal(l);
-            l.fill(str2color(value)); 
+            l.fill(value); 
         })
         .def("__getitem__", +[](const ColorLayer &l, uint index){
             checkIndex(l, index);
-            return color2str(l[index]);
+            return l[index].toStringRGBA();
         })
         .def("__setitem__", +[](ColorLayer &l, uint index, const std::string &value) {
             checkInternal(l);
             checkIndex(l, index);
-            l[index] = str2color(value);
-        })
-        .def("__setitem__", +[](ColorLayer &l, uint index, const py::tuple &value) {
-            checkInternal(l);
-            checkIndex(l, index);
-            l[index] = tuple2color(value);
+            l[index] = value;
         })
         .def("__len__", &ColorLayer::size)
         .def("__enter__", +[](ColorLayer &l) {
@@ -225,17 +155,16 @@ void export_led()
         })
         ;
 
-    py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("LEDControl", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Control::NOTIFY_DEFAULT))
+    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyDefault>, boost::noncopyable>("LEDControl", py::no_init)
         .add_static_property("NOTIFY_UPDATE", py::make_getter(Control::NOTIFY_UPDATE))
         .add_property("brightness", &Control::getBrightness, &Control::setBrightness)
         .add_property("color_correction", &Control::getColorCorrection, &Control::setColorCorrection)
         .add_property("background", 
             +[](const Control &self) {
-                return color2rgbstr(self.getBackground());
+                return static_cast<std::string>(self.getBackground());
             },
             +[](Control &self, const std::string &value) {
-                self.setBackground(str2color(value));
+                self.setBackground(value);
             })
         .add_property("animation", &Control::getAnimation, &Control::setAnimation)
         .add_property("indicators", &Control::getIndicators, &Control::setIndicators)
@@ -244,8 +173,6 @@ void export_led()
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("update", &Control::update)
-        .def("subscribe", +[](Control &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Control &self, std::shared_ptr<NotifySubscription<Control::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         .def("__enter__", +[](Control &self) {
             self.mutex_lock();
             return self.shared_from_this();

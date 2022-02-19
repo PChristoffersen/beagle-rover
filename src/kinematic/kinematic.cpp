@@ -51,7 +51,7 @@ void Kinematic::init(const std::shared_ptr<Robot::Motor::Control> &motor_control
     m_control_scheme = std::make_shared<ControlSchemeIdle>(shared_from_this());
     m_drive_mode = DriveMode::NONE;
 
-    m_axis_connection = input_control->signals.steer.connect(::Robot::Input::SignalSteer::slot_type(&Kinematic::onSteer, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4).track_foreign(shared_from_this()));
+    m_axis_connection = input_control->signals.steer.connect(::Robot::Input::steer_signal_type::slot_type(&Kinematic::onSteer, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4).track_foreign(shared_from_this()));
 }
 
 

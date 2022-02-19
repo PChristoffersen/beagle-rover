@@ -27,14 +27,11 @@ void export_rcreceiver()
         .add_property("failsafe", &Flags::failsafe)
         ;
 
-    py::class_<Receiver, std::shared_ptr<Receiver>, boost::noncopyable>("RCReceiver", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Receiver::NOTIFY_DEFAULT))
+    py::class_<Receiver, std::shared_ptr<Receiver>, py::bases<WithNotifyDefault>, boost::noncopyable>("RCReceiver", py::no_init)
         .add_property("enabled", &Receiver::getEnabled, &Receiver::setEnabled)
         .add_property("connected", &Receiver::isConnected)
         .add_property("flags", &Receiver::getFlags)
         .add_property("rssi", &Receiver::getRSSI)
-        .def("subscribe", +[](Receiver &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Receiver &self, std::shared_ptr<NotifySubscription<Receiver::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         .def("__enter__", +[](Receiver &self) {
             self.mutex_lock();
             return self.shared_from_this();

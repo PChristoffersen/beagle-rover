@@ -13,7 +13,10 @@ namespace Robot {
 
     class Value {
         public:
-            using value_t = std::uint32_t;
+            using value_type = std::uint32_t;
+
+            static constexpr float PI { static_cast<float>(M_PI) };
+            static constexpr float PI_2 { static_cast<float>(M_PI_2) };
 
             static constexpr std::uint32_t PULSE_MIN { ::Robot::Config::SERVO_LIMIT_MIN };
             static constexpr std::uint32_t PULSE_MAX { ::Robot::Config::SERVO_LIMIT_MAX };
@@ -27,8 +30,8 @@ namespace Robot {
             constexpr Value() : m_value { PULSE_CENTER } { }
             constexpr Value(const Value &other) : m_value { other.m_value } { }
             constexpr Value(const Value &&other) : m_value { other.m_value } { }
-            constexpr Value(value_t v) : m_value { clamp(v) } { }
-            constexpr Value(std::int32_t v) : Value { (value_t)v } { }
+            constexpr Value(value_type v) : m_value { clamp(v) } { }
+            constexpr Value(std::int32_t v) : Value { static_cast<value_type>(v) } { }
 
             Value &operator=(const Value &other) { m_value = other.m_value; return *this; }
             Value &operator=(const std::uint32_t value) 
@@ -50,7 +53,7 @@ namespace Robot {
                 return m_value != other.m_value;
             }
 
-            inline constexpr Value clamp(value_t min, value_t max) const {
+            inline constexpr Value clamp(value_type min, value_type max) const {
                 return Value { std::clamp(m_value, min, max) };
             }
 
@@ -60,42 +63,42 @@ namespace Robot {
             }
             inline static constexpr Value fromPercent(float percent)
             {
-                return Value { (value_t)((std::clamp(percent, 0.0f, 1.0f) * PULSE_RANGE) + PULSE_MIN) };
+                return Value { static_cast<value_type>(((std::clamp(percent, 0.0f, 1.0f) * PULSE_RANGE) + PULSE_MIN)) };
             }
             inline static constexpr Value fromFloat(float value)
             {
-                return Value { (value_t)(((1.0f+std::clamp(value, -1.0f, 1.0f)) * 0.5f * PULSE_RANGE) + PULSE_MIN) };
+                return Value { static_cast<value_type>((((1.0f+std::clamp(value, -1.0f, 1.0f)) * 0.5f * PULSE_RANGE) + PULSE_MIN)) };
             }
             inline static constexpr Value fromAngle(float angle) 
             {
-                return Value { (value_t)((std::clamp(angle, -(float)M_PI_2, (float)M_PI_2) * PULSE_RANGE) / (float)M_PI + PULSE_CENTER) };
+                return Value { static_cast<value_type>((std::clamp(angle, -PI_2, PI_2) * PULSE_RANGE) / PI + PULSE_CENTER) };
             }
             inline static constexpr Value fromAngleDegrees(float angle) 
             {
-                return fromAngle(angle * (float)M_PI / 180.0f);
+                return fromAngle(angle * PI / 180.0f);
             }
 
 
 
-            inline constexpr value_t asServoPulse() const 
+            inline constexpr value_type asServoPulse() const 
             { 
                 return m_value; 
             }
             inline constexpr float asPercent() const 
             {
-                return (float)(m_value-PULSE_MIN)/PULSE_RANGE;
+                return static_cast<float>(m_value-PULSE_MIN)/PULSE_RANGE;
             }
             inline constexpr float asFloat() const 
             {
-                return (float)(2*((std::int32_t)m_value-PULSE_CENTER))/PULSE_RANGE;
+                return static_cast<float>((2*(static_cast<std::int32_t>(m_value)-PULSE_CENTER)))/PULSE_RANGE;
             }
             inline constexpr float asAngle() const 
             { 
-                return (float)M_PI * (float)((int32_t)m_value - PULSE_CENTER) / PULSE_RANGE;
+                return PI * static_cast<float>(static_cast<std::int32_t>(m_value) - PULSE_CENTER) / PULSE_RANGE;
             }
             inline constexpr float asAngleDegrees() const 
             { 
-                return asAngle() * 180.0f / (float)M_PI;
+                return asAngle() * 180.0f / PI;
             }
             inline constexpr uint8_t asButton(uint8_t divisions) const 
             {
@@ -107,7 +110,7 @@ namespace Robot {
                 return asButton(2);
             }
 
-            constexpr operator value_t() const 
+            constexpr operator value_type() const 
             { 
                 return asServoPulse(); 
             }
@@ -118,7 +121,7 @@ namespace Robot {
         private:
             std::uint32_t m_value;
 
-            inline constexpr static value_t clamp(value_t v) {
+            inline constexpr static value_type clamp(value_type v) {
                 return std::clamp(v, PULSE_MIN, PULSE_MAX);
             }
 

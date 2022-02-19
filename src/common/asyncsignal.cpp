@@ -55,7 +55,7 @@ void ASyncSignal::cancel()
 
 
 
-boost::signals2::connection ASyncSignal::connect(const typename signal_t::slot_type &subscriber) 
+boost::signals2::connection ASyncSignal::connect(const typename signal_type::slot_type &subscriber) 
 {
     return m_sig.connect(subscriber);
 }

@@ -1,6 +1,7 @@
 #ifndef _ROBOT_LED_ANIMATION_RAINBOW_H_
 #define _ROBOT_LED_ANIMATION_RAINBOW_H_
 
+#include <cstdint>
 #include <memory>
 
 #include <robotcontext.h>
@@ -18,7 +19,7 @@ namespace Robot::LED {
         private:
             std::shared_ptr<ColorLayer> m_layer;
 
-            uint16_t m_hue;
+            std::uint8_t m_hue;
 
             void update() override;
     };

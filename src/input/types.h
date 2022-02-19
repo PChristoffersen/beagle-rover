@@ -8,10 +8,10 @@
 
 namespace Robot::Input {
 
-    using SignalSteer = boost::signals2::signal<void(float steer, float throttle, float aux_x, float aux_y)>;
+    using steer_signal_type = boost::signals2::signal<void(float steer, float throttle, float aux_x, float aux_y)>;
 
     struct Signals {
-        SignalSteer steer;
+        steer_signal_type steer;
     };
 
     static constexpr auto STEER_MIN { -1.0f };

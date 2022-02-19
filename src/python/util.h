@@ -29,7 +29,8 @@ namespace Robot::Python {
      * @return boost::python::tuple Python tuple
      */
     template<typename T>
-    boost::python::tuple container_to_tuple(const T &container) {
+    boost::python::tuple container_to_tuple(const T &container) 
+    {
         boost::python::tuple obj { boost::python::handle<>(PyTuple_New(container.size())) };
         int idx = 0;
         for (auto &v : container) {
@@ -38,6 +39,20 @@ namespace Robot::Python {
         }
         return obj;
     }
+
+
+    template<typename T>
+    T tuple_to_container(const boost::python::tuple &t) 
+    {
+        T res;      
+        auto len = boost::python::len(t);
+        for (boost::python::ssize_t i = 0; i<len; i++) {
+            boost::python::object item { boost::python::handle(boost::python::borrowed(PyTuple_GetItem(t.ptr(), i))) };
+            res.insert(boost::python::extract<typename T::value_type>(item));
+        }
+        return res;
+    }
+
 
 }
 

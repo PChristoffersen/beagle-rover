@@ -21,9 +21,9 @@ namespace Robot::Motor {
 
     class Motor : private Robot::Telemetry::Source, public WithNotifyDefault {
         public:
-            static constexpr NotifyType NOTIFY_TELEMETRY { 1 };
+            static constexpr notify_type NOTIFY_TELEMETRY { 1 };
 
-            using clock = std::chrono::high_resolution_clock;
+            using clock_type = std::chrono::high_resolution_clock;
             using mutex_type = std::recursive_mutex;
             using guard = std::lock_guard<mutex_type>;
 
@@ -80,7 +80,7 @@ namespace Robot::Motor {
             Mode m_mode;
 
             std::int32_t m_last_enc_value;
-            clock::time_point m_last_update;
+            clock_type::time_point m_last_update;
 
             std::int32_t m_odometer_base;
 

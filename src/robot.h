@@ -2,17 +2,20 @@
 #define _ROBOT_ROBOT_H_
 
 #include <memory>
+#include <mutex>
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 
 #include <robotconfig.h>
 #include <robottypes.h>
-#include <logging.h>
+#include <robotlogging.h>
+#include <common/withmutex.h>
+#include <common/notifysubscription.h>
 
 namespace Robot {
 
 
-    class Robot : public std::enable_shared_from_this<Robot> {
+    class Robot : public std::enable_shared_from_this<Robot>, public WithMutex<std::mutex>, public WithNotifyDefault {
         public:
             Robot();
             Robot(const Robot&) = delete; // No copy constructor
@@ -62,6 +65,12 @@ namespace Robot {
 
             void timerSetup();
             void timer();
+
+            friend std::ostream &operator<<(std::ostream &os, const Robot &self)
+            {
+                return os << "Robot::Robot";
+            }
+
     };
 
 }

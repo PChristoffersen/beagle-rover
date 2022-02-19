@@ -2,6 +2,7 @@
 #define _ROBOT_LED_COLOR_H_
 
 #include <cstdint>
+#include <string>
 #include <array>
 #include <limits>
 #include <algorithm>
@@ -50,12 +51,19 @@ namespace Robot::LED {
             constexpr Color(const Color &&color) : m_data{ color.m_data } {}
             constexpr Color(channel_type r, channel_type g, channel_type b) : m_data { raw_argb(CHANNEL_MAX, r, g, b) } {}
             constexpr Color(channel_type r, channel_type g, channel_type b, channel_type a) : m_data { raw_argb(a, r, g, b) } {}
+            constexpr Color(int r, int g, int b) : m_data { raw_argb(CHANNEL_MAX, to_channel(r), to_channel(g), to_channel(b)) } {}
+            constexpr Color(int r, int g, int b, int a) : m_data { raw_argb(to_channel(a), to_channel(r), to_channel(g), to_channel(b)) } {}
+            constexpr Color(unsigned int r, unsigned int g, unsigned int b) : m_data { raw_argb(CHANNEL_MAX, to_channel(r), to_channel(g), to_channel(b)) } {}
+            constexpr Color(unsigned int r, unsigned int g, unsigned int b, unsigned int a) : m_data { raw_argb(to_channel(a), to_channel(r), to_channel(g), to_channel(b)) } {}
+            constexpr Color(float r, float g, float b) : m_data { raw_argb(CHANNEL_MAX, to_channel(r), to_channel(g), to_channel(b)) } {}
+            constexpr Color(float r, float g, float b, float a) : m_data { raw_argb(to_channel(a), to_channel(r), to_channel(g), to_channel(b)) } {}
             constexpr explicit Color(Correction correction) : m_data { static_cast<raw_type>(correction) } {}
             constexpr explicit Color(raw_type raw) : m_data { raw } {}
+            Color(const std::string &value);
+
+            constexpr Color opaque() const { return Color { m_data | ALPHA_MASK }; }
 
             static constexpr inline brightness_type clampBrightness(brightness_type b) { return std::clamp(b, BRIGHTNESS_MIN, BRIGHTNESS_MAX); }
-
-            static Color fromHSV(uint16_t h, uint8_t s, uint8_t v);
 
             constexpr inline channel_type red()   const { return (m_data >> RED_SHIFT) & CHANNEL_MASK; }
             constexpr inline channel_type green() const { return (m_data >> GREEN_SHIFT) & CHANNEL_MASK; }
@@ -68,6 +76,11 @@ namespace Robot::LED {
             constexpr inline void setBlue(channel_type b)  { m_data = (m_data & ~BLUE_MASK)  | (static_cast<raw_type>(b)<<BLUE_SHIFT); }
             constexpr inline void setAlpha(channel_type a) { m_data = (m_data & ~ALPHA_MASK) | (static_cast<raw_type>(a)<<ALPHA_SHIFT); }
 
+            std::string toString() const;
+            std::string toStringRGB() const;
+            std::string toStringRGBA() const;
+            operator std::string() const { return toString(); }
+
             static constexpr inline raw_type rawRGB(channel_type r, channel_type g, channel_type b) { return raw_argb(CHANNEL_MAX,r,g,b); }
             static constexpr inline raw_type rawRGBA(channel_type r, channel_type g, channel_type b, channel_type a) { return raw_argb(a,r,g,b); }
             static constexpr inline channel_type rawRed(raw_type c) { return (c >> RED_SHIFT) & CHANNEL_MASK; }
@@ -77,6 +90,7 @@ namespace Robot::LED {
 
             Color &operator=(const Color &other) { m_data = other.m_data; return *this; }
             Color &operator=(const raw_type other) { m_data = other; return *this; }
+            Color &operator=(const std::string &value) { m_data = (Color { value }).m_data; return *this; }
 
             constexpr bool operator==(const Color &other) const { return m_data==other.m_data; }
             constexpr bool operator==(const raw_type other) const { return m_data==other; }
@@ -87,6 +101,10 @@ namespace Robot::LED {
             Color  operator*(const brightness_type brightness) const;
             Color &operator*=(const Correction other);
             Color  operator*(const Correction other) const;
+            Color &operator|(const Color &other) { m_data |= other.m_data; return *this; }
+            Color  operator|(const Color &other) const { return Color { m_data|other.m_data }; }
+            Color &operator&(const Color &other) { m_data &= other.m_data; return *this; }
+            Color  operator&(const Color &other) const { return Color { m_data&other.m_data }; }
 
             /**
              * @brief Blend this color with color
@@ -101,6 +119,64 @@ namespace Robot::LED {
              */
             Color &operator<<(const Color &color);
 
+
+
+            class HSV {
+                public:
+                    constexpr HSV(std::uint8_t h, std::uint8_t s, std::uint8_t v) : m_hue { h }, m_sat { s }, m_val { v } {}
+
+                    /**
+                     * @brief Convert a hue, saturation, and value to RGB
+                     * 
+                     * using a visually balanced rainbow (vs a straight
+                     * mathematical spectrum).
+                     * This 'rainbow' yields better yellow and orange
+                     * than a straight 'spectrum'.
+                     * 
+                     * @note Here hue is 0-255, not just 0-191
+                     * 
+                     * @return Color Converted RGB Color
+                     */
+                    Color rainbow() const;
+
+                    /**
+                     * @brief Convert a hue, saturation, and value to RGB
+                     * 
+                     * Using a mathematically straight spectrum (vs
+                     * a visually balanced rainbow).
+                     * This 'spectrum' will have more green & blue
+                     * than a 'rainbow', and less yellow and orange.
+                     * 
+                     * @note Here hue is 0-255, not just 0-191
+                     * 
+                     * @return Color Converted RGB Color
+                     */
+                    Color spectrum() const;
+
+                    /**
+                     * @brief Convert hue, saturation, and value to RGB.
+                     * 
+                     * This 'spectrum' conversion will be more green & blue
+                     * than a real 'rainbow', and the hue is specified just
+                     * in the range 0-191.  Together, these result in a
+                     * slightly faster conversion speed, at the expense of
+                     * color balance.
+                     * 
+                     * @note Hue is 0-191 only! Saturation & value are 0-255 each.
+                     * 
+                     * @return Color Converted RGB Color
+                     */
+                    Color raw() const;
+
+                    operator Color() const { return rainbow(); }
+
+                private:
+                    std::uint8_t m_hue;
+                    std::uint8_t m_sat;
+                    std::uint8_t m_val;
+            };
+
+
         private:
             raw_type m_data;
 
@@ -109,15 +185,19 @@ namespace Robot::LED {
                 return a<<ALPHA_SHIFT | r<<RED_SHIFT | g<<GREEN_SHIFT | b<<BLUE_SHIFT;
             }
 
+            static constexpr inline channel_type to_channel(float v) { return std::clamp<float>(v*static_cast<float>(CHANNEL_MAX)+0.5f, CHANNEL_MIN, CHANNEL_MAX); }
+            static constexpr inline channel_type to_channel(int v) { return std::clamp<int>(v, CHANNEL_MIN, CHANNEL_MAX); }
+            static constexpr inline channel_type to_channel(unsigned int v) { return std::clamp<unsigned int>(v, CHANNEL_MIN, CHANNEL_MAX); }
+
             friend std::ostream &operator<<(std::ostream &os, const Color &color)
             {
-                return os << boost::format("Color<%+02x%+02x%+02x%+02x>") 
-                                % static_cast<uint32_t>(color.red())
-                                % static_cast<uint32_t>(color.green())
-                                % static_cast<uint32_t>(color.blue())
-                                % static_cast<uint32_t>(color.alpha());
+                return os << "Color<" << color.toString() << ">";
             }
     };
+
+
+
+
 
 
     constexpr Color Color::TRANSPARENT { CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MIN };

@@ -35,12 +35,9 @@ void export_kinematic()
         .value("WEST", Orientation::WEST)
         ;
 
-    py::class_<Kinematic, std::shared_ptr<Kinematic>, boost::noncopyable>("Kinematic", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Kinematic::NOTIFY_DEFAULT))
+    py::class_<Kinematic, std::shared_ptr<Kinematic>, py::bases<WithNotifyDefault>, boost::noncopyable>("Kinematic", py::no_init)
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
-        .def("subscribe", +[](Kinematic &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Kinematic &self, std::shared_ptr<NotifySubscription<Kinematic::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         .def("__enter__", +[](Kinematic &self) {
             self.mutex_lock();
             return self.shared_from_this();

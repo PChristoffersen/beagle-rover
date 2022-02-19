@@ -4,3 +4,4 @@
 #define robot_VERSION_MINOR @robotsystem_VERSION_MINOR@
 
 #cmakedefine HAVE_ROBOTCONTROL
+

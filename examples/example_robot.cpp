@@ -10,6 +10,7 @@
 #include <boost/bind.hpp>
 
 #include <robot.h>
+#include <led/color.h>
 
 using namespace std::literals;
 
@@ -45,6 +46,6 @@ int main() {
     BOOST_LOG_TRIVIAL(info) << "Cleanup";
     robot->cleanup();
     BOOST_LOG_TRIVIAL(info) << "Done";
-
-    return 0;
+#
+   return 0;
 }

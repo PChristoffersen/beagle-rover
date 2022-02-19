@@ -19,10 +19,7 @@ void export_system()
     using Robot::System::Network;
     using Robot::System::Power, Robot::System::PowerSource, Robot::System::PowerSourceUnknown, Robot::System::PowerSourceBattery;
 
-    py::class_<Network, std::shared_ptr<Network>, boost::noncopyable>("Network", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Network::NOTIFY_DEFAULT))
-        .def("subscribe", +[](Network &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Network &self, std::shared_ptr<NotifySubscription<Network::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
+    py::class_<Network, std::shared_ptr<Network>, py::bases<WithNotifyDefault>, boost::noncopyable>("Network", py::no_init)
         ;
 
 
@@ -55,11 +52,8 @@ void export_system()
         .add_property("voltage", &PowerSourceBattery::voltage)
         ;
 
-    py::class_<Power, std::shared_ptr<Power>, boost::noncopyable>("Power", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Power::NOTIFY_DEFAULT))
+    py::class_<Power, std::shared_ptr<Power>, py::bases<WithNotifyDefault>, boost::noncopyable>("Power", py::no_init)
         .add_property("system", py::make_function(+[](const Power &self){ return self.system().get(); }, py::return_internal_reference<>()))
-        .def("subscribe", +[](Power &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Power &self, std::shared_ptr<NotifySubscription<Power::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         ;
 
 }

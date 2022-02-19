@@ -30,8 +30,7 @@ void export_motor()
         .value("BRAKE", Motor::Mode::BRAKE)
         ;
 
-    py::class_<Motor, boost::noncopyable>("Motor", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Motor::NOTIFY_DEFAULT))
+    py::class_<Motor, py::bases<WithNotifyDefault>, boost::noncopyable>("Motor", py::no_init)
         .add_static_property("NOTIFY_TELEMETRY", py::make_getter(Motor::NOTIFY_TELEMETRY))
         .add_property("index", &Motor::getIndex)
         .add_property("enabled", &Motor::getEnabled, &Motor::setEnabled)
@@ -45,13 +44,10 @@ void export_motor()
         .def("brake", &Motor::brake)
         .def("free_spin", &Motor::freeSpin)
         .def("reset_odometer", &Motor::resetOdometer)
-        .def("subscribe", +[](Motor &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Motor &self, std::shared_ptr<NotifySubscription<Motor::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         .def("__str__", +[](const Motor &m) { return (boost::format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
 
-    py::class_<Servo, boost::noncopyable>("Servo", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(Servo::NOTIFY_DEFAULT))
+    py::class_<Servo, py::bases<WithNotifyDefault>, boost::noncopyable>("Servo", py::no_init)
         .add_property("index", &Servo::getIndex)
         .add_property("enabled", &Servo::getEnabled, &Servo::setEnabled)
         .add_property("pulse_us", +[](const Servo &self) { return self.getValue().asServoPulse(); }, +[](Servo &self, uint32_t value) { self.setValue(Value::fromMicroSeconds(value)); })
@@ -60,8 +56,6 @@ void export_motor()
         .add_property("limit_min", +[](const Servo &self) { return self.getLimitMin().asAngle(); }, +[](Servo &self, float value) { self.setLimitMin(Value::fromAngle(value)); })
         .add_property("limit_max", +[](const Servo &self) { return self.getLimitMax().asAngle(); }, +[](Servo &self, float value) { self.setLimitMax(Value::fromAngle(value)); })
         .def("set_limits", +[](Servo &self, float min, float max) { self.setLimits(Value::fromAngle(min), Value::fromAngle(max)); })
-        .def("subscribe", +[](Servo &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](Servo &self, std::shared_ptr<NotifySubscription<Servo::NotifyType>> sub, int offset) { notify_attach(*sub, self, offset); return sub; })
         .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
 

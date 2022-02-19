@@ -13,7 +13,7 @@ namespace Robot {
 
     class ASyncSignal : public std::enable_shared_from_this<ASyncSignal> {
         public:
-            using signal_t = boost::signals2::signal<void(std::uint64_t)>;
+            using signal_type = boost::signals2::signal<void(std::uint64_t)>;
             using timer_type = boost::asio::high_resolution_timer;
             using clock_type = timer_type::clock_type;
 
@@ -26,11 +26,11 @@ namespace Robot {
 
             void operator()(std::uint64_t cnt = 1);
 
-            boost::signals2::connection connect(const typename signal_t::slot_type &subscriber);
+            boost::signals2::connection connect(const typename signal_type::slot_type &subscriber);
         private:
             int m_fd;
             clock_type::duration m_signal_interval;
-            signal_t m_sig;
+            signal_type m_sig;
             boost::asio::posix::stream_descriptor m_descriptor;
             boost::asio::null_buffers m_buffers;
             timer_type m_timer;

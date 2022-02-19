@@ -124,7 +124,6 @@ void Control::showPixels()
     // Apply color correction and brightness
     ColorArray pixels { m_pixels };
     pixels *= m_color_correction;
-    pixels *= m_brightness;
 
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     if (rc_ext_neopixel_set(RawColorArray(pixels).data())!=0) {
@@ -174,9 +173,10 @@ void Control::setColorCorrection(Color::Correction correction)
 }
 
 
-void Control::setBackground(const Color &color) 
+void Control::setBackground(Color color) 
 {
     const guard lock(m_mutex);
+    color = color.opaque();
     if (m_background!=color) {
         m_background = color;
         if (m_initialized) {
@@ -301,6 +301,7 @@ void Control::updatePixels()
     for (const auto &layer : m_layers) {
         m_pixels << *layer;
     }
+    m_pixels *= m_brightness;
 
     showPixels();
     notify(NOTIFY_UPDATE);

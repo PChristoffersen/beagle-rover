@@ -13,14 +13,14 @@ set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
 add_compile_definitions(BOOST_BIND_GLOBAL_PLACEHOLDERS)
 add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-unused-parameter)
+add_compile_options("$<$<CONFIG:DEBUG>:-DROBOT_DEBUG>")
 
-
+find_package(Threads REQUIRED)
 find_package(Python3 3.7 COMPONENTS Development)
 find_package(PythonLibs 3.7 REQUIRED)
 find_package(Boost 1.67.0 COMPONENTS system log python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR})
 find_library(ROBOTCONTROL robotcontrol)
 add_definitions(-DBOOST_LOG_DYN_LINK)
-
 
 # -----------------------------------------------
 # Helper libraries
@@ -28,6 +28,7 @@ add_definitions(-DBOOST_LOG_DYN_LINK)
 if(ROBOTCONTROL)
     set(HAVE_ROBOTCONTROL 1)
     add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
+    include_directories("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
 endif()
 
 # -----------------------------------------------
@@ -40,13 +41,15 @@ configure_file (
 include_directories("${PROJECT_BINARY_DIR}")
 
 
+
 # -----------------------------------------------
 # Main src
 # -----------------------------------------------
 set(SRC 
     src/robot.cpp
     src/robotcontext.cpp
-    src/logging.cpp
+    src/robotlogging.cpp
+    src/robotdebug.cpp
     src/rc/receiver.cpp
     src/rc/mappings/taranis_x9d.cpp
     src/common/asyncsignal.cpp
@@ -101,7 +104,7 @@ add_library(robotsystem SHARED
 )
 set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(robotsystem PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(robotsystem PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 if(ROBOTCONTROL)
 target_link_libraries(robotsystem PRIVATE robotcontrolext)
 endif()
@@ -130,7 +133,7 @@ add_library(robotsystem_python MODULE
 set_property(TARGET robotsystem_python PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_target_properties(robotsystem_python PROPERTIES OUTPUT_NAME "robotsystem")
 target_include_directories(robotsystem_python PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(robotsystem_python PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+target_link_libraries(robotsystem_python PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 if(ROBOTCONTROL)
 target_link_libraries(robotsystem_python PRIVATE robotcontrolext)
 endif()
@@ -143,7 +146,7 @@ endif()
 # -----------------------------------------------
 add_executable(example_robot examples/example_robot.cpp )
 target_include_directories(example_robot PRIVATE src)
-target_link_libraries(example_robot robotsystem ${Boost_LOG_LIBRARIES})
+target_link_libraries(example_robot robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 
 
 
@@ -152,30 +155,34 @@ target_link_libraries(example_robot robotsystem ${Boost_LOG_LIBRARIES})
 # -----------------------------------------------
 add_executable(test_robot test/test_robot.cpp )
 target_include_directories(test_robot PRIVATE src)
-target_link_libraries(test_robot robotsystem ${Boost_LOG_LIBRARIES})
+target_link_libraries(test_robot robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Robot COMMAND test_robot)
-
+ 
 add_executable(test_leds test/test_leds.cpp )
 target_include_directories(test_leds PRIVATE src)
-target_link_libraries(test_leds robotsystem ${Boost_LOG_LIBRARIES})
+target_link_libraries(test_leds robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME LEDS COMMAND test_leds)
 
 add_executable(test_color test/test_color.cpp )
 target_include_directories(test_color PRIVATE src)
-target_link_libraries(test_color robotsystem ${Boost_LOG_LIBRARIES})
+target_link_libraries(test_color robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Color COMMAND test_color)
 
 add_executable(test_value test/test_value.cpp )
 target_include_directories(test_value PRIVATE src)
-target_link_libraries(test_value robotsystem ${Boost_LOG_LIBRARIES})
+target_link_libraries(test_value robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Value COMMAND test_value)
 
 add_executable(test_asyncsignal test/test_asyncsignal.cpp )
 target_include_directories(test_asyncsignal PRIVATE src)
-target_link_libraries(test_asyncsignal robotsystem ${Boost_LOG_LIBRARIES})
+target_link_libraries(test_asyncsignal robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME ASyncSignal COMMAND test_asyncsignal)
 
+add_executable(test_subscription test/test_subscription.cpp )
+target_include_directories(test_subscription PRIVATE src)
+target_link_libraries(test_subscription robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+add_test(NAME Subscription COMMAND test_subscription)
 
+# Python tests
 add_test(NAME PythonSubscription COMMAND test_subscription.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 add_test(NAME PythonLEDS COMMAND test_leds.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
-

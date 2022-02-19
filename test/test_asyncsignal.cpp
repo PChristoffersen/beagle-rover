@@ -22,36 +22,38 @@ BOOST_AUTO_TEST_CASE(Test)
 
     io_context io;
 
-    auto signal { std::make_shared<Robot::ASyncSignal>(io) };
+    auto signal_ptr { std::make_shared<Robot::ASyncSignal>(io) };
     uint64_t count { 0 };
     uint64_t calls { 0 };
 
-    signal->connect([&count, &calls](auto cnt) {
+    signal_ptr->connect([&count, &calls](auto cnt) {
         calls++;
         count += cnt;
     });
-    signal->async_wait();
+    signal_ptr->async_wait();
 
-    (*signal)();
-    (*signal)();
-    (*signal)();
-    (*signal)();
+    auto &signal { *signal_ptr };
+
+    signal();
+    signal();
+    signal();
+    signal();
     io.run_for(10ms);
 
     // We should receive all 4 signals in one call
-    BOOST_TEST(calls == 1);
-    BOOST_TEST(count == 4);
+    BOOST_CHECK_EQUAL(calls, 1);
+    BOOST_CHECK_EQUAL(count, 4);
 
-    (*signal)();
+    signal();
     io.run_for(10ms);
-    (*signal)();
+    signal();
     io.run_for(10ms);
-    (*signal)();
+    signal();
     io.run_for(10ms);
 
     // Signal should have been received immediately 
-    BOOST_TEST(calls == 4);
-    BOOST_TEST(count == 7);
+    BOOST_CHECK_EQUAL(calls , 4);
+    BOOST_CHECK_EQUAL(count , 7);
 }
 
 BOOST_AUTO_TEST_CASE(TestRate)
@@ -60,42 +62,44 @@ BOOST_AUTO_TEST_CASE(TestRate)
 
     io_context io;
 
-    auto signal { std::make_shared<Robot::ASyncSignal>(io, 1s) };
+    auto signal_ptr { std::make_shared<Robot::ASyncSignal>(io, 1s) };
     uint64_t count { 0 };
     uint64_t calls { 0 };
 
-    signal->connect([&count, &calls](auto cnt) {
+    signal_ptr->connect([&count, &calls](auto cnt) {
         calls++;
         count += cnt;
     });
-    signal->async_wait();
+    signal_ptr->async_wait();
 
-    (*signal)();
+    auto &signal { *signal_ptr };
+
+    signal();
     io.run_for(10ms);
-    (*signal)();
+    signal();
     io.run_for(10ms);
-    (*signal)();
+    signal();
     io.run_for(10ms);
-    (*signal)();
+    signal();
     io.run_for(10ms);
 
     // One second has not yet elapsed so no signal should have been sent
-    BOOST_TEST(calls == 0);
-    BOOST_TEST(count == 0);
+    BOOST_CHECK_EQUAL(calls , 0);
+    BOOST_CHECK_EQUAL(count , 0);
 
     io.run_for(2s);
 
     // We should receive all 4 signals in one call
-    BOOST_TEST(calls == 1);
-    BOOST_TEST(count == 4);
+    BOOST_CHECK_EQUAL(calls , 1);
+    BOOST_CHECK_EQUAL(count , 4);
 
     io.run_for(1s);
-    (*signal)();
+    signal();
     io.run_for(10ms);
 
     // Signal should have been received immediately because the it has been more than 1s since the last signal
-    BOOST_TEST(calls == 2);
-    BOOST_TEST(count == 5);
+    BOOST_CHECK_EQUAL(calls , 2);
+    BOOST_CHECK_EQUAL(count , 5);
 }
 
 

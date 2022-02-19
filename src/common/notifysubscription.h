@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <chrono>
+#include <sstream>
 #include <unordered_set>
 #include <poll.h>
 #include <sys/eventfd.h>
@@ -18,12 +19,11 @@ namespace Robot {
     template<typename T>
     class NotifySubscription : public std::enable_shared_from_this<NotifySubscription<T>> {
         public:
-            using result_set_t = std::unordered_set<T>;
+            using result_type = std::unordered_set<T>;
 
             static constexpr size_t QUEUE_SIZE { 128 };
 
-            NotifySubscription(const std::string &name, bool nonblocking=true) :
-                m_name { name },
+            NotifySubscription(bool nonblocking=true) :
                 m_queue { QUEUE_SIZE }
             {
                 int flags = EFD_CLOEXEC;
@@ -79,14 +79,6 @@ namespace Robot {
 
 
             /**
-             * @brief The name of the subscription
-             * 
-             * @return const std::string& 
-             */
-            const std::string &get_name() const { return m_name; }
-
-
-            /**
              * @brief Get the subscription filedescriptor for polling do not read directly from it.
              * 
              * @return int filedescriptor
@@ -97,10 +89,10 @@ namespace Robot {
             /**
              * @brief Read the set of events written since last read.
              * 
-             * @return result_set_t A set of events returned from this event
+             * @return result_type A set of events returned from this event
              */
-            result_set_t read() {
-                result_set_t result;
+            result_type read() {
+                result_type result;
                 uint64_t cnt { 0ULL };
                 auto res = ::read(m_fd, &cnt, sizeof(cnt));
                 if (res==-1) {
@@ -128,16 +120,16 @@ namespace Robot {
              * @brief Wait for event with timeout
              * 
              * @param timeout Timeout
-             * @return result_set_t A set of events returned from this event
+             * @return result_type A set of events returned from this event
              */
-            result_set_t read(std::chrono::milliseconds timeout) 
+            result_type read(std::chrono::milliseconds timeout) 
             {
                 struct pollfd pfd;
                 pfd.fd = m_fd;
                 pfd.events = POLLIN;
                 pfd.revents = 0;
                 if (poll(&pfd, 1, timeout.count())<1) {
-                    return result_set_t();
+                    return result_type();
                 }
                 return read();
             }
@@ -161,19 +153,24 @@ namespace Robot {
                     return true;
                 }
                 else {
-                    BOOST_LOG_TRIVIAL(warning) << m_name << " PUSH (" << value << ") queue full";
+                    BOOST_LOG_TRIVIAL(warning) << *this << " PUSH (" << value << ") queue full";
                 }
                 return false;
             }
 
         private:
-            std::string m_name;
             int m_fd;
             std::vector<boost::signals2::connection> m_connections;
             boost::lockfree::queue<T, boost::lockfree::fixed_sized<true>> m_queue;
+
+            friend std::ostream &operator<<(std::ostream &os, const NotifySubscription<T> &self)
+            {
+                return os << "Subscription<" << static_cast<const void*>(&self) << ">";
+            }
+
     };
 
-    using NotifySubscriptionDefault = NotifySubscription<WithNotifyDefault::NotifyType>;
+    using NotifySubscriptionDefault = NotifySubscription<WithNotifyDefault::notify_type>;
 
 
     /**
@@ -181,16 +178,14 @@ namespace Robot {
      * 
      * @tparam T Object type
      * @param obj Object to subscribe 
-     * @return std::shared_ptr<NotifySubscription<typename T::NotifyType>> New subscription
+     * @return std::shared_ptr<NotifySubscription<typename T::notify_type>> New subscription
      */
     template<typename T>
-    std::shared_ptr<NotifySubscription<typename T::NotifyType>> notify_subscribe(T &obj)
+    std::shared_ptr<NotifySubscription<typename T::notify_type>> notify_subscribe(T &obj)
     {
-        std::stringstream sstream;
-        sstream << obj;
-        auto sub { std::make_shared<NotifySubscription<typename T::NotifyType>>(sstream.str()) };
+        auto sub { std::make_shared<NotifySubscription<typename T::notify_type>>() };
         sub->add_connection(obj.subscribe(
-            [sub_ptr=sub->weak_from_this()] (typename T::NotifyType arg) {
+            [sub_ptr=sub->weak_from_this()] (typename T::notify_type arg) {
                 if (auto sub = sub_ptr.lock()) { 
                     sub->write(arg);
                 }
@@ -201,7 +196,35 @@ namespace Robot {
 
 
     /**
-     * @brief Adds a subscription 
+     * @brief Create a filtered subscription on object that listens for notify signals
+     * 
+     * @tparam T Object type
+     * @param obj Object to subscribe 
+     * @param events Set of wanted events
+     * @return std::shared_ptr<NotifySubscription<typename T::notify_type>> New subscription
+     */
+    template<typename T>
+    std::shared_ptr<NotifySubscription<typename T::notify_type>> notify_subscribe(T &obj, const std::unordered_set<typename T::notify_type> &events)
+    {
+        auto sub { std::make_shared<NotifySubscription<typename T::notify_type>>() };
+        if (events.empty()) {
+            return sub;
+        }
+        sub->add_connection(obj.subscribe(
+            [sub_ptr=sub->weak_from_this(), events] (typename T::notify_type arg) {
+                if (events.find(arg)==events.end())
+                    return;
+                if (auto sub = sub_ptr.lock()) { 
+                    sub->write(arg);
+                }
+            }
+        ));
+        return sub;
+    }
+
+
+    /**
+     * @brief Adds a subscription to an existing subscription object
      * 
      * @tparam T Object type 
      * @param sub Add to this subscription
@@ -209,16 +232,41 @@ namespace Robot {
      * @param offset Offset added to notify argument before adding to queue
      */
     template<typename T>
-    void notify_attach(NotifySubscription<typename T::NotifyType> &sub, T &obj, typename T::NotifyType offset)
+    void notify_attach(const std::shared_ptr<NotifySubscription<typename T::notify_type>> &sub, T &obj, typename T::notify_type offset)
     {
-        sub.add_connection(obj.subscribe(
-            [sub_ptr=sub.weak_from_this(),offset] (typename T::NotifyType arg) {
+        sub->add_connection(obj.subscribe(
+            [sub_ptr=sub->weak_from_this(),offset] (typename T::notify_type arg) {
                 if (auto sub = sub_ptr.lock()) { 
                     sub->write(arg+offset);
                 }
             }
         ));
     }
+
+
+    /**
+     * @brief Adds a filtered subscription to an existing subscription object
+     * 
+     * @tparam T Object type 
+     * @param sub Add to this subscription
+     * @param obj Object to subscribe
+     * @param events Set of wanted events
+     * @param offset Offset added to notify argument before adding to queue
+     */
+    template<typename T>
+    void notify_attach(const std::shared_ptr<NotifySubscription<typename T::notify_type>> &sub, T &obj, typename T::notify_type offset, const std::unordered_set<typename T::notify_type> &events)
+    {
+        sub->add_connection(obj.subscribe(
+            [sub_ptr=sub->weak_from_this(),offset, events] (typename T::notify_type arg) {
+                if (events.find(arg)==events.end())
+                    return;
+                if (auto sub = sub_ptr.lock()) { 
+                    sub->write(arg+offset);
+                }
+            }
+        ));
+    }
+
 
 }
 

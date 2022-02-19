@@ -191,7 +191,7 @@ void Context::stop()
 }
 
 
-void Context::setPowerEnabled(std::shared_ptr<::Robot::Hardware::AbstractPower> &power, PowerSignal &sig_power, bool enabled, bool &state, const char *name)
+void Context::setPowerEnabled(std::shared_ptr<::Robot::Hardware::AbstractPower> &power, power_signal_type &sig_power, bool enabled, bool &state, const char *name)
 {
     auto cnt = power->setEnabled(enabled);
     if (cnt>=1) {

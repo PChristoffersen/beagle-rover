@@ -99,7 +99,7 @@ void export_telemetry()
     using Robot::Telemetry::Telemetry;
 
   
-    py::class_<Telemetry, std::shared_ptr<Telemetry>, boost::noncopyable>("Telemetry", py::no_init)
+    py::class_<Telemetry, std::shared_ptr<Telemetry>, py::bases<WithNotifyDefault>, boost::noncopyable>("Telemetry", py::no_init)
         .add_property("values", +[](Telemetry &self){ 
             Telemetry::guard(self.mutex());
             py::dict vals;

@@ -9,7 +9,7 @@ using namespace std::literals;
 namespace Robot::LED {
 
 
-static constexpr auto TIMER_INTERVAL { 100ms };
+static constexpr auto TIMER_INTERVAL { 150ms };
 static constexpr Color LED_COLOR1 { 0x40, 0x00, 0x00, 0xFF };
 static constexpr Color LED_COLOR2 { 0x40, 0x00, 0x00, 0x40 };
 

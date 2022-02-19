@@ -15,8 +15,8 @@ namespace Robot {
 
     class Context : public std::enable_shared_from_this<Context>, public WithMutex<std::recursive_mutex> {
         public:
-            using PowerSignal = boost::signals2::signal<void(bool)>;
-            using ThreadSignal = boost::signals2::signal<void(bool)>;
+            using power_signal_type = boost::signals2::signal<void(bool)>;
+            using thread_signal_type = boost::signals2::signal<void(bool)>;
 
             Context();
             Context(const Context&) = delete; // No copy constructor
@@ -41,12 +41,12 @@ namespace Robot {
 
             boost::asio::io_context &io() { return m_io; }
 
-            PowerSignal sig_motor_power;
-            PowerSignal sig_servo_power;
-            PowerSignal sig_led_power;
-            PowerSignal sig_rc_power;
+            power_signal_type sig_motor_power;
+            power_signal_type sig_servo_power;
+            power_signal_type sig_led_power;
+            power_signal_type sig_rc_power;
 
-            ThreadSignal sig_thread;
+            thread_signal_type sig_thread;
         private:
             bool m_initialized;
             bool m_started;
@@ -65,7 +65,7 @@ namespace Robot {
             void initPlatform();
             void cleanupPlatform();
 
-            void setPowerEnabled(std::shared_ptr<::Robot::Hardware::AbstractPower> &power, PowerSignal &sig_power, bool enabled, bool &state, const char *name);
+            void setPowerEnabled(std::shared_ptr<::Robot::Hardware::AbstractPower> &power, power_signal_type &sig_power, bool enabled, bool &state, const char *name);
     };
 
 }
