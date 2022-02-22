@@ -13,18 +13,18 @@ namespace Robot::LED {
 Color::Color(const std::string &value)
 {
     auto len = value.length();
-    if ((len!=7 && len!=9) || value[0]!='#') {
-        BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid color string '"+value+"'"));
+    if (len!=6 && len!=8) {
+        BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid color string length '"+value+"'"));
     }
     uint32_t v;
     std::size_t end = 0;
-    if (len==7) { // Without alpha
-        v = (std::stoul(value.substr(1), &end, 16) << 8 ) | 0xFF;
+    if (len==6) { // Without alpha
+        v = (std::stoul(value, &end, 16) << 8 ) | 0xFF;
     }
     else { // With alpha
-        v = std::stoul(value.substr(1), &end, 16);
+        v = std::stoul(value, &end, 16);
     }
-    if (end+1!=len) {
+    if (end!=len) {
         BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid color string '"+value+"'"));
     }
     m_data = raw_argb(
@@ -47,68 +47,12 @@ std::string Color::toString() const
 
 std::string Color::toStringRGB() const
 {
-    return (boost::format("#%+02X%+02X%+02X") % static_cast<int>(red()) % static_cast<int>(green()) % static_cast<int>(blue())).str();
+    return (boost::format("%+02X%+02X%+02X") % static_cast<int>(red()) % static_cast<int>(green()) % static_cast<int>(blue())).str();
 }
 
 std::string Color::toStringRGBA() const
 {
-    return (boost::format("#%+02X%+02X%+02X%+02X") % static_cast<int>(red()) % static_cast<int>(green()) % static_cast<int>(blue()) % static_cast<int>(alpha())).str();
-}
-
-
-Color Color::operator*(brightness_type brightness) const
-{
-    raw_type scale = std::clamp<raw_type>(brightness*static_cast<brightness_type>(CHANNEL_MAX)+0.5f, CHANNEL_MIN, CHANNEL_MAX);
-    if (scale == CHANNEL_MAX) {
-        return *this;
-    }
-    if (scale == CHANNEL_MIN) {
-        return Color { m_data & ALPHA_MASK };
-    }
-
-    raw_type red   = ( (m_data & RED_MASK)   * scale / CHANNEL_MAX ) & RED_MASK;
-    raw_type green = ( (m_data & GREEN_MASK) * scale / CHANNEL_MAX ) & GREEN_MASK;
-    raw_type blue  = ( (m_data & BLUE_MASK)  * scale / CHANNEL_MAX ) & BLUE_MASK;
-    raw_type alpha = m_data & ALPHA_MASK;
-
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" R %+08x (%+02x)-> %+08x") % (m_data & Color::RED_MASK) % static_cast<uint32_t>(brightness) % (red);
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" G %+08x (%+02x)-> %+08x") % (m_data & Color::GREEN_MASK) % static_cast<uint32_t>(brightness) % (green);
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" B %+08x (%+02x)-> %+08x") % (m_data & Color::BLUE_MASK) % static_cast<uint32_t>(brightness) % (blue);
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" A %+08x (%+02x)-> %+08x") % (m_data & Color::ALPHA_MASK) % static_cast<uint32_t>(brightness) % (alpha);
-
-    return Color { alpha | red | green | blue };
-}
-
-
-Color &Color::operator*=(brightness_type brightness)
-{
-    *this = *this * brightness;
-    return *this;
-}
-
-
-
-Color Color::operator*(const Correction correction) const
-{
-    raw_type red   = ( (m_data & RED_MASK)   * rawRed(static_cast<raw_type>(correction))   / CHANNEL_MAX ) & RED_MASK;
-    raw_type green = ( (m_data & GREEN_MASK) * rawGreen(static_cast<raw_type>(correction)) / CHANNEL_MAX ) & GREEN_MASK;
-    raw_type blue  = ( (m_data & BLUE_MASK)  * rawBlue(static_cast<raw_type>(correction))  / CHANNEL_MAX ) & BLUE_MASK;
-    raw_type alpha = m_data & ALPHA_MASK;
-
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" R %+08x -> %+08x") % (m_data & Color::RED_MASK) % (red);
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" G %+08x -> %+08x") % (m_data & Color::GREEN_MASK) % (green);
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" B %+08x -> %+08x") % (m_data & Color::BLUE_MASK) % (blue);
-    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(" A %+08x -> %+08x") % (m_data & Color::ALPHA_MASK) % (alpha);
-
-    return Color { alpha | red | green | blue };
-}
-
-
-
-Color &Color::operator*=(const Correction correction) 
-{
-    *this = *this * correction;
-    return *this;
+    return (boost::format("%+02X%+02X%+02X%+02X") % static_cast<int>(red()) % static_cast<int>(green()) % static_cast<int>(blue()) % static_cast<int>(alpha())).str();
 }
 
 

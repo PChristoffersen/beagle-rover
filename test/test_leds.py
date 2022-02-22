@@ -45,43 +45,109 @@ class LedTestCase(unittest.TestCase):
         self.robot = None
 
 
+    def test_output(self):
+        led_control = self.led_control
+        output = led_control.output
+
+        with output:
+            # Check colors
+            for c in output:
+                self.assertIsInstance(c, str, "Unexpected color type")
+            # Check values tuple
+            values = output.values()
+            self.assertIsInstance(values, tuple, "Unexpected value type")
+            for v in values:
+                self.assertIsInstance(v, str, "Unexpected color type")
+
+        segments = output.segments
+        self.assertEqual(len(segments), 2, "Unexpected number of segments")
+
+        # Iterate through segments
+        for segment in segments:
+            self.assertIsInstance(segment.name, str, "Unexpected name type")
+            with output:
+                # Check colors
+                for c in segment:
+                    self.assertIsInstance(c, str, "Unexpected color type")
+                # Check values tuple
+                values = segment.values()
+                self.assertIsInstance(values, tuple, "Unexpected value type")
+                for v in values:
+                    self.assertIsInstance(v, str, "Unexpected color type")
+
+
+        # Iterate through segments by index
+        for idx in range(len(segments)):
+            segment = segments[idx]
+            self.assertIsInstance(segment.name, str, "Unexpected name type")
+            with output:
+                # Check colors
+                for c in segment:
+                    self.assertIsInstance(c, str, "Unexpected color type")
+                # Check values tuple
+                values = segment.values()
+                self.assertIsInstance(values, tuple, "Unexpected value type")
+                for v in values:
+                    self.assertIsInstance(v, str, "Unexpected color type")
+
+
+        # Iterate through segments by name
+        self.assertGreater(len(segments.keys()), 0, "No segment list keys")
+        for name in segments.keys():
+            segment = segments[name]
+            self.assertIsInstance(name, str, "Unexpected name type")
+            self.assertIsInstance(segment.name, str, "Unexpected name type")
+            self.assertEqual(segment.name, name, "Expected name to match")
+            with output:
+                # Check colors
+                for c in segment:
+                    self.assertIsInstance(c, str, "Unexpected color type")
+                # Check values tuple
+                values = segment.values()
+                self.assertIsInstance(values, tuple, "Unexpected value type")
+                for v in values:
+                    self.assertIsInstance(v, str, "Unexpected color type")
+
+
+
     def test_background(self):
         led_control = self.led_control
 
-        col = "#804020"
+        col = "804020"
         led_control.background = col
         wait_for_show(self.sub, 1.0)
-        pixels = led_control.pixels
-        self.assertEqual(pixels[0], col, f"Unexpected pixel color {pixels[0]} != {col}")
+        leds = led_control.output.values()
+        self.assertEqual(leds[0], col, f"Unexpected pixel color {leds[0]} != {col}")
 
-        col = "#FFFFFF80"
-        expect = "#FFFFFF"
+        col = "FFFFFF80"
+        expect = "FFFFFF"
         led_control.background = col
         wait_for_show(self.sub, 1.0)
-        pixels = led_control.pixels
-        self.assertEqual(pixels[0], expect, f"Unexpected pixel color {pixels[0]} != {expect}")
+        leds = led_control.output.values()
+        self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
+
 
 
     def test_brightness(self):
         led_control = self.led_control
 
-        led_control.background = "#FFFFFF"
+        led_control.background = "FFFFFF"
         wait_for_show(self.sub, 1.0)
-        pixels = led_control.pixels
-        expect = "#FFFFFF"
-        self.assertEqual(pixels[0], expect, f"Unexpected pixel color {pixels[0]} != {expect}")
+        leds = led_control.output.values()
+        expect = "FFFFFF"
+        self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
 
         led_control.brightness = 0.5
         wait_for_show(self.sub, 1.0)
-        pixels = led_control.pixels
-        expect = "#808080"
-        self.assertEqual(pixels[0], expect, f"Unexpected pixel color {pixels[0]} != {expect}")
+        leds = led_control.output.values()
+        expect = "808080"
+        self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
 
         led_control.brightness = 0.0
         wait_for_show(self.sub, 1.0)
-        pixels = led_control.pixels
-        expect = "#000000"
-        self.assertEqual(pixels[0], expect, f"Unexpected pixel color {pixels[0]} != {expect}")
+        leds = led_control.output.values()
+        expect = "000000"
+        self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
 
 
 
@@ -111,7 +177,7 @@ class LedTestCase(unittest.TestCase):
 
 
     def test_layer(self):
-        self.led_control.background = "#202020"
+        self.led_control.background = "202020"
 
         self.led_control.animation = LEDAnimation.NONE
         self.led_control.indicators = LEDIndicator.NONE
@@ -125,57 +191,58 @@ class LedTestCase(unittest.TestCase):
 
         with layer:
             layer.visible = True
-            layer.fill("#FF0000")
+            layer.fill("FF0000")
             layer.update()
 
         wait_for_show(self.sub, 3.0)
-        for idx, pix in enumerate(self.led_control.pixels):
-            self.assertEqual(pix, "#FF0000", f"Unexpected colors on pixel {idx}")
+        for idx, pix in enumerate(self.led_control.output.values()):
+            self.assertEqual(pix, "FF0000", f"Unexpected colors on pixel {idx}")
 
 
         with layer:
-            layer.fill("#00000000")
-            layer[0] = "#FF0000"
-            layer[1] = "#00FF00"
-            layer[2] = "#0000FF"
+            layer.fill("00000000")
+            layer[0] = "FF0000"
+            layer[1] = "00FF00"
+            layer[2] = "0000FF"
             layer.update()
 
         wait_for_show(self.sub, 3.0)
-        pixels = self.led_control.pixels
-        self.assertEqual(pixels[0], "#FF0000", "Unexpected colors on pixel 0")
-        self.assertEqual(pixels[1], "#00FF00", "Unexpected colors on pixel 1")
-        self.assertEqual(pixels[2], "#0000FF", "Unexpected colors on pixel 2")
-        self.assertEqual(pixels[3], "#202020", "Unexpected colors on pixel 3")
+        leds = self.led_control.output.values()
+        self.assertEqual(leds[0], "FF0000", "Unexpected colors on pixel 0")
+        self.assertEqual(leds[1], "00FF00", "Unexpected colors on pixel 1")
+        self.assertEqual(leds[2], "0000FF", "Unexpected colors on pixel 2")
+        self.assertEqual(leds[3], "202020", "Unexpected colors on pixel 3")
 
         with layer:
-            layer.fill("#00000000")
-            layer[0] = "#FF0000FF"
-            layer[1] = "#00FF00FF"
-            layer[2] = "#0000FFFF"
+            layer.fill("00000000")
+            layer[0] = "FF0000FF"
+            layer[1] = "00FF00FF"
+            layer[2] = "0000FFFF"
             layer.update()
 
         wait_for_show(self.sub, 3.0)
-        pixels = self.led_control.pixels
-        self.assertEqual(pixels[0], "#FF0000", "Unexpected colors on pixel 0")
-        self.assertEqual(pixels[1], "#00FF00", "Unexpected colors on pixel 1")
-        self.assertEqual(pixels[2], "#0000FF", "Unexpected colors on pixel 2")
-        self.assertEqual(pixels[3], "#202020", "Unexpected colors on pixel 3")
+        leds = self.led_control.output.values()
+        self.assertEqual(leds[0], "FF0000", "Unexpected colors on pixel 0")
+        self.assertEqual(leds[1], "00FF00", "Unexpected colors on pixel 1")
+        self.assertEqual(leds[2], "0000FF", "Unexpected colors on pixel 2")
+        self.assertEqual(leds[3], "202020", "Unexpected colors on pixel 3")
 
         with layer:
-            layer.fill("#00000000")
-            layer.segments[0][0] = "#00FF00"
-            layer.segments[0][1] = "#0000FF"
-            layer.segments[0][2] = "#00FFFF"
-            layer.segments[1][0] = "#00FF00"
-            layer.segments[1][1] = "#0000FF"
-            layer.segments[1][2] = "#00FFFF"
+            layer.fill("00000000")
+            layer.segments[0][0] = "00FF00"
+            layer.segments[0][1] = "0000FF"
+            layer.segments[0][2] = "00FFFF"
+            layer.segments[1][0] = "00FF00"
+            layer.segments[1][1] = "0000FF"
+            layer.segments[1][2] = "00FFFF"
             layer.update()
 
         wait_for_show(self.sub, 3.0)
 
         self.led_control.detach_layer(layer)
 
-        self.led_control.background = "#000000"
+        self.led_control.background = "000000"
+
 
 
     def test_invalid_colors(self):
@@ -185,19 +252,20 @@ class LedTestCase(unittest.TestCase):
             led_control.background = ""
         
         with self.assertRaises(ValueError):
-            led_control.background = "#"
-        
-        with self.assertRaises(ValueError):
             led_control.background = "Bad"
         
         with self.assertRaises(ValueError):
-            led_control.background = "#000"
+            led_control.background = "000"
         
         with self.assertRaises(ValueError):
-            led_control.background = "#00000"
+            led_control.background = "00000"
         
         with self.assertRaises(ValueError):
-            led_control.background = "#0000000"
+            led_control.background = "0000000"
+
+
+
+
 
 
 

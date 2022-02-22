@@ -1,4 +1,4 @@
-#include "rainbow.h"
+#include "rainbowwave.h"
 
 #include <chrono>
 #include <boost/log/trivial.hpp>
@@ -9,12 +9,11 @@ using namespace std::literals;
 namespace Robot::LED {
 
 
-static constexpr auto LAYER_NAME { "rainbow" };
+static constexpr auto LAYER_NAME { "rainbowwave" };
 static constexpr auto TIMER_INTERVAL { 20ms };
 
 
-
-Rainbow::Rainbow(const std::shared_ptr<Robot::Context> &context) :
+RainbowWave::RainbowWave(const std::shared_ptr<Robot::Context> &context) :
     AbstractAnimation { context, TIMER_INTERVAL },
     m_hue { 0 }
 {
@@ -22,7 +21,7 @@ Rainbow::Rainbow(const std::shared_ptr<Robot::Context> &context) :
 }
 
 
-void Rainbow::init(const std::shared_ptr<Control> &control)
+void RainbowWave::init(const std::shared_ptr<Control> &control)
 {
     AbstractAnimation::init(control);
 
@@ -34,14 +33,13 @@ void Rainbow::init(const std::shared_ptr<Control> &control)
 }
 
 
-void Rainbow::update() 
+void RainbowWave::update() 
 {
     const ColorLayer::guard lock(m_layer->mutex());
     auto &layer { *m_layer };
 
-    Color color { Color::HSV { m_hue, 255, 255 } };
     for (auto i=0u; i<m_layer->size(); i++) {
-        layer[i] = color;
+        layer[i] = Color::HSV { static_cast<std::uint8_t>(m_hue + i * 8), 255, 255 };
     }
     m_hue++;
 

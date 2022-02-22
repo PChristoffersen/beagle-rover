@@ -21,6 +21,12 @@ using Robot::LED::Color, Robot::LED::ColorArray, Robot::LED::RawColorArray;
 
 BOOST_AUTO_TEST_SUITE(led_suite)
 
+BOOST_AUTO_TEST_CASE(TestColorSize)
+{
+    BOOST_LOG_TRIVIAL(info) << "Color size: " << sizeof(Color);
+    BOOST_CHECK_EQUAL(sizeof(Color), 4);
+}
+
 BOOST_AUTO_TEST_CASE(TestColor)
 {
     BOOST_CHECK_EQUAL(Color(0xFF, 0xFF, 0xFF), Color::WHITE);
@@ -109,18 +115,18 @@ BOOST_AUTO_TEST_CASE(TestUnsignedIntColor)
 
 BOOST_AUTO_TEST_CASE(TestStringColorInvalid)
 {
-    BOOST_CHECK_EQUAL(Color("#000000"),   Color(0x00, 0x00, 0x00));
-    BOOST_CHECK_EQUAL(Color("#00000000"), Color(0x00, 0x00, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color("000000"),   Color(0x00, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color("00000000"), Color(0x00, 0x00, 0x00, 0x00));
 
-    BOOST_CHECK_EQUAL(Color("#FFFFFF"),   Color(0xFF, 0xFF, 0xFF));
-    BOOST_CHECK_EQUAL(Color("#FFFFFFFF"), Color(0xFF, 0xFF, 0xFF, 0xFF));
-    BOOST_CHECK_EQUAL(Color("#ffffff"),   Color(0xFF, 0xFF, 0xFF));
-    BOOST_CHECK_EQUAL(Color("#ffffffff"), Color(0xFF, 0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color("FFFFFF"),   Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color("FFFFFFFF"), Color(0xFF, 0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color("ffffff"),   Color(0xFF, 0xFF, 0xFF));
+    BOOST_CHECK_EQUAL(Color("ffffffff"), Color(0xFF, 0xFF, 0xFF, 0xFF));
 
-    BOOST_CHECK_EQUAL(Color("#800000"), Color(0x80, 0x00, 0x00));
-    BOOST_CHECK_EQUAL(Color("#008000"), Color(0x00, 0x80, 0x00));
-    BOOST_CHECK_EQUAL(Color("#000080"), Color(0x00, 0x00, 0x80));
-    BOOST_CHECK_EQUAL(Color("#00000080"), Color(0x00, 0x00, 0x00, 0x80));
+    BOOST_CHECK_EQUAL(Color("800000"), Color(0x80, 0x00, 0x00));
+    BOOST_CHECK_EQUAL(Color("008000"), Color(0x00, 0x80, 0x00));
+    BOOST_CHECK_EQUAL(Color("000080"), Color(0x00, 0x00, 0x80));
+    BOOST_CHECK_EQUAL(Color("00000080"), Color(0x00, 0x00, 0x00, 0x80));
 }
 
 
@@ -130,13 +136,13 @@ BOOST_AUTO_TEST_CASE(TestColorToString)
     Color col;
 
     col = Color { 0x80, 0x40, 0x20 };
-    expect = "#804020";
+    expect = "804020";
     BOOST_CHECK_EQUAL(col.toString(), expect);
     BOOST_CHECK_EQUAL(col.toStringRGB(), expect);
     BOOST_CHECK_EQUAL(static_cast<std::string>(col), expect);
 
     col = Color { 0x80, 0x40, 0x20, 0x10 };
-    expect = "#80402010";
+    expect = "80402010";
     BOOST_CHECK_EQUAL(col.toString(), expect);
     BOOST_CHECK_EQUAL(col.toStringRGBA(), expect);
     BOOST_CHECK_EQUAL(static_cast<std::string>(col), expect);
@@ -156,12 +162,12 @@ BOOST_AUTO_TEST_CASE(TestStringColor)
     BOOST_CHECK_THROW(Color("123456789"), std::invalid_argument);
 
     // Not enough values (length should be 7 or 9)
-    BOOST_CHECK_THROW(Color("#00000"), std::invalid_argument);
-    BOOST_CHECK_THROW(Color("#0000000"), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("00000"), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("0000000"), std::invalid_argument);
 
     // Should be hex
-    BOOST_CHECK_THROW(Color("#000g00"), std::invalid_argument);
-    BOOST_CHECK_THROW(Color("#0000000x"), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("000g00"), std::invalid_argument);
+    BOOST_CHECK_THROW(Color("0000000x"), std::invalid_argument);
 }
 
 
@@ -250,7 +256,7 @@ BOOST_AUTO_TEST_CASE(TestBrightness)
 
 }
 
-BOOST_AUTO_TEST_CASE(TestCorrect)
+BOOST_AUTO_TEST_CASE(TestColorCorrection)
 {
     auto test_sources = std::initializer_list { Color::WHITE, Color::BLACK, Color::RED, Color::GREEN, Color::BLUE };
     auto test_correct = std::initializer_list { 
@@ -332,6 +338,98 @@ BOOST_AUTO_TEST_CASE(TestColorArray)
     }
 
 }
+
+
+BOOST_AUTO_TEST_CASE(TestSegments)
+{
+    Robot::LED::ColorArray<4> array { 
+        { "seg0", 0, 2 },
+        { "seg1", 2, 2 },
+        { "seg2", 1, 2 },
+    };
+
+    array[0] = Color::RED;
+    array[1] = Color::GREEN;
+    array[2] = Color::BLUE;
+    array[3] = Color::YELLOW;
+
+    BOOST_CHECK_EQUAL(array[0], Color::RED);
+    BOOST_CHECK_EQUAL(array[1], Color::GREEN);
+    BOOST_CHECK_EQUAL(array[2], Color::BLUE);
+    BOOST_CHECK_EQUAL(array[3], Color::YELLOW);
+
+    BOOST_CHECK_EQUAL(array.segments()[0][0], Color::RED);
+    BOOST_CHECK_EQUAL(array.segments()[0][1], Color::GREEN);
+
+    BOOST_CHECK_EQUAL(array.segments()[1][0], Color::BLUE);
+    BOOST_CHECK_EQUAL(array.segments()[1][1], Color::YELLOW);
+
+    BOOST_CHECK_EQUAL(array.segments()[2][0], Color::GREEN);
+    BOOST_CHECK_EQUAL(array.segments()[2][1], Color::BLUE);
+
+    array.fill(Color::BLACK);
+    array.segments()[2].fill(Color::WHITE);
+
+    BOOST_CHECK_EQUAL(array[0], Color::BLACK);
+    BOOST_CHECK_EQUAL(array[1], Color::WHITE);
+    BOOST_CHECK_EQUAL(array[2], Color::WHITE);
+    BOOST_CHECK_EQUAL(array[3], Color::BLACK);
+
+}
+
+BOOST_AUTO_TEST_CASE(TestSegmentsFind)
+{
+    using array_type = Robot::LED::ColorArray<4>;
+
+    array_type array { 
+        { "seg0", 0, 2 },
+        { "seg1", 2, 2 },
+        { "seg2", 1, 2 },
+    };
+
+    BOOST_CHECK_EQUAL(array.segments()[0], array_type::Segment("seg0", 0, 2));
+    BOOST_CHECK_EQUAL(array.segment("seg0"), array_type::Segment("seg0", 0, 2));
+    BOOST_CHECK_EQUAL(array.segments().find("seg0"), array_type::Segment("seg0", 0, 2));
+
+    BOOST_CHECK_EQUAL(array.segments()[1], array_type::Segment("seg1", 2, 2));
+    BOOST_CHECK_EQUAL(array.segment("seg1"), array_type::Segment("seg1", 2, 2));
+    BOOST_CHECK_EQUAL(array.segments().find("seg1"), array_type::Segment("seg1", 2, 2));
+
+    BOOST_CHECK_EQUAL(array.segments()[2], array_type::Segment("seg2", 1, 2));
+    BOOST_CHECK_EQUAL(array.segment("seg2"), array_type::Segment("seg2", 1, 2));
+    BOOST_CHECK_EQUAL(array.segments().find("seg2"), array_type::Segment("seg2", 1, 2));
+
+
+    BOOST_CHECK_THROW(array.segments().find("none"), std::out_of_range);
+}
+
+BOOST_AUTO_TEST_CASE(TestSegmentsFindConst)
+{
+    using array_type = Robot::LED::ColorArray<4>;
+
+    const array_type array { 
+        { "seg0", 0, 2 },
+        { "seg1", 2, 2 },
+        { "seg2", 1, 2 },
+    };
+
+    BOOST_CHECK_EQUAL(array.segments()[0], array_type::Segment("seg0", 0, 2));
+    BOOST_CHECK_EQUAL(array.segment("seg0"), array_type::Segment("seg0", 0, 2));
+    BOOST_CHECK_EQUAL(array.segments().find("seg0"), array_type::Segment("seg0", 0, 2));
+
+    BOOST_CHECK_EQUAL(array.segments()[1], array_type::Segment("seg1", 2, 2));
+    BOOST_CHECK_EQUAL(array.segment("seg1"), array_type::Segment("seg1", 2, 2));
+    BOOST_CHECK_EQUAL(array.segments().find("seg1"), array_type::Segment("seg1", 2, 2));
+
+    BOOST_CHECK_EQUAL(array.segments()[2], array_type::Segment("seg2", 1, 2));
+    BOOST_CHECK_EQUAL(array.segment("seg2"), array_type::Segment("seg2", 1, 2));
+    BOOST_CHECK_EQUAL(array.segments().find("seg2"), array_type::Segment("seg2", 1, 2));
+
+
+    BOOST_CHECK_THROW(array.segments().find("none"), std::out_of_range);
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

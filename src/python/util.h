@@ -41,6 +41,13 @@ namespace Robot::Python {
     }
 
 
+    /**
+     * @brief Converts python tuple to c++ container. 
+     * 
+     * @tparam T Container type
+     * @param t Python tuple to convert
+     * @return T The container
+     */
     template<typename T>
     T tuple_to_container(const boost::python::tuple &t) 
     {

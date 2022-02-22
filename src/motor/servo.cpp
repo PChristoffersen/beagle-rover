@@ -36,14 +36,12 @@ Servo::Servo(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_trim { SERVO_TRIM[index] }, 
     m_event { TELEMETRY_SOURCE_NAME + "[" + std::to_string(index) + "]", index }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 
 Servo::~Servo() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 

@@ -45,6 +45,9 @@ namespace Robot::LED {
             static const Color RED;
             static const Color GREEN;
             static const Color BLUE;
+            static const Color YELLOW;
+            static const Color CYAN;
+            static const Color MAGENTA;
 
             constexpr Color() : Color(TRANSPARENT) {}
             constexpr Color(const Color &color) : m_data{ color.m_data } {}
@@ -62,6 +65,10 @@ namespace Robot::LED {
             Color(const std::string &value);
 
             constexpr Color opaque() const { return Color { m_data | ALPHA_MASK }; }
+            constexpr Color withAlpha(channel_type alpha) const { return Color { (m_data & ~ALPHA_MASK)| (alpha<<ALPHA_SHIFT) }; }
+            constexpr Color withAlpha(int alpha) const { return Color { (m_data & ~ALPHA_MASK)| (to_channel(alpha)<<ALPHA_SHIFT) }; }
+            constexpr Color withAlpha(unsigned int alpha) const { return Color { (m_data & ~ALPHA_MASK)| (to_channel(alpha)<<ALPHA_SHIFT) }; }
+            constexpr Color withAlpha(float alpha) const { return Color { (m_data & ~ALPHA_MASK)| (to_channel(alpha)<<ALPHA_SHIFT) }; }
 
             static constexpr inline brightness_type clampBrightness(brightness_type b) { return std::clamp(b, BRIGHTNESS_MIN, BRIGHTNESS_MAX); }
 
@@ -97,14 +104,39 @@ namespace Robot::LED {
             constexpr bool operator!=(const Color &other) const { return m_data!=other.m_data; }
             constexpr bool operator!=(const raw_type other) const { return m_data!=other; }
 
-            Color &operator*=(const brightness_type brightness);
-            Color  operator*(const brightness_type brightness) const;
-            Color &operator*=(const Correction other);
-            Color  operator*(const Correction other) const;
             Color &operator|(const Color &other) { m_data |= other.m_data; return *this; }
             Color  operator|(const Color &other) const { return Color { m_data|other.m_data }; }
             Color &operator&(const Color &other) { m_data &= other.m_data; return *this; }
             Color  operator&(const Color &other) const { return Color { m_data&other.m_data }; }
+
+            Color &operator*=(const Correction correction) { *this = *this * correction; return *this; }
+            Color &operator*=(const brightness_type brightness) { *this = *this * brightness; return *this; }
+
+            constexpr Color operator*(const brightness_type brightness) const
+            {
+                raw_type scale = std::clamp<raw_type>(brightness*static_cast<brightness_type>(CHANNEL_MAX)+0.5f, CHANNEL_MIN, CHANNEL_MAX);
+                if (scale == CHANNEL_MAX) {
+                    return *this;
+                }
+                if (scale == CHANNEL_MIN) {
+                    return Color { m_data & ALPHA_MASK };
+                }
+                raw_type red   = ( (m_data & RED_MASK)   * scale / CHANNEL_MAX ) & RED_MASK;
+                raw_type green = ( (m_data & GREEN_MASK) * scale / CHANNEL_MAX ) & GREEN_MASK;
+                raw_type blue  = ( (m_data & BLUE_MASK)  * scale / CHANNEL_MAX ) & BLUE_MASK;
+                raw_type alpha = m_data & ALPHA_MASK;
+                return Color { alpha | red | green | blue };
+            }
+
+            constexpr Color operator*(const Correction correction) const 
+            {
+                raw_type red   = ( (m_data & RED_MASK)   * rawRed(static_cast<raw_type>(correction))   / CHANNEL_MAX ) & RED_MASK;
+                raw_type green = ( (m_data & GREEN_MASK) * rawGreen(static_cast<raw_type>(correction)) / CHANNEL_MAX ) & GREEN_MASK;
+                raw_type blue  = ( (m_data & BLUE_MASK)  * rawBlue(static_cast<raw_type>(correction))  / CHANNEL_MAX ) & BLUE_MASK;
+                raw_type alpha = m_data & ALPHA_MASK;
+                return Color { alpha | red | green | blue };
+            }
+
 
             /**
              * @brief Blend this color with color
@@ -200,12 +232,15 @@ namespace Robot::LED {
 
 
 
-    constexpr Color Color::TRANSPARENT { CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MIN };
+    constexpr Color Color::TRANSPARENT { 0.0f, 0.0f, 0.0f, 0.0f };
     constexpr Color Color::BLACK       { CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MIN };
     constexpr Color Color::WHITE       { CHANNEL_MAX, CHANNEL_MAX, CHANNEL_MAX };
     constexpr Color Color::RED         { CHANNEL_MAX, CHANNEL_MIN, CHANNEL_MIN };
     constexpr Color Color::GREEN       { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MIN };
     constexpr Color Color::BLUE        { CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MAX };
+    constexpr Color Color::YELLOW      { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MAX };
+    constexpr Color Color::CYAN        { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MAX };
+    constexpr Color Color::MAGENTA     { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MAX };
 
 
     /**
@@ -227,75 +262,6 @@ namespace Robot::LED {
         /// uncorrected color
         UncorrectedColor = Color(0xFF, 0xFF, 0xFF).raw()
     };
-
-
-
-    /**
-     * @brief An std::array of colors
-     * 
-     * An std::array of Color with additional operators for applying brightness and color correction.
-     * 
-     * @tparam NCOLORS Number of colors in the array
-     */
-    template<std::size_t NCOLORS>
-    class ColorArray : public std::array<Color, NCOLORS> {
-        public:
-            using std::array<Color, NCOLORS>::array;
-
-            /**
-             * @brief Adjust the brightness of all colors in the array
-             * 
-             * @param brightness Brightness 0.0 - 1.0
-             */
-            ColorArray<NCOLORS> &operator*=(const Color::brightness_type brightness)
-            {
-                std::for_each(this->begin(), this->end(), [brightness](auto &dst) { dst *= brightness; });
-                return *this;
-            }
-
-            /**
-             * @brief Apply color correction to all the colors in the array
-             * 
-             * @param correction Correction to apply
-             */
-            ColorArray<NCOLORS> &operator*=(const Color::Correction correction)
-            {
-                std::for_each(this->begin(), this->end(), [correction](auto &dst) { dst *= correction; });
-                return *this;
-            }
-            /**
-             * @brief Blend all the colors from another array into this
-             * 
-             * @param other Array to blend
-             */
-            ColorArray<NCOLORS> &operator<<(const ColorArray<NCOLORS> &other)
-            {
-                std::transform(this->begin(), this->end(), other.begin(), this->begin(), [](auto &dst, const auto &src){ return dst<<src; });
-                return *this;
-            }
-    };
-
-    /**
-     * @brief An std::array of colors
-     * 
-     * @tparam NCOLORS 
-     */
-    template<std::size_t NCOLORS>
-    class RawColorArray : public std::array<Color::raw_type, NCOLORS> {
-        public:
-            using std::array<Color::raw_type, NCOLORS>::array;
-
-            /**
-             * @brief Construct a new RawColorArray from a ColorArray
-             * 
-             * @param array Source ColorArray
-             */
-            RawColorArray(const ColorArray<NCOLORS> &array)
-            {
-                std::transform(this->begin(), this->end(), array.begin(), this->begin(), [](auto &dst, const auto &src){ return (dst = src.raw()); });
-            }
-    };
-
 
 
 

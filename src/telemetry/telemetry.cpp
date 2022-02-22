@@ -30,7 +30,6 @@ Telemetry::Telemetry(const std::shared_ptr<Robot::Context> &context) :
 Telemetry::~Telemetry() 
 {
     cleanup();
-    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 

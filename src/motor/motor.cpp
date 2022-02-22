@@ -46,8 +46,6 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_pid { PID_P, PID_I, PID_D, PID_INTERVAL, PID_EMA_ALPHA },
     m_event { TELEMETRY_SOURCE_NAME + "[" + std::to_string(index) + "]", index }
 {
-    BOOST_LOG_TRIVIAL(trace) << *this << " " << __FUNCTION__;
-
     m_pid.setLimits(-1.0f, 1.0f);
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_rc_pid = RC_FILTER_INITIALIZER;
@@ -65,7 +63,6 @@ Motor::~Motor()
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_filter_free(&m_rc_pid);
     #endif
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "[" << m_index << "]";
 }
 
 
@@ -209,10 +206,10 @@ void Motor::resetOdometer()
 }
 
 
-double Motor::getOdometer() const 
+Motor::odometer_type Motor::getOdometer() const 
 {
-    double value = (m_last_enc_value - m_odometer_base);
-    return (WHEEL_CIRC_MM * value) / (GEARING * ENCODER_CPR);
+    odometer_type value = (m_last_enc_value - m_odometer_base);
+    return (value * WHEEL_CIRC_MM) / (GEARING * ENCODER_CPR);
 }
 
 

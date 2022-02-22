@@ -3,23 +3,27 @@
 
 namespace Robot::LED {
 
+static constexpr auto LAYER_NAME { "headlights" };
 static constexpr Color FRONT_COLOR { Color::WHITE };
-static constexpr Color REAR_COLOR { 0x40, 0x00, 0x00 };
+static constexpr Color REAR_COLOR { Color::RED * 0.5f };
 
 
 Headlights::Headlights(const std::shared_ptr<Robot::Context> &context) :
     AbstractAnimation { context }
 {
-
+    m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);
 }
 
 
-void Headlights::init(const std::shared_ptr<ColorLayer> &layer)
+void Headlights::init(const std::shared_ptr<Control> &control)
 {
-    auto &front { layer->segments()[0] };
-    auto &back { layer->segments()[1] };
+    AbstractAnimation::init(control);
 
-    layer->fill(Color::TRANSPARENT);
+    m_layer->fill(Color::TRANSPARENT);
+    
+    auto &front { m_layer->segments()[0] };
+    auto &back { m_layer->segments()[1] };
+
 
     // Front
     front[0] = FRONT_COLOR;
@@ -33,15 +37,9 @@ void Headlights::init(const std::shared_ptr<ColorLayer> &layer)
     //back[6] = REAR_COLOR;
     back[7] = REAR_COLOR;
 
-    layer->setVisible(true);
-    layer->update();
+    m_layer->setVisible(true);
+    m_layer->update();
 }
-
-
-void Headlights::cleanup()
-{
-}
-
 
 
 }

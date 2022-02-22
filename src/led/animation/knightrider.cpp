@@ -9,9 +9,10 @@ using namespace std::literals;
 namespace Robot::LED {
 
 
-static constexpr auto TIMER_INTERVAL { 150ms };
+static constexpr auto LAYER_NAME { "knightrider" };
+static constexpr auto TIMER_INTERVAL { 100ms };
 static constexpr Color LED_COLOR1 { 0x40, 0x00, 0x00, 0xFF };
-static constexpr Color LED_COLOR2 { 0x40, 0x00, 0x00, 0x40 };
+static constexpr Color LED_COLOR2 { 0x10, 0x00, 0x00, 0x80 };
 
 
 KnightRider::KnightRider(const std::shared_ptr<Robot::Context> &context) :
@@ -19,27 +20,22 @@ KnightRider::KnightRider(const std::shared_ptr<Robot::Context> &context) :
     m_pos { 0 },
     m_dir { 1 }
 {
-
+    m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);
 }
 
 
-void KnightRider::init(const std::shared_ptr<ColorLayer> &layer)
+void KnightRider::init(const std::shared_ptr<Control> &control)
 {
-    m_layer = layer;
-    m_timer.expires_after(TIMER_INTERVAL);
-    timerSetup();
+    AbstractAnimation::init(control);
+
     m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
-    m_layer->update();
+
+    m_timer.expires_after(TIMER_INTERVAL);
+    timerSetup();
 }
 
 
-void KnightRider::cleanup()
-{
-    m_timer.cancel();
-    m_layer->setVisible(false);
-    m_layer = nullptr;
-}
 
 
 void KnightRider::update() 

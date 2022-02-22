@@ -62,8 +62,7 @@ void export_motor()
     py::class_<MotorList, boost::noncopyable>("MotorList", py::no_init)
         .def("__getitem__", +[](const MotorList &l, uint index){
             if (index >= l.size()) {
-                PyErr_SetString(PyExc_IndexError, "Index out of range");
-                py::throw_error_already_set();
+                BOOST_THROW_EXCEPTION(std::out_of_range("Index out of range"));
             }
             return l[index].get();
         }, py::return_internal_reference<>())

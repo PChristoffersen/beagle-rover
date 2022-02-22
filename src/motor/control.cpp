@@ -27,7 +27,6 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_motor_timer { context->io() },
     m_servo_timer { context->io() }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     for (uint i=0; i<MOTOR_COUNT; i++) {
         m_motors[i] = std::make_unique<Motor>(i, m_mutex, context);
     }
@@ -37,7 +36,6 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
 Control::~Control() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
@@ -129,7 +127,8 @@ void Control::resetOdometer()
 
 double Control::getOdometer() const
 {
-    double sum = 0.0;
+    const guard lock(m_mutex);
+    Motor::odometer_type sum { 0 };
     for (auto &motor : m_motors) {
         sum += motor->getOdometer();
     }

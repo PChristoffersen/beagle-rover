@@ -17,9 +17,9 @@ namespace Robot {
             void mutex_unlock() { m_mutex.unlock(); }
             void mutex_trylock() { m_mutex.trylock(); }
 
-            MUTEX &mutex() { return m_mutex; }
+            MUTEX &mutex() const { return m_mutex; }
         protected:
-            MUTEX m_mutex;
+            mutable MUTEX m_mutex;
     };
 
     template<typename MUTEX>    

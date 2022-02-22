@@ -41,13 +41,10 @@ RobotControlBattery::RobotControlBattery(const std::shared_ptr<Robot::Context> &
     m_jack_voltage { 0.0 }
 
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
-
 }
 
 RobotControlBattery::~RobotControlBattery() 
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     cleanup();
 
     rc_filter_free(&m_pack_filter);
@@ -57,7 +54,6 @@ RobotControlBattery::~RobotControlBattery()
 
 void RobotControlBattery::init(const std::shared_ptr<Telemetry> &telemetry) 
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     AbstractSource::init(telemetry);
 
     m_initialized = true;
@@ -89,7 +85,6 @@ void RobotControlBattery::init(const std::shared_ptr<Telemetry> &telemetry)
 
 void RobotControlBattery::cleanup() 
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     if (!m_initialized)
         return;
     m_initialized = false;

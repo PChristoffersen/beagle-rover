@@ -5,6 +5,7 @@
 
 #include <robotcontext.h>
 #include "abstractanimation.h"
+#include "../colorlayer.h"
 
 namespace Robot::LED {
 
@@ -12,12 +13,10 @@ namespace Robot::LED {
         public:
             Police(const std::shared_ptr<Robot::Context> &context);
 
-            void init(const std::shared_ptr<ColorLayer> &layer) override;
-            void cleanup() override;
+            void init(const std::shared_ptr<Control> &control) override;
 
         private:
             bool m_state;
-            std::shared_ptr<ColorLayer> m_layer;
 
             void update() override;
     };

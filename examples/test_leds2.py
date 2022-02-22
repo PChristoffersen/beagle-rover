@@ -17,63 +17,11 @@ def main():
     robot = Robot()
     robot.init()
 
-    sleep(1)
-
     led_control = robot.led_control
 
-    layer = LEDColorLayer(15)
-    led_control.attach_layer(layer)
-    layer.visible = True
+    led_control.animation = LEDAnimation.RUNNING_LIGHT
 
-    log.info("Update1")
-    with layer:
-        front = layer.segments[0]
-        back = layer.segments[1]
-        front[0] = "#FF0000"
-        front[1] = "#00FF00"
-        front[2] = "#0000FF"
-        back[0] = "#FF000080"
-        back[1] = "#00FF0080"
-        back[2] = "#0000FF80"
-        layer.show()
-
-    sleep(1)
-
-    log.info("Update>>")
-    layer.show()
-    layer.show()
-    layer.show()
-    sleep(0.01)
-    layer.show()
-    sleep(0.01)
-    layer.show()
-    layer.show()
-    layer.show()
-    layer.show()
-    log.info("Update<<")
-    sleep(1)
-
-    log.info("Update2")
-    with layer:
-        front = layer.segments[0]
-        back = layer.segments[1]
-        front[0] = "#FF0000"
-        front[1] = "#00FF00"
-        front[2] = "#0000FF"
-        back[0] = "#FF000080"
-        back[1] = "#00FF0080"
-        back[2] = "#0000FF80"
-        layer.show()
-    sleep(1)
-
-
-    led_control.detach_layer(layer)
-    sleep(1)
-
-
-    layer = None
-    log.info("<Layer Layer")
-
+    sleep(10)
 
     led_control = None
 

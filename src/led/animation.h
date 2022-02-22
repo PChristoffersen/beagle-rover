@@ -2,7 +2,7 @@
 #define _ROBOT_LED_ANIMATION_H_
 
 #include <memory>
-#include "colorlayer.h"
+#include "types.h"
 
 namespace Robot::LED {
 
@@ -11,7 +11,7 @@ namespace Robot::LED {
             Animation() {}
             virtual ~Animation() = default;
 
-            virtual void init(const std::shared_ptr<ColorLayer> &layer) = 0;
+            virtual void init(const std::shared_ptr<Control> &control) = 0;
             virtual void cleanup() = 0;
         
     };

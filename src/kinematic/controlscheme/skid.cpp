@@ -32,8 +32,6 @@ void ControlSchemeSkid::init()
 {
     const guard lock(m_mutex);
 
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
-
     resetMotors();
 
     const auto &motors = m_motor_control->getMotors();
@@ -59,7 +57,6 @@ void ControlSchemeSkid::cleanup()
     for (auto &motor : motors) {
         motor->setDuty(0.0);
     }
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 

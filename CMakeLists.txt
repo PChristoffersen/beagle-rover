@@ -65,7 +65,9 @@ set(SRC
     src/led/animation/police.cpp
     src/led/animation/ambulance.cpp
     src/led/animation/knightrider.cpp
+    src/led/animation/runninglight.cpp
     src/led/animation/rainbow.cpp
+    src/led/animation/rainbowwave.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/events.cpp
     src/telemetry/sources/robotcontrolbattery.cpp
@@ -185,4 +187,5 @@ add_test(NAME Subscription COMMAND test_subscription)
 
 # Python tests
 add_test(NAME PythonSubscription COMMAND test_subscription.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+add_test(NAME PythonColors COMMAND test_color.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 add_test(NAME PythonLEDS COMMAND test_leds.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)

@@ -35,7 +35,6 @@ Kinematic::Kinematic(const std::shared_ptr<Robot::Context> &context) :
 Kinematic::~Kinematic() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
@@ -62,8 +61,6 @@ void Kinematic::cleanup()
         return;
     m_initialized = false;
 
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
-
     m_axis_connection.disconnect();
 
     if (m_control_scheme) {
@@ -79,7 +76,7 @@ void Kinematic::setDriveMode(DriveMode mode)
 {
     const guard lock(m_mutex);
     if (mode!=m_drive_mode || !m_control_scheme) {
-        BOOST_LOG_TRIVIAL(info) << "Kinematic scheme: " << (int)mode;
+        //BOOST_LOG_TRIVIAL(info) << "Kinematic scheme: " << (int)mode;
 
         m_control_scheme->cleanup();
         m_control_scheme = nullptr;

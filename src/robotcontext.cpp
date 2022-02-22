@@ -28,7 +28,7 @@ Context::Context() :
     m_led_power_enabled { false },
     m_rc_power_enabled { false }
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     rc_model();
@@ -38,7 +38,7 @@ Context::Context() :
 
 Context::~Context() 
 {
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
+    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     stop();
     cleanup();
 }
@@ -48,6 +48,7 @@ Context::~Context()
 
 void Context::init() 
 {
+    BOOST_LOG_TRIVIAL(info) << "Init context";
     const guard lock(m_mutex);
 
     initPlatform();
@@ -72,6 +73,8 @@ void Context::cleanup()
     m_io.stop();
 
     sig_thread.disconnect_all_slots();
+    
+    BOOST_LOG_TRIVIAL(info) << "Cleanup context";
 }
 
 

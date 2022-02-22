@@ -6,8 +6,11 @@
 #include <boost/python.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python/tuple.hpp>
+#include <boost/python/implicit.hpp>
+#include <boost/python/exception_translator.hpp>
 
 #include "util.h"
+#include "errors.h"
 #include <common/notifysubscription.h>
 #include <robotdebug.h>
 
@@ -15,8 +18,16 @@ namespace py = boost::python;
 
 namespace Robot::Python {
 
+static void translate(const attribute_error &e) 
+{
+    PyErr_SetString(PyExc_AttributeError, e.what());
+}
+
+
 void export_misc() 
 {
+    py::register_exception_translator<attribute_error>(&translate);
+
     py::class_<WithNotifyDefault, boost::noncopyable>("Subscribable", py::no_init)
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(WithNotifyDefault::NOTIFY_DEFAULT))
         .def("subscribe", +[](WithNotifyDefault &self) { return notify_subscribe(self); })

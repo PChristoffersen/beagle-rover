@@ -12,8 +12,10 @@
 #include "animation/construction.h"
 #include "animation/police.h"
 #include "animation/ambulance.h"
+#include "animation/runninglight.h"
 #include "animation/knightrider.h"
 #include "animation/rainbow.h"
+#include "animation/rainbowwave.h"
 
 using namespace std::literals;
 
@@ -28,6 +30,7 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_brightness { Color::BRIGHTNESS_DEFAULT },
     m_color_correction { Color::Correction::TypicalLEDStrip },
     m_background { Color::BLACK },
+    m_pixels { DEFAULT_SEGMENTS },
     m_animation_mode { AnimationMode::NONE },
     m_indicator_mode { IndicatorMode::NONE }
 {
@@ -38,7 +41,6 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
 Control::~Control() 
 {
     cleanup();
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
 
 
@@ -57,14 +59,8 @@ void Control::init()
     });
     m_update_signal->async_wait();
 
-    m_indicator_layer = std::make_shared<ColorLayer>("Indicators", LAYER_DEPTH_INDICATORS, true);
-    m_animation_layer = std::make_shared<ColorLayer>("Animation", LAYER_DEPTH_ANIMATION, true);
-    
-    attachLayer(m_indicator_layer);
-    attachLayer(m_animation_layer);
-
     m_indicator = std::make_shared<Indicator>(m_context);
-    m_indicator->init(m_indicator_layer);
+    m_indicator->init(shared_from_this());
 
 }
 
@@ -80,6 +76,11 @@ void Control::cleanup()
     m_update_signal->cancel();
     m_update_signal = nullptr;
 
+    for (auto &l : m_layers) {
+        l->clearSignal();
+    }
+    m_layers.clear();
+
     if (m_animation) {
         m_animation->cleanup();
         m_animation = nullptr;
@@ -89,12 +90,6 @@ void Control::cleanup()
         m_indicator = nullptr;
     }
 
-    for (auto &l : m_layers) {
-        l->clearSignal();
-    }
-    m_layers.clear();
-    m_indicator_layer = nullptr;
-    m_animation_layer = nullptr;
 
     std::this_thread::sleep_for(50us);
     clear(Color::BLACK);
@@ -122,7 +117,7 @@ void Control::clear(const Color &color)
 void Control::showPixels()
 {
     // Apply color correction and brightness
-    ColorArray pixels { m_pixels };
+    color_array_type pixels { m_pixels };
     pixels *= m_color_correction;
 
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
@@ -191,7 +186,7 @@ void Control::setBackground(Color color)
 void Control::setAnimation(AnimationMode mode) 
 {
     const guard lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << "Animation: " << (int)mode;
+    //BOOST_LOG_TRIVIAL(trace) << "Animation: " << (int)mode;
     if (mode!=m_animation_mode) {
         if (m_animation) {
             m_animation->cleanup();
@@ -213,11 +208,17 @@ void Control::setAnimation(AnimationMode mode)
         case AnimationMode::AMBULANCE:
             m_animation = std::make_shared<Ambulance>(m_context);
             break;
+        case AnimationMode::RUNNING_LIGHT:
+            m_animation = std::make_shared<RunningLight>(m_context);
+            break;
         case AnimationMode::KNIGHT_RIDER:
             m_animation = std::make_shared<KnightRider>(m_context);
             break;
         case AnimationMode::RAINBOW:
             m_animation = std::make_shared<Rainbow>(m_context);
+            break;
+        case AnimationMode::RAINBOW_WAVE:
+            m_animation = std::make_shared<RainbowWave>(m_context);
             break;
         }
 
@@ -225,14 +226,8 @@ void Control::setAnimation(AnimationMode mode)
         m_animation_mode = mode;
 
         if (m_animation) {
-            m_animation->init(m_animation_layer);
+            m_animation->init(shared_from_this());
         }
-        else {
-            m_animation_layer->fill(Color::TRANSPARENT);
-            m_animation_layer->setVisible(false);
-            update();
-        }
-
         notify(NOTIFY_DEFAULT);
     }
 }
@@ -241,7 +236,7 @@ void Control::setAnimation(AnimationMode mode)
 void Control::setIndicators(IndicatorMode mode) 
 {
     const guard lock(m_mutex);
-    BOOST_LOG_TRIVIAL(info) << "Indicator: " << (int)mode;
+    //BOOST_LOG_TRIVIAL(trace) << "Indicator: " << (int)mode;
     if (mode!=m_indicator_mode) {
         switch (mode) {
         case IndicatorMode::NONE:
@@ -274,17 +269,15 @@ void Control::update()
 }
 
 
-Control::LayerList Control::layers()
+Control::LayerList Control::layers(bool filter_internal) const
 {
     const guard lock(m_mutex);
+    if (filter_internal) {
+        LayerList res;
+        std::copy_if(m_layers.begin(), m_layers.end(), std::back_inserter(res), [](auto &l) { return !l->internal(); });
+        return res;
+    }
     return m_layers;
-}
-
-
-ColorLayer::array_type Control::pixels()
-{
-    const guard lock(m_mutex);
-    return m_pixels;
 }
 
 
@@ -296,12 +289,14 @@ void Control::updatePixels()
     
     //BOOST_LOG_TRIVIAL(trace) << "Control::Show()";
 
-    m_pixels.fill(m_background);
-
-    for (const auto &layer : m_layers) {
-        m_pixels << *layer;
+    {
+        const color_array_type::guard pix_lock(m_pixels.mutex());
+        m_pixels.fill(m_background);
+        for (const auto &layer : m_layers) {
+            m_pixels << *layer;
+        }
+        m_pixels *= m_brightness;
     }
-    m_pixels *= m_brightness;
 
     showPixels();
     notify(NOTIFY_UPDATE);
@@ -342,11 +337,11 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
 
 void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer) 
 {
-    BOOST_LOG_TRIVIAL(trace) << "Detach Layer " << *layer;
     const guard lock(m_mutex);
     bool updated = false;
     m_layers.remove_if([layer, &updated](const auto &l) {
         if (l==layer) {
+            BOOST_LOG_TRIVIAL(trace) << "Detach Layer " << *layer;
             updated |= true;
             layer->clearSignal();
             return true;

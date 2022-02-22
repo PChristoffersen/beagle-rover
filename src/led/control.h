@@ -15,34 +15,16 @@
 #include <common/withnotify.h>
 #include <common/asyncsignal.h>
 #include <robottypes.h>
-#include "color.h"
-#include "colorlayer.h"
+#include "types.h"
 
 namespace Robot::LED {
-
-    enum class AnimationMode {
-        NONE,
-        HEADLIGHTS,
-        CONSTRUCTION,
-        POLICE,
-        AMBULANCE,
-        KNIGHT_RIDER,
-        RAINBOW,
-    };
-
-    enum class IndicatorMode {
-        NONE,
-        LEFT,
-        RIGHT,
-        HAZARD
-    };
-
-
 
     class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
             static constexpr notify_type NOTIFY_UPDATE { 1 };
-       
+
+            using color_array_type = ColorArray<PIXEL_COUNT>;
+            using raw_color_array_type = RawColorArray<PIXEL_COUNT>;
             using LayerList = std::list<std::shared_ptr<ColorLayer>>;
 
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
@@ -76,9 +58,9 @@ namespace Robot::LED {
 
             void attachLayer(const std::shared_ptr<ColorLayer> &layer);
             void detachLayer(const std::shared_ptr<ColorLayer> &layer);
+            LayerList layers(bool filter_internal=false) const;
 
-            LayerList layers();
-            ColorLayer::array_type pixels();
+            const color_array_type &output() const { return m_pixels; };
 
         private:
             std::shared_ptr<::Robot::Context> m_context;
@@ -90,15 +72,13 @@ namespace Robot::LED {
             Color::Correction m_color_correction;
             Color m_background;
 
-            ColorLayer::array_type m_pixels;
+            color_array_type m_pixels;
             LayerList m_layers;
 
             AnimationMode m_animation_mode;
-            std::shared_ptr<class ColorLayer> m_animation_layer;
             std::shared_ptr<class Animation> m_animation;
 
             IndicatorMode m_indicator_mode;
-            std::shared_ptr<class ColorLayer> m_indicator_layer;
             std::shared_ptr<class Indicator> m_indicator;
 
             void clear(const Color &color);

@@ -60,7 +60,6 @@ Receiver::Receiver(const std::shared_ptr<Robot::Context> &context) :
 Receiver::~Receiver() 
 {
     cleanup();
-    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
     #ifdef HAVE_ROBOTCONTROL
     rc_filter_free(&m_rssi_filter);
     #endif

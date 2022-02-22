@@ -1,7 +1,6 @@
-#ifndef _ROBOT_LED_ANIMATION_RAINBOW_H_
-#define _ROBOT_LED_ANIMATION_RAINBOW_H_
+#ifndef _ROBOT_LED_ANIMATION_RUNNINGLIGHT_H_
+#define _ROBOT_LED_ANIMATION_RUNNINGLIGHT_H_
 
-#include <cstdint>
 #include <memory>
 
 #include <robotcontext.h>
@@ -10,14 +9,15 @@
 
 namespace Robot::LED {
 
-    class Rainbow : public AbstractAnimation<Rainbow> {
+    class RunningLight : public AbstractAnimation<RunningLight> {
         public:
-            Rainbow(const std::shared_ptr<Robot::Context> &context);
+            RunningLight(const std::shared_ptr<Robot::Context> &context);
 
             void init(const std::shared_ptr<Control> &control) override;
 
         private:
             std::uint8_t m_hue;
+            uint m_pos;
 
             void update() override;
     };

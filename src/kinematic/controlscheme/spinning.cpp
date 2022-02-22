@@ -23,8 +23,6 @@ ControlSchemeSpinning::~ControlSchemeSpinning()
 
 void ControlSchemeSpinning::init() 
 {
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
-
     // Set all motor angles to 0 degrees and throttle to 0
     for (auto &motor : m_motor_control->getMotors()) {
         motor->setDuty(0.0);
@@ -40,19 +38,16 @@ void ControlSchemeSpinning::init()
 void ControlSchemeSpinning::cleanup() 
 {
     const guard lock(m_mutex);
-
     if (!m_initialized) 
         return;
     m_initialized = false;
-
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 
 void ControlSchemeSpinning::steer(float steering, float throttle, float aux_x, float aux_y)
 {
     const guard lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "  throttle="<<throttle;
+
     const auto &motors = m_motor_control->getMotors();
     for (auto &motor : motors) {
         motor->setDuty(throttle);

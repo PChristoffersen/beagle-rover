@@ -27,6 +27,9 @@ namespace Robot::Motor {
             using mutex_type = std::recursive_mutex;
             using guard = std::lock_guard<mutex_type>;
 
+            using odometer_type = std::int32_t;
+            using encoder_type = std::int32_t;
+
             enum class Mode {
                 DUTY,
                 RPM,
@@ -57,8 +60,8 @@ namespace Robot::Motor {
             float getRPM() const { return m_rpm; }
 
             void resetOdometer();
-            double getOdometer() const;
-            int32_t getEncoderValue() const { return m_last_enc_value-m_odometer_base; }
+            odometer_type getOdometer() const;
+            encoder_type getEncoderValue() const { return m_last_enc_value-m_odometer_base; }
 
             class Servo *servo() const { return m_servo.get(); }
 
@@ -79,10 +82,10 @@ namespace Robot::Motor {
             bool m_enabled;
             Mode m_mode;
 
-            std::int32_t m_last_enc_value;
+            encoder_type m_last_enc_value;
             clock_type::time_point m_last_update;
 
-            std::int32_t m_odometer_base;
+            encoder_type m_odometer_base;
 
             float m_duty;
             float m_duty_set;

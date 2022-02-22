@@ -27,8 +27,6 @@ void ControlSchemePassthrough::init()
 {
     const guard lock(m_mutex);
 
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
-    
     #if 0
     m_rc_connection = m_rc_receiver->sigData.connect(
         [self_ptr=weak_from_this()] (const auto flags, const auto rssi, const auto &channels) {
@@ -50,8 +48,6 @@ void ControlSchemePassthrough::cleanup()
     if (!m_initialized) 
         return;
     m_initialized = false;
-
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 
     for (auto &motor : m_motor_control->getMotors()) {
         motor->setEnabled(false);

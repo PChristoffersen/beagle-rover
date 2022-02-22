@@ -5,6 +5,7 @@
 
 #include <robotcontext.h>
 #include "abstractanimation.h"
+#include "../colorlayer.h"
 
 namespace Robot::LED {
 
@@ -12,11 +13,9 @@ namespace Robot::LED {
         public:
             KnightRider(const std::shared_ptr<Robot::Context> &context);
 
-            void init(const std::shared_ptr<ColorLayer> &layer) override;
-            void cleanup() override;
+            void init(const std::shared_ptr<Control> &control) override;
 
         private:
-            std::shared_ptr<ColorLayer> m_layer;
             uint m_pos;
             int m_dir;
 

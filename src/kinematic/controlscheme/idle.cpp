@@ -32,7 +32,6 @@ ControlSchemeIdle::~ControlSchemeIdle()
 void ControlSchemeIdle::init() 
 {
     const guard lock(m_mutex);
-    BOOST_LOG_TRIVIAL(trace) << this << ": " << __FUNCTION__;
 
     // Set all motor angles to 0 degrees and throttle to 0
     for (auto &motor : m_motor_control->getMotors()) {

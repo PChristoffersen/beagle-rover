@@ -3,11 +3,13 @@
 #include <chrono>
 #include <boost/log/trivial.hpp>
 
+#include "../control.h"
+
 using namespace std::literals;
 
 namespace Robot::LED {
 
-
+static constexpr auto LAYER_NAME { "ambulance" };
 static constexpr auto TIMER_INTERVAL { 250ms };
 static constexpr Color LED_COLOR { 0x00, 0x00, 0xFF };
 
@@ -16,27 +18,21 @@ Ambulance::Ambulance(const std::shared_ptr<Robot::Context> &context) :
     AbstractAnimation { context, TIMER_INTERVAL },
     m_state { false }
 {
-
+    m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);
 }
 
 
-void Ambulance::init(const std::shared_ptr<ColorLayer> &layer)
+void Ambulance::init(const std::shared_ptr<Control> &control)
 {
-    m_layer = layer;
-    m_timer.expires_after(TIMER_INTERVAL);
-    timerSetup();
+    AbstractAnimation::init(control);
+
     m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
-    m_layer->update();
+
+    m_timer.expires_after(TIMER_INTERVAL);
+    timerSetup();
 }
 
-
-void Ambulance::cleanup()
-{
-    m_timer.cancel();
-    m_layer->setVisible(false);
-    m_layer = nullptr;
-}
 
 
 void Ambulance::update() 

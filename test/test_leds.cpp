@@ -9,6 +9,7 @@
 #include <robotlogging.h>
 #include <common/notifysubscription.h>
 #include <led/control.h>
+#include <led/colorlayer.h>
 
 using namespace std::literals;
 
@@ -19,13 +20,19 @@ struct animation_entry {
     uint num_shows;
 };
 
+
+/**
+ * @brief List of test animations, and how many show events to wait for during test
+ */
 static constexpr std::initializer_list ALL_ANIMATIONS { 
     animation_entry { Robot::LED::AnimationMode::HEADLIGHTS, 0 },
     animation_entry { Robot::LED::AnimationMode::CONSTRUCTION, 3 },
     animation_entry { Robot::LED::AnimationMode::POLICE, 3 },
     animation_entry { Robot::LED::AnimationMode::AMBULANCE, 3 },
+    animation_entry { Robot::LED::AnimationMode::RUNNING_LIGHT, Robot::LED::PIXEL_COUNT + 1 },
     animation_entry { Robot::LED::AnimationMode::KNIGHT_RIDER, 9 },
     animation_entry { Robot::LED::AnimationMode::RAINBOW, 5 },
+    animation_entry { Robot::LED::AnimationMode::RAINBOW_WAVE, 5 },
 };
 
 
@@ -55,7 +62,90 @@ static void wait_for_show(std::shared_ptr<Robot::NotifySubscription<Robot::LED::
 BOOST_AUTO_TEST_SUITE(led_suite)
 
 
-BOOST_AUTO_TEST_CASE(TestAnimation)
+BOOST_AUTO_TEST_CASE(Background)
+{
+    using Robot::LED::Color;
+
+    auto context { std::make_shared<Robot::Context>() };
+    auto control { std::make_shared<Robot::LED::Control>(context) };
+
+    context->init();
+    control->init();
+    context->start();
+
+    {
+        auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
+        wait_for_show(sub, 250ms, false);
+        sub->clear();
+
+
+        control->setBackground(Color::RED);
+        wait_for_show(sub, 2s);
+        for (const auto &col: control->output()) {
+            BOOST_CHECK_EQUAL(col, Color::RED);
+        }
+
+        control->setBackground(Color::GREEN);
+        wait_for_show(sub, 2s);
+        for (const auto &col: control->output()) {
+            BOOST_CHECK_EQUAL(col, Color::GREEN);
+        }
+
+    }
+
+    context->stop();
+    control->cleanup();
+    context->cleanup();
+}
+
+
+
+BOOST_AUTO_TEST_CASE(Brightness)
+{
+    using Robot::LED::Color;
+
+    auto context { std::make_shared<Robot::Context>() };
+    auto control { std::make_shared<Robot::LED::Control>(context) };
+
+    context->init();
+    control->init();
+    context->start();
+
+    {
+        auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
+        
+        control->setBackground(Color::WHITE);
+        wait_for_show(sub, 2s);
+        sub->clear();
+
+        for (const auto &col: control->output()) {
+            BOOST_CHECK_EQUAL(col, Color::WHITE);
+        }
+
+        control->setBrightness(0.5f);
+        wait_for_show(sub, 2s);
+        for (const auto &col: control->output()) {
+            BOOST_CHECK_EQUAL(col, Color::WHITE * 0.5f);
+        }
+
+        control->setBrightness(0.0f);
+        wait_for_show(sub, 2s);
+        for (const auto &col: control->output()) {
+            BOOST_CHECK_EQUAL(col, Color::BLACK);
+        }
+
+
+    }
+
+    context->stop();
+    control->cleanup();
+    context->cleanup();
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(Animation)
 {
     auto context { std::make_shared<Robot::Context>() };
     auto control { std::make_shared<Robot::LED::Control>(context) };
@@ -67,9 +157,6 @@ BOOST_AUTO_TEST_CASE(TestAnimation)
     {
         auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
         
-        // Make sure we don't have any animations running
-        control->setAnimation(Robot::LED::AnimationMode::NONE);
-        control->setIndicators(Robot::LED::IndicatorMode::NONE);
         wait_for_show(sub, 250ms, false);
         sub->clear();
 
@@ -91,7 +178,7 @@ BOOST_AUTO_TEST_CASE(TestAnimation)
     context->cleanup();
 }
 
-BOOST_AUTO_TEST_CASE(TestIndicators)
+BOOST_AUTO_TEST_CASE(Indicators)
 {
     auto context { std::make_shared<Robot::Context>() };
     auto control { std::make_shared<Robot::LED::Control>(context) };
@@ -103,9 +190,6 @@ BOOST_AUTO_TEST_CASE(TestIndicators)
     {
         auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
         
-        // Make sure we don't have any animations running
-        control->setAnimation(Robot::LED::AnimationMode::NONE);
-        control->setIndicators(Robot::LED::IndicatorMode::NONE);
         wait_for_show(sub, 250ms, false);
         sub->clear();
         
@@ -126,7 +210,7 @@ BOOST_AUTO_TEST_CASE(TestIndicators)
 }
 
 
-BOOST_AUTO_TEST_CASE(TestRapid)
+BOOST_AUTO_TEST_CASE(Rapid)
 {
     auto context { std::make_shared<Robot::Context>() };
     auto control { std::make_shared<Robot::LED::Control>(context) };
@@ -153,7 +237,7 @@ BOOST_AUTO_TEST_CASE(TestRapid)
 
 
 
-BOOST_AUTO_TEST_CASE(TestLayers)
+BOOST_AUTO_TEST_CASE(Layers)
 {
     using namespace Robot::LED;
 
@@ -187,7 +271,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             layer1->mutex_unlock();
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color::RED);
             BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
             BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
@@ -199,7 +283,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             layer1->setVisible(false);
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color::BLACK);
             BOOST_CHECK_EQUAL(pixels[1], Color::BLACK);
             BOOST_CHECK_EQUAL(pixels[2], Color::BLACK);
@@ -211,7 +295,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             layer1->setVisible(true);
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color::RED);
             BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
             BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
@@ -224,7 +308,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             control->setBackground(bgcolor);
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color::RED);
             BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
             BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
@@ -236,7 +320,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             control->setBackground(Color::BLACK);
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color::RED);
             BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
             BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
@@ -249,7 +333,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             control->attachLayer(layer2);
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color::RED);
             BOOST_CHECK_EQUAL(pixels[1], Color::GREEN);
             BOOST_CHECK_EQUAL(pixels[2], Color::BLUE);
@@ -266,7 +350,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             layer2->mutex_unlock();
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color::BLUE);
             BOOST_CHECK_EQUAL(pixels[1], Color::RED);
             BOOST_CHECK_EQUAL(pixels[2], Color::GREEN);
@@ -288,7 +372,7 @@ BOOST_AUTO_TEST_CASE(TestLayers)
             layer1->mutex_unlock();
             wait_for_show(sub, 500ms);
 
-            auto pixels { control->pixels() };
+            auto &pixels { control->output() };
             BOOST_CHECK_EQUAL(pixels[0], Color(0x80, 0x80, 0x00, 0xFF));
             BOOST_CHECK_EQUAL(pixels[1], Color(0x00, 0x80, 0x80, 0xFF));
             BOOST_CHECK_EQUAL(pixels[2], Color(0x80, 0x00, 0x80, 0xFF));
@@ -304,6 +388,82 @@ BOOST_AUTO_TEST_CASE(TestLayers)
     control->cleanup();
     context->cleanup();
 }
+
+
+BOOST_AUTO_TEST_CASE(LayerDepths)
+{
+    using Robot::LED::ColorLayer;
+    auto context { std::make_shared<Robot::Context>() };
+    auto control { std::make_shared<Robot::LED::Control>(context) };
+
+    context->init();
+    control->init();
+    context->start();
+
+    {
+        auto layer0 { std::make_shared<ColorLayer>("Layer0", 0) };
+        auto layer1 { std::make_shared<ColorLayer>("Layer1", 10) };
+        auto layer2 { std::make_shared<ColorLayer>("Layer2", 20) };
+        auto layer3 { std::make_shared<ColorLayer>("Layer3", 30) };
+
+        control->attachLayer(layer1);
+        { // Verify that the layer list contains 1 elements 
+            auto layers { control->layers(true) };
+            BOOST_CHECK_EQUAL(layers.size(), 1);
+            BOOST_CHECK_EQUAL(layers.front(), layer1);
+        }
+
+        control->attachLayer(layer0);
+        { // Verify that the layer list contains 2 elements and that layer0 is first
+            auto layers { control->layers(true) };
+            BOOST_CHECK_EQUAL(layers.size(), 2);
+            BOOST_CHECK_EQUAL(layers.front(), layer0);
+            BOOST_CHECK_EQUAL(layers.back(), layer1);
+        }
+
+        control->attachLayer(layer3);
+        { // Verify that the layer list contains 3 elements and that layer3 is last
+            auto layers { control->layers(true) };
+            BOOST_CHECK_EQUAL(layers.size(), 3);
+            BOOST_CHECK_EQUAL(layers.front(), layer0);
+            BOOST_CHECK_EQUAL(layers.back(), layer3);
+        }
+
+        control->attachLayer(layer2);
+        { // Verify that the layer list contains 4 elements, and verify the order
+            auto layers { control->layers(true) };
+            BOOST_CHECK_EQUAL(layers.size(), 4);
+            auto ith { layers.begin() };
+            BOOST_CHECK_EQUAL(*(ith++), layer0);
+            BOOST_CHECK_EQUAL(*(ith++), layer1);
+            BOOST_CHECK_EQUAL(*(ith++), layer2);
+            BOOST_CHECK_EQUAL(*(ith++), layer3);
+        }
+
+        // Detach all 
+        control->detachLayer(layer1);
+        BOOST_CHECK_EQUAL(control->layers(true).size(), 3);
+        control->detachLayer(layer0);
+        BOOST_CHECK_EQUAL(control->layers(true).size(), 2);
+        control->detachLayer(layer3);
+        BOOST_CHECK_EQUAL(control->layers(true).size(), 1);
+        control->detachLayer(layer2);
+        BOOST_CHECK_EQUAL(control->layers(true).size(), 0);
+
+        // Validate that double detach does not do bad things
+        control->detachLayer(layer0);
+        control->detachLayer(layer1);
+        control->detachLayer(layer2);
+        control->detachLayer(layer3);
+
+    }
+
+    context->stop();
+    control->cleanup();
+    context->cleanup();
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -8,6 +8,7 @@ using namespace std::literals;
 namespace Robot::LED {
 
 
+static constexpr auto LAYER_NAME { "construction" };
 static constexpr auto TIMER_INTERVAL { 250ms };
 static constexpr Color LED_COLOR { 0xEE, 0xBE, 0x00 };
 
@@ -15,26 +16,19 @@ Construction::Construction(const std::shared_ptr<Robot::Context> &context) :
     AbstractAnimation { context, TIMER_INTERVAL },
     m_state { false }
 {
-
+    m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);
 }
 
 
-void Construction::init(const std::shared_ptr<ColorLayer> &layer)
+void Construction::init(const std::shared_ptr<Control> &control)
 {
-    m_layer = layer;
-    m_timer.expires_after(TIMER_INTERVAL);
-    timerSetup();
+    AbstractAnimation::init(control);
+
     m_layer->fill(Color::TRANSPARENT);
     m_layer->setVisible(true);
-    m_layer->update();
-}
 
-
-void Construction::cleanup()
-{
-    m_timer.cancel();
-    m_layer->setVisible(false);
-    m_layer = nullptr;
+    m_timer.expires_after(TIMER_INTERVAL);
+    timerSetup();
 }
 
 

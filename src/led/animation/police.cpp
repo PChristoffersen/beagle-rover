@@ -9,6 +9,7 @@ using namespace std::literals;
 namespace Robot::LED {
 
 
+static constexpr auto LAYER_NAME { "police" };
 static constexpr auto TIMER_INTERVAL { 300ms };
 static constexpr Color LED_COLOR1 { 0xFF, 0x00, 0x00 };
 static constexpr Color LED_COLOR2 { 0x00, 0x00, 0xFF };
@@ -18,26 +19,21 @@ Police::Police(const std::shared_ptr<Robot::Context> &context) :
     AbstractAnimation { context, TIMER_INTERVAL },
     m_state { false }
 {
-
+    m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);
 }
 
 
-void Police::init(const std::shared_ptr<ColorLayer> &layer)
+void Police::init(const std::shared_ptr<Control> &control)
 {
-    m_layer = layer;
+    AbstractAnimation::init(control);
+
+    m_layer->fill(Color::TRANSPARENT);
+    m_layer->setVisible(true);
+
     m_timer.expires_after(TIMER_INTERVAL);
     timerSetup();
-    m_layer->setVisible(true);
-    m_layer->update();
 }
 
-
-void Police::cleanup()
-{
-    m_timer.cancel();
-    m_layer->setVisible(false);
-    m_layer = nullptr;
-}
 
 
 void Police::update() 

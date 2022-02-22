@@ -9,14 +9,11 @@
 namespace Robot::LED {
 
 ColorLayer::ColorLayer(const std::string &name, uint depth, bool internal) :
+    array_type { DEFAULT_SEGMENTS },
     m_name { name },
     m_depth { depth },
     m_internal { internal },
-    m_visible { false },
-    m_segments {
-        Segment { this, "front", 0, PIXEL_COUNT/2 },
-        Segment { this, "back", PIXEL_COUNT/2, PIXEL_COUNT/2 }, 
-    }
+    m_visible { false }
 {
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
@@ -33,7 +30,7 @@ void ColorLayer::setVisible(bool visible)
     const guard lock(m_mutex);
     if (m_visible!=visible) {
         m_visible = visible;
-        update();
+        sendSignal();
     }
 }
 
@@ -41,6 +38,14 @@ void ColorLayer::setVisible(bool visible)
 void ColorLayer::update()
 {
     const guard lock(m_mutex);
+    if (m_visible) {
+        sendSignal();
+    }
+}
+
+
+void ColorLayer::sendSignal() const
+{
     if (m_show_sig) {
         (*m_show_sig)();
     }
@@ -63,7 +68,7 @@ void ColorLayer::clearSignal()
 
 ColorLayer::array_type &operator<<(ColorLayer::array_type &dst, ColorLayer &layer) {
     const ColorLayer::guard lock(layer.mutex());
-    //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " <<  layer=" << layer.depth();
+    //BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " <<  layer=" << layer.depth();
     if (layer.visible()) {
         std::transform(dst.begin(), dst.end(), layer.begin(), dst.begin(), [](auto &&dst, auto &&src){ return dst<<src; });
     }

@@ -105,8 +105,6 @@ void ControlSchemeBalancing::init()
 {
     const guard lock(m_mutex);
 
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
-
     initMotors();
     initFilters();
 
@@ -239,8 +237,6 @@ void ControlSchemeBalancing::cleanup()
     rc_filter_free(&m_D1);
     rc_filter_free(&m_D2);
     rc_filter_free(&m_D3);
-
-    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__;
 }
 
 

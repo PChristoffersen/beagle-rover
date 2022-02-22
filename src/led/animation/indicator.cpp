@@ -8,6 +8,7 @@ using namespace std::literals;
 namespace Robot::LED {
 
 
+static constexpr auto LAYER_NAME { "indicators" };
 static constexpr auto TIMER_INTERVAL { 500ms };
 static constexpr Color INDICATOR_COLOR { 0xEE, 0xBE, 0x00 };
 
@@ -16,24 +17,16 @@ Indicator::Indicator(const std::shared_ptr<Robot::Context> &context) :
     m_state { false },
     m_timer_active { false }
 {
+    m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_INDICATORS, true);
 }
 
 
-void Indicator::init(const std::shared_ptr<ColorLayer> &layer)
+void Indicator::init(const std::shared_ptr<Control> &control)
 {
-    m_layer = layer;
-    m_layer->setVisible(false);
-    m_layer->fill(Color::TRANSPARENT);
+    AbstractAnimation::init(control);
 }
 
 
-void Indicator::cleanup()
-{
-    m_timer.cancel();
-    m_timer_active = false;
-    m_layer->setVisible(false);
-    m_layer = nullptr;
-}
 
 
 void Indicator::none()
