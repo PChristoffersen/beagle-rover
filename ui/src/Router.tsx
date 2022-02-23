@@ -9,7 +9,7 @@ import LEDS from './pages/LEDS';
 import Telemetry from './pages/Telemetry';
 import FullscreenLayout from './layouts/fullscreen';
 import Test from './pages/Test';
-import Swagger from './pages/Swagger';
+import RestAPI from './pages/RestAPI';
 
 
 interface PageDefinition {
@@ -20,10 +20,11 @@ interface PageDefinition {
 
 export const pages = [
     { id: "main",       name: 'Main',       to: '/' },
-    { id: "controls",    name: 'Controls',  to: '/controls' },
+    { id: "controls",   name: 'Controls',  to: '/controls' },
     { id: "telemetry",  name: 'Telemetry',  to: '/telemetry' },
     { id: "leds",       name: 'LEDS',       to: '/leds' },
     { id: "motors",     name: 'Motors',     to: '/motors' },
+    { id: "rest",       name: 'API',     to: '/rest' },
 ] as PageDefinition[];
 
 
@@ -39,16 +40,16 @@ export default function Router() {
                     { path: 'leds', element: <LEDS /> },
                     { path: 'telemetry', element: <Telemetry /> },
                     { path: 'motors', element: <Motors /> },
+                    { path: 'rest', element: <RestAPI /> },
                     { element: <Home />, index: true },
                 ]
             },
             { 
-                path: '/fullscreen', 
+                path: '/', 
                 element: <FullscreenLayout />,
                 
                 children: [
-                    { path: 'swagger', element: <Swagger /> },
-                    { element: <Test />, index: true },
+                    { path: 'fullscreen', element: <Test /> },
                 ]
             },
         ])

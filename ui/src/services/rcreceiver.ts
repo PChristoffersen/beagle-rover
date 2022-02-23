@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { io } from 'socket.io-client';
 
 import { robotApi, socketPrefix } from './robot';
-import { RecursivePartial } from './util';
+import { handleUpdateSubscription, RecursivePartial } from './util';
 
 
 export interface RCReceiver {
@@ -22,34 +22,7 @@ const rcreceiverApi = robotApi.injectEndpoints({
             providesTags: (result, error, id) => [ 'RCReceiver' ],
 
             async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                const sock = io(socketPrefix+"/rcreceiver")
-                const watchName = "update"
-
-                try {
-                    sock.on("connect", () => {
-                        sock.emit("add_watch", watchName, (answer: RecursivePartial<RCReceiver>) => {
-                            updateCachedData((draft) => {
-                                _.merge(draft, answer)
-                            })
-                        })
-                    })
-
-                    // wait for the initial query to resolve before proceeding
-                    await cacheDataLoaded
-
-                    sock.on(watchName, (data) => {
-                        updateCachedData((draft) => {
-                            _.merge(draft, data)
-                        })
-                    })
-                } catch {
-                    // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
-                    // in which case `cacheDataLoaded` will throw
-                }
-   
-                await cacheEntryRemoved
-
-                sock.disconnect()
+                await handleUpdateSubscription("/rcreceiver", "update", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
             }
         }),
 

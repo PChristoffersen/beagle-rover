@@ -5,55 +5,162 @@ info:
   title: Robot REST API
 
 servers:
-  - url: http://localhost:5000/api
+  - url: /api
 
 tags:
-  - name: LEDS
-    description: Control lights
+  - name: Input
+    description: Input control
+  - name: Kinematic
+    description: Kinematic control
   - name: Motors
     description: Direct motor control
+  - name: RC Receiver
+    description: Remote control receiver
+  - name: LEDS
+    description: Control lights
 
 paths:
-  /leds:
+
+
+  /input:
     get:
-      summary: Get LED controller properties
-      operationId: leds_get
+      summary: Get properties
+      description: The global Input controller properties
+      operationId: input_get
       tags:
-        - LEDS
+        - Input
       responses:
         '200':
-          description: LED controller properties
+          description: Input controller properties
           content:
             application/json:    
               schema:
-                $ref: "#/components/schemas/LEDControl"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/InputControl"
     put:
-      summary: Set LED controller properties
-      operationId: leds_set
+      summary: Set properties
+      description: The global Input controller properties
+      operationId: input_set
       tags:
-        - LEDS
+        - Input
       requestBody:
           content:
             application/json:    
               schema:
-                $ref: "#/components/schemas/LEDControl"
+                $ref: "#/components/schemas/InputControl"
       responses:
         '200':
-          description: LED controller properties
+          description: Input controller properties
           content:
             application/json:    
               schema:
-                $ref: "#/components/schemas/LEDControl"
+                $ref: "#/components/schemas/InputControl"
+
+
+  /input/steer:
+    get:
+      summary: Get steering state
+      description: The current state of the WEB input steering
+      operationId: input_get_state
+      tags:
+        - Input
+      responses:
+        '200':
+          description: Input controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputState"
+    put:
+      summary: Set steering state
+      description: Set the current state of the WEB input steering
+      operationId: input_set_state
+      tags:
+        - Input
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputState"
+      responses:
+        '200':
+          description: Input controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputState"
+
+  /kinematic:
+    get:
+      summary: Get properties
+      description: The kinematic controller properties
+      operationId: kinematic_get
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Kinematic controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/KinematicControl"
+    put:
+      summary: Set properties
+      description: The kinematic controller properties
+      operationId: kinematic_set
+      tags:
+        - Kinematic
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/KinematicControl"
+      responses:
+        '200':
+          description: Kinematic controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/KinematicControl"
+
+  /kinematic/drive-modes:
+    get:
+      summary: List drive modes
+      description: List available drive modes
+      operationId: kinematic_list_drive_modes
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Available drive modes
+          content:
+            application/json:    
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KinematicDriveMode"
+
+  /kinematic/orientations:
+    get:
+      summary: List orientations
+      description: List available orientations
+      operationId: kinematic_list_orientations
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Available orientations
+          content:
+            application/json:    
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KinematicOrientation"
+
 
   /motors:
     get:
-      summary: Get all motors
+      summary: List motors
+      description: List all motors
       operationId: motors_list
       tags:
         - Motors
@@ -74,6 +181,13 @@ paths:
       operationId: motors_get
       tags:
         - Motors
+      parameters:
+        - name: id
+          in: path
+          description: Id of the motor
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Motor properties
@@ -87,6 +201,13 @@ paths:
       operationId: motors_set
       tags:
         - Motors
+      parameters:
+        - name: id
+          in: path
+          description: Id of the motor
+          required: true
+          schema:
+            type: integer
       requestBody:
           content:
             application/json:    
@@ -102,48 +223,238 @@ paths:
 
 
 
+  /rcreceiver:
+    get:
+      summary: Get properties
+      description: The remote receiver properties
+      operationId: rc_get
+      tags:
+        - RC Receiver
+      responses:
+        '200':
+          description: Receiver properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCReceiver"
+    put:
+      summary: Set properties
+      description: The remote receiver properties
+      operationId: rc_set
+      tags:
+        - RC Receiver
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCReceiver"
+      responses:
+        '200':
+          description: The remote receiver properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCReceiver"
+
+
+  /leds:
+    get:
+      summary: Get properties
+      description: The global LED controller properties
+      operationId: leds_get
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: LED controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+    put:
+      summary: Set properties
+      description: The global LED controller properties
+      operationId: leds_set
+      tags:
+        - LEDS
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+      responses:
+        '200':
+          description: LED controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+
+  /leds/animations:
+    get:
+      summary: List animations
+      description: List available animations
+      operationId: leds_list_animations
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: LED Animations
+          content:
+            application/json:    
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LEDAnimation"
+
+  /leds/indicators:
+    get:
+      summary: List indicators
+      description: List available indicators
+      operationId: leds_list_indicators
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: LED Indicators
+          content:
+            application/json:    
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LEDIndicators"
+
+  /leds/output:
+    get:
+      summary: Get Segment output
+      description: The colors currently being displayed on the robot LEDS grouped by segments
+      operationId: leds_get_output
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: Current led output
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDOutput"
+
+  /leds/strip-output:
+    get:
+      summary: Get Strip output
+      description: The colors currently being displayed on the robot LEDS
+      operationId: leds_get_output
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: Current led output
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LEDColor"
+                example:
+                - "FF0000"
+                - "00FF00"
+                - "0000FF"
+                - "000000"
+
+
+
 components:
   schemas:
-    LEDControl:
+
+    InputControl:
       type: object
       properties:
-        brightness:
-          type: number
-          format: float
-          minimum: 0.0
-          maximum: 1.0
-        background:
-          $ref: "#/components/schemas/LEDColor"
-        animation:
-          $ref: "#/components/schemas/LEDAnimation"
-        indicators:
-          $ref: "#/components/schemas/LEDIndicators"
+        source:
+          $ref: "#/components/schemas/InputSource"
 
-    LEDColor:
-      type: string
-      pattern: "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{8})$"
-      example: "#aa33cc"
-
-    LEDAnimation:
+    InputSource:
       type: string
       enum:
-        - NONE
-        - HEADLIGHTS
-        - CONSTRUCTION
-        - POLICE
-        - AMBULANCE
-        - KNIGHT_RIDER
-        - RAINBOW
-      default: NONE
+        - MANUAL
+        - RC
+        - WEB
+        - CONTROLLER
+      default: MANUAL
 
-    LEDIndicators:
+    InputAxis:
+      type: number
+      format: float
+      minimum: -1.0
+      maximum: 1.0
+      default: 0.0
+
+    InputState:
+      type: object
+      properties:
+        controller:
+          type: string
+          readOnly: true
+        steering:
+          $ref: "#/components/schemas/InputAxis"
+        throttle:
+          $ref: "#/components/schemas/InputAxis"
+        aux_x:
+          $ref: "#/components/schemas/InputAxis"
+        aux_y:
+          $ref: "#/components/schemas/InputAxis"
+
+
+    KinematicDriveMode:
       type: string
+      description: Mode used to translate input into robot movement
       enum:
         - NONE
-        - LEFT
-        - RIGHT
-        - HAZARD
-      default: NONE
+        - ALL
+        - FRONT
+        - REAR
+        - SKID
+        - SPINNING
+        - BALANCING
+        - PASSTHROUGH
+      default: IDLE
+
+    KinematicOrientation:
+      type: string
+      enum:
+        - NORTH
+        - SOUTH
+        - EAST
+        - WEST
+      default: NORTH
+      
+
+    KinematicControl:
+      type: object
+      properties:
+        drive_mode:
+          $ref: "#/components/schemas/KinematicDriveMode"
+        orientation:
+          $ref: "#/components/schemas/KinematicOrientation"
+
+
+    RCReceiver:
+      type: object
+      properties:
+        enabled:
+          description: Whether power to the receiver is enabled
+          type: boolean
+          default: false
+        connected:
+          description: True if the receiver has a connection to the transmitter
+          type: boolean
+          readOnly: true
+        rssi:
+          description: Signal strength
+          type: integer
+          minimum: 0
+          maximum: 100
+          readOnly: true
+
 
     Motor:
       description: Motor properties
@@ -154,18 +465,21 @@ components:
           type: integer
           readOnly: true
         enabled:
-          type: boolean
           description: Whether power to the motor is enabled
+          type: boolean
+          default: false
         duty:
+          description: Motor duty cycle
           type: number
           format: float
           minimum: -1.0
           maximum: 1.0
-          description: Motor duty cycle
+          default: 0.0
         target_rpm:
+          description: Target RPM of motor
           type: number
           format: float
-          description: Target RPM of motor
+          default: 0.0
         rpm:
           type: number
           format: float
@@ -176,8 +490,7 @@ components:
           description: Value of the encoder counter
           readOnly: true
         odometer:
-          type: number
-          format: float
+          type: integer
           description: Odometer value in mm
           readOnly: true
         servo:
@@ -209,20 +522,69 @@ components:
           description: The maximum angle of the servo
 
 
-    Error:
+    LEDControl:
       type: object
-      required:
-        - status
-        - title
       properties:
-        status:
-          type: integer
-          format: int32
-        title:
-          type: string
-        detail:
-          type: string
-        type:
-          type: string
-        instance: 
-          type: string
+        brightness:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 1.0
+        background:
+          $ref: "#/components/schemas/LEDColor"
+        animation:
+          $ref: "#/components/schemas/LEDAnimation"
+        indicators:
+          $ref: "#/components/schemas/LEDIndicators"
+
+    LEDColor:
+      type: string
+      pattern: "^([a-fA-F0-9]{6}|[a-fA-F0-9]{8})$"
+      example: "aa33cc"
+      default: "00000000"
+
+    LEDColorArray:
+      type: array
+      items:
+        $ref: "#/components/schemas/LEDColor"
+      example:
+        - "FF0000"
+        - "00FF00"
+        - "0000FF"
+        
+    LEDOutput:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/LEDColorArray"
+      example:
+        front:
+          - "FFFFFF"
+          - "000000"
+        back:
+          - "FF0000"
+          - "000000"
+
+    LEDAnimation:
+      type: string
+      enum:
+        - NONE
+        - HEADLIGHTS
+        - CONSTRUCTION
+        - POLICE
+        - AMBULANCE
+        - RUNNING_LIGHT
+        - KNIGHT_RIDER
+        - RAINBOW
+        - RAINBOW_WAVE
+      default: NONE
+
+    LEDIndicators:
+      type: string
+      enum:
+        - NONE
+        - LEFT
+        - RIGHT
+        - HAZARD
+      default: NONE
+

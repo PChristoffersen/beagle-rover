@@ -1,2 +1,4 @@
 aiohttp
 python-socketio
+orjson
+setproctitle

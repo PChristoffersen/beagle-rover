@@ -4,7 +4,7 @@ import { IndicatorMode, indicatorModes, useGetLEDSQuery, useSetLEDSMutation } fr
 
 
 export default function IndicatorModeSelect() {
-    const { data: leds, error, isLoading } = useGetLEDSQuery()
+    const { data: leds, isSuccess, isError } = useGetLEDSQuery()
     const [ update ] = useSetLEDSMutation()
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -12,8 +12,6 @@ export default function IndicatorModeSelect() {
         update({ indicators: value });
     };
 
-    const isReady = !error && !isLoading;
-    const isError = !!error
     const value = leds?.indicators || "unk";
 
     return (
@@ -25,12 +23,12 @@ export default function IndicatorModeSelect() {
                 value={value}
                 label="Indicators"
                 onChange={handleChange}
-                disabled={!isReady}
+                disabled={!isSuccess}
             >
-                { isReady && indicatorModes.map(entry => (
+                { isSuccess && indicatorModes.map(entry => (
                     <MenuItem key={entry.key} value={entry.key} disabled={entry.disabled}>{entry.name}</MenuItem>
                 ))}
-                { !isReady && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}
+                { !isSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}
             </Select>
         </FormControl>
     )

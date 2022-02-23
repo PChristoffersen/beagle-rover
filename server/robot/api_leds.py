@@ -2,20 +2,26 @@ import enum
 import logging
 import asyncio
 from dataclasses import dataclass
-from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
+from aiohttp.web import Application, RouteTableDef, Request, Response
+from bidict import frozenbidict
 from socketio import AsyncServer
 from typing import List
 
-from robotsystem import Subscription, LEDControl, LEDAnimation, LEDIndicator, LEDColorLayer, LEDSegment
+from robotsystem import LEDControl, LEDAnimation, LEDIndicator, LEDColorArray, LEDColorLayer, LEDColorSegment, LEDColorSegmentList
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch
+from .serializer import json_request, json_response
 
 logger = logging.getLogger(__name__)
 
 route = RouteTableDef()
 
 LAYER_DEPTHS = [ 5, 15 ]
+
+ANIMATION_NAMES = {
+    LEDAnimation.NONE: "None"
+}
 
 LED_PROPERTIES = frozenset([
     "brightness",
@@ -29,20 +35,22 @@ LAYER_PROPERTIES = frozenset([
 ])
 
 
-def segment2list(segment: LEDSegment) -> list:
+def segment2list(segment: LEDColorSegment) -> list:
     return [col for col in segment]
 
-# TODO Better segment mapping
+def segments2dict(segments: LEDColorSegmentList) -> dict:
+    return {
+        segment.name: segment.values() for segment in segments
+    }
+
+
 def layer2dict(layer: LEDColorLayer) -> dict:
     return {
         "name": layer.name,
         "internal": layer.internal,
         "visible": layer.visible,
         "depth": layer.depth,
-        "segments": {
-            "front": segment2list(layer.segments[0]),
-            "back": segment2list(layer.segments[1]),
-        }
+        "segments": segments2dict(layer.segments)
     }
 
 def leds2dict(led_control) -> dict:
@@ -51,7 +59,6 @@ def leds2dict(led_control) -> dict:
         "background": led_control.background,
         "animation": str(led_control.animation),
         "indicators": str(led_control.indicators),
-        "layers": [layer.name for layer in led_control.layers]
     }
     return res
 
@@ -67,7 +74,7 @@ def set_leds_from_dict(led_control, json: dict):
             setattr(led_control, key, value)
 
 
-def set_segment_from_list(segment: LEDSegment, json: list):
+def set_segment_from_list(segment: LEDColorSegment, json: list):
     for idx, color in enumerate(json):
         segment[idx] = color
 
@@ -92,9 +99,22 @@ async def put(request: Request) -> Response:
     robot = request.config_dict["robot"]
     led_control = robot.led_control
     t = await request.text()
-    json = await request.json()
+    json = await json_request(request)
     set_leds_from_dict(led_control, json)
     return json_response(leds2dict(led_control))
+
+
+@route.get("/output")
+async def index(request: Request) -> Response:
+    robot = request.config_dict["robot"]
+    output = robot.led_control.output
+    return json_response(segments2dict(output.segments))
+
+@route.get("/strip-output")
+async def index(request: Request) -> Response:
+    robot = request.config_dict["robot"]
+    output = robot.led_control.output
+    return json_response(output.values())
 
 
 @route.get("/layers")
@@ -104,17 +124,24 @@ async def layers(request: Request) -> Response:
     return json_response([layer2dict(layer) for layer in led_control.layers])
 
 
-@route.get("/layers/{index:\d+}")
+@route.get("/layers/{name}")
 async def get_layer(request: Request) -> Response:
-    index = int(request.match_info["index"])
-    layer = request.config_dict["layers"][index]
-    return json_response(layer2dict(index, layer))
+    name = str(request.match_info["name"])
+    robot = request.config_dict["robot"]
+    led_control = robot.led_control
+    layer = led_control.layers.find(name)
+    return json_response(layer2dict(layer))
 
-@route.put("/layers/{index:\d+}")
+@route.put("/layers/{name}")
 async def put_layer(request: Request) -> Response:
-    index = int(request.match_info["index"])
-    layer = request.config_dict["layers"][index]
-    json = await request.json()
+    name = str(request.match_info["name"])
+    robot = request.config_dict["robot"]
+    led_control = robot.led_control
+    layer = led_control.layers.find(name)
+
+    json = await json_request(request)
+
+
     changed = False
     with layer:
         changed = set_layer_from_dict(layer, json)
@@ -137,11 +164,11 @@ async def put_layer(request: Request) -> Response:
 
 @route.get("/animations")
 async def animations(request: Request) -> Response:
-    return json_response([ str(v) for k,v in LEDAnimation.values.items()])
+    return json_response([ str(v) for _,v in LEDAnimation.values.items() ])
 
 @route.get("/indicators")
 async def indicators(request: Request) -> Response:
-    return json_response([ str(v) for k,v in LEDIndicator.values.items()])
+    return json_response([ str(v) for _,v in LEDIndicator.values.items() ])
 
 
 
@@ -150,6 +177,29 @@ async def indicators(request: Request) -> Response:
 class LEDWatch(SubscriptionWatch):
     def data(self):
         return leds2dict(self.target)
+
+    def _target_subscribe(self):
+        if not self.sub:
+            # We only want the default notification, not the NOTIFY_UPDATE event since it triggers very fast
+            self.sub = self.target.subscribe( (LEDControl.NOTIFY_DEFAULT, ) )
+
+
+class LEDOutputWatch(SubscriptionWatch):
+    UPDATE_GRACE_PERIOD = 0.1
+
+    def data(self):
+        return segments2dict(self.target.output.segments)
+
+    def _target_subscribe(self):
+        if not self.sub:
+            # We only want the default notification, not the NOTIFY_UPDATE event since it triggers very fast
+            self.sub = self.target.subscribe( (LEDControl.NOTIFY_UPDATE, ) )
+    
+    async def emit(self, res: tuple):
+        await super().emit(res)
+        await asyncio.sleep(self.UPDATE_GRACE_PERIOD)
+
+
 
 class LEDNamespace(WatchableNamespace):
     NAME = "/leds"
@@ -161,7 +211,8 @@ class LEDNamespace(WatchableNamespace):
     async def app_started(self):
         robot = self.app["root"]["robot"]
         await self._init_watches([
-            LEDWatch(self, robot.led_control)
+            LEDWatch(self, robot.led_control),
+            LEDOutputWatch(self, robot.led_control, "update_output")
         ])
 
     async def app_cleanup(self):

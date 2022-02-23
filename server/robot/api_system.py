@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
+from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from dataclasses import dataclass
 
@@ -8,6 +8,7 @@ from robotsystem import Robot, Network, Power, PowerSource, PowerSourceBattery
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch
+from .serializer import json_request, json_response
 
 
 logger = logging.getLogger(__name__)

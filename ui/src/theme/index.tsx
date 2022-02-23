@@ -11,10 +11,10 @@ const theme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
-            main: '#556cd6',
+            main: '#2196f3',
         },
         secondary: {
-              main: '#19857b',
+              main: '#ffea00',
         },
         error: {
               main: red.A400,
@@ -26,7 +26,7 @@ export default function ThemeConfig({ children }: Props) {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
-                <CssBaseline />
+                <CssBaseline enableColorScheme />
                 {children}
             </ThemeProvider>
         </StyledEngineProvider>

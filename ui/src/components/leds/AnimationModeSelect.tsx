@@ -4,7 +4,7 @@ import { AnimationMode, animationModes, useGetLEDSQuery, useSetLEDSMutation } fr
 
 
 export default function AnimationModeSelect() {
-    const { data: leds, error, isLoading } = useGetLEDSQuery()
+    const { data: leds, isSuccess, isError } = useGetLEDSQuery()
     const [ update ] = useSetLEDSMutation()
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -12,8 +12,6 @@ export default function AnimationModeSelect() {
         update({ animation: value });
     };
 
-    const isReady = !error && !isLoading;
-    const isError = !!error
     const value = leds?.animation || "unk";
 
     return (
@@ -25,12 +23,12 @@ export default function AnimationModeSelect() {
                 value={value}
                 label="Animation"
                 onChange={handleChange}
-                disabled={!isReady}
+                disabled={!isSuccess}
             >
-                { isReady && animationModes.map(entry => (
+                { isSuccess && animationModes.map(entry => (
                     <MenuItem key={entry.key} value={entry.key} disabled={entry.disabled}>{entry.name}</MenuItem>
                 ))}
-                { !isReady && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}
+                { !isSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}
             </Select>
         </FormControl>
     )

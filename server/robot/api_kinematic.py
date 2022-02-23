@@ -1,6 +1,7 @@
+from ast import Or
 import logging
 import asyncio
-from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
+from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from dataclasses import dataclass
 
@@ -8,6 +9,7 @@ from robotsystem import Kinematic, Subscription, DriveMode, Orientation
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch
+from .serializer import json_request, json_response
 
 
 logger = logging.getLogger(__name__)
@@ -47,9 +49,18 @@ async def index(request: Request) -> Response:
 async def put(request: Request) -> Response:
     robot = request.config_dict["robot"]
     kinematic = robot.kinematic
-    json = await request.json()
+    json = await json_request(request)
     set_kinematic_from_dict(kinematic, json)
     return json_response(kinematic2dict(kinematic))
+
+
+@route.get("/drive-modes")
+async def indicators(request: Request) -> Response:
+    return json_response([ str(v) for _,v in DriveMode.values.items() ])
+
+@route.get("/orientations")
+async def indicators(request: Request) -> Response:
+    return json_response([ str(v) for _,v in Orientation.values.items() ])
 
 
 class KinematicWatch(SubscriptionWatch):

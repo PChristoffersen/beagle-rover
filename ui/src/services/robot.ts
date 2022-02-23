@@ -2,8 +2,8 @@ import { io } from 'socket.io-client';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 //export const socketPrefix = "";
-//export const socketPrefix = "http://localhost:5000";
-export const socketPrefix = "http://beaglebone-blue:5000";
+export const socketPrefix = "http://localhost:5000";
+//export const socketPrefix = "http://beaglebone-blue:5000";
 
 
 export const robotSocket = io(socketPrefix);

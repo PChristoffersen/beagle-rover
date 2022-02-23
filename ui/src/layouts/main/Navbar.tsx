@@ -94,7 +94,7 @@ export default function Navbar() {
                                 component={RouterLink}
                                 to={page.to}
                                 sx={{ my: 2, display: 'block' }}
-                                color={page.id===currentPage?.id ? "primary" : "secondary"}
+                                color={page.id===currentPage?.id ? "inherit" : "info"}
                             >
                                 {page.name}
                             </Button>

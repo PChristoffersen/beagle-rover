@@ -1,8 +1,7 @@
 import _ from 'lodash';
-import { io } from 'socket.io-client';
 
-import { robotApi, socketPrefix } from './robot';
-import { RecursivePartial } from './util';
+import { robotApi } from './robot';
+import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
 export enum AnimationMode {
     NONE = "NONE",
@@ -10,8 +9,10 @@ export enum AnimationMode {
     CONSTRUCTION = "CONSTRUCTION",
     POLICE = "POLICE",
     AMBULANCE = "AMBULANCE",
+    RUNNING_LIGHT = "RUNNING_LIGHT",
     KNIGHT_RIDER = "KNIGHT_RIDER",
     RAINBOW = "RAINBOW",
+    RAINBOW_WAVE = "RAINBOW_WAVE",
 }
 
 export const animationModes = [
@@ -20,8 +21,10 @@ export const animationModes = [
     { key: AnimationMode.CONSTRUCTION, disabled: false, name: "Construction" },
     { key: AnimationMode.POLICE,       disabled: false, name: "Police" },
     { key: AnimationMode.AMBULANCE,    disabled: false, name: "Ambulance" },
+    { key: AnimationMode.RUNNING_LIGHT, disabled: false, name: "Running Light" },
     { key: AnimationMode.KNIGHT_RIDER, disabled: false, name: "Knight Rider" },
     { key: AnimationMode.RAINBOW,      disabled: false, name: "Rainbow" },
+    { key: AnimationMode.RAINBOW_WAVE, disabled: false, name: "Rainbow Wave" },
 ]
 
 
@@ -41,14 +44,16 @@ export const indicatorModes = [
 
 export interface LEDControl {
     background: string,
+    brightness: number,
     animation: AnimationMode,
     indicators: IndicatorMode,
 }
 
-export interface ColorSegments {
-    front: Array<string>,
-    back: Array<string>
-}
+export type ColorSegment = Array<String>;
+
+export type ColorSegments = Map<String, ColorSegment>;
+
+export type LEDOutput = ColorSegments;
 
 export interface ColorLayer {
     id: number,
@@ -69,37 +74,9 @@ const ledsApi = robotApi.injectEndpoints({
             providesTags: (result, error, id) => [ 'LEDS' ],
 
             async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                const sock = io(socketPrefix+"/leds")
-                const watchName = "update"
-
-                try {
-                    sock.on("connect", () => {
-                        sock.emit("add_watch", watchName, (answer: RecursivePartial<LEDControl>) => {
-                            updateCachedData((draft) => {
-                                _.merge(draft, answer)
-                            })
-                        })
-                    })
-
-                    // wait for the initial query to resolve before proceeding
-                    await cacheDataLoaded
-
-                    sock.on(watchName, (data) => {
-                        updateCachedData((draft) => {
-                            _.merge(draft, data)
-                        })
-                    })
-                } catch {
-                    // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
-                    // in which case `cacheDataLoaded` will throw
-                }
-   
-                await cacheEntryRemoved
-
-                sock.disconnect()
+                await handleUpdateSubscription("/leds", "update", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
             }
         }),
-
         setLEDS: builder.mutation<LEDControl, RecursivePartial<LEDControl>>({
             query(data) {
                 return {
@@ -126,7 +103,19 @@ const ledsApi = robotApi.injectEndpoints({
                     dispatch(ledsApi.util.invalidateTags(['LEDS']))
                 }
             },
-        })
+        }),
+
+        getOutput: builder.query<LEDOutput, void>({
+            query: () => `leds/output`,
+
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'LEDS/Output' ],
+
+            async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
+                await handleUpdateSubscription("/leds", "update_output", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
+            }
+        }),
+
     }),
 
     overrideExisting: false,
@@ -138,4 +127,5 @@ const ledsApi = robotApi.injectEndpoints({
 export const { 
     useGetLEDSQuery,
     useSetLEDSMutation,
+    useGetOutputQuery,
 } = ledsApi;

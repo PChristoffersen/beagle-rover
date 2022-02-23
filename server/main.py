@@ -31,8 +31,11 @@ logging.getLogger('aiohttp').setLevel(logging.WARNING)
 logger = logging.getLogger('Main')
 
 
+import setproctitle
 
 if __name__ == '__main__':
+    setproctitle.setproctitle("RobotWeb")
+
     web.run_app(create_application(), port=5000)
 #    socketio.run(app, host='0.0.0.0')
     #app.run(host = '0.0.0.0',port=5000, debug=False, threaded=True)

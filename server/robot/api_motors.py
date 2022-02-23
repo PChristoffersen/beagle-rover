@@ -1,13 +1,11 @@
 import asyncio
-import contextlib
 import logging
-import threading
-import concurrent
 from dataclasses import dataclass
 from typing import Dict
-from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
-from socketio import AsyncNamespace, AsyncServer
+from aiohttp.web import Application, RouteTableDef, Request, Response
+from socketio import AsyncServer
 from .watches import WatchableNamespace, SubscriptionWatch
+from .serializer import json_request, json_response
 
 from robotsystem import Motor, Servo
 
@@ -102,8 +100,6 @@ async def get_motor(request: Request) -> Response:
     robot = request.config_dict["robot"]
     motor = robot.motor_control.motors[index]
 
-    logger.info(f"GET Motor {index}")
-
     mot = motor2dict(motor)
     mot["servo"] = servo2dict(motor.servo)
     return json_response(mot)
@@ -116,12 +112,8 @@ async def put_motor(request: Request) -> Response:
     index = int(request.match_info["index"])
     motor = robot.motor_control.motors[index]
 
-    logger.info(f"PUT Motor {index}")
-
-    json = await request.json()
+    json = await json_request(request)
     set_motor_from_dict(motor, json)
-    
-    logger.info(f"PUT Motor {index} <<")
 
     json = motor2dict(motor)
     json["servo"] = servo2dict(motor.servo)

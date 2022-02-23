@@ -1,8 +1,7 @@
 import _ from 'lodash';
-import { io } from 'socket.io-client';
 
-import { robotApi, socketPrefix } from './robot';
-import { RecursivePartial } from './util';
+import { robotApi } from './robot';
+import { handleUpdateSubscription, RecursivePartial } from './util';
 
 
 export interface InputState {
@@ -45,35 +44,7 @@ const inputApi = robotApi.injectEndpoints({
             providesTags: (result, error, id) => [ 'Input' ],
 
             async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                const sock = io(socketPrefix+"/input")
-                const watchName = "update"
-
-                try {
-                    sock.on("connect", () => {
-                        sock.emit("add_watch", watchName, (answer: RecursivePartial<Input>) => {
-                            updateCachedData((draft) => {
-                                _.merge(draft, answer)
-                            })
-                        })
-                    })
-
-                    // wait for the initial query to resolve before proceeding
-                    await cacheDataLoaded
-
-                    sock.on(watchName, (data) => {
-                        console.log("Input", data)
-                        updateCachedData((draft) => {
-                            _.merge(draft, data)
-                        })
-                    })
-                } catch {
-                    // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
-                    // in which case `cacheDataLoaded` will throw
-                }
-   
-                await cacheEntryRemoved
-
-                sock.disconnect()
+                await handleUpdateSubscription("/input", "update", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
             }
         }),
 
@@ -113,34 +84,7 @@ const inputApi = robotApi.injectEndpoints({
             providesTags: (result, error, id) => [ 'InputSteer' ],
 
             async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                const sock = io("/input")
-                const watchName = "update_steer"
-
-                try {
-                    sock.on("connect", () => {
-                        sock.emit("add_watch", watchName, (answer: RecursivePartial<InputState>) => {
-                            updateCachedData((draft) => {
-                                _.merge(draft, answer)
-                            })
-                        })
-                    })
-
-                    // wait for the initial query to resolve before proceeding
-                    await cacheDataLoaded
-
-                    sock.on(watchName, (data) => {
-                        //console.log("Input", data)
-                        updateCachedData((draft) => {
-                            _.merge(draft, data)
-                        })
-                    })
-                } catch {
-                    // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
-                    // in which case `cacheDataLoaded` will throw
-                }
-   
-                await cacheEntryRemoved
-                sock.disconnect()
+                await handleUpdateSubscription("/input", "update_steer", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
             }
         }),
 

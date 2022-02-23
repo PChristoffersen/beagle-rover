@@ -1,7 +1,7 @@
 from json import JSONDecodeError
 import logging
 import asyncio
-from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
+from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from dataclasses import dataclass
 
@@ -9,6 +9,7 @@ from robotsystem import InputControl, InputSource, InputInterface, Subscription
 
 from .util import to_enum
 from .watches import WatchableNamespace, Watch, SubscriptionWatch
+from .serializer import json_request, json_response
 
 
 logger = logging.getLogger(__name__)
@@ -73,7 +74,7 @@ async def index(request: Request) -> Response:
 async def put(request: Request) -> Response:
     robot = request.config_dict["robot"]
     input = robot.input
-    json = await request.json()
+    json = await json_request(request)
     set_input_from_dict(input, json)
     return json_response(input2dict(input))
 
@@ -93,7 +94,7 @@ async def steer(request: Request) -> Response:
 async def put(request: Request) -> Response:
     robot = request.config_dict["robot"]
     state = request.config_dict["state"]
-    json = await request.json()
+    json = await json_request(request)
     if state.controller is None:
         # Only set state if no one is controlling from web socket
         set_state_from_dict(robot.input.web, state, json)

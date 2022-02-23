@@ -2,6 +2,7 @@ import { Card, CardActions, CardHeader, CardContent, Box, Slider, Switch, Table,
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 import { useGetMotorQuery, useSetMotorMutation } from "../../services/motors";
+import ServoAngleSlider from './ServoAngleSlider';
 
 
 
@@ -17,13 +18,6 @@ function float2string(val: number|undefined, digits: number): string {
     return val.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits })
 }
 
-function angleText(value: number|undefined): string {
-    if (value === undefined) {
-        return ""
-    }
-    return float2string(value * 180.0 / Math.PI, 1) + "°"
-}
-
 function angleTextTable(value: number|undefined): string {
     if (value === undefined) {
         return "0.0"
@@ -33,9 +27,7 @@ function angleTextTable(value: number|undefined): string {
 
 
 
-
-
-export default function ServoCard({ id, disabled }: Props) {
+export function ServoCardBody({ id, disabled }: Props) {
     const { data: motor, error, isLoading } = useGetMotorQuery(id)
     const [ update ] = useSetMotorMutation();
     const servo = motor?.servo;
@@ -58,28 +50,9 @@ export default function ServoCard({ id, disabled }: Props) {
 
     const isReady = !error && !isLoading
     const servoAngle = servo?.angle || 0.0;
-    const servoEnabled = servo?.enabled || false;
-    const limitMin = servo?.limit_min || -Math.PI/2.0;
-    const limitMax = servo?.limit_max || Math.PI/2.0;
-    const step = (limitMax-limitMin)/180.0;
 
-    const marks = [
-        {
-            value: limitMin,
-            label: angleText(limitMin)
-        },
-        {
-            value: 0.0,
-            label: angleText(0.0)
-        },
-        {
-            value: limitMax,
-            label: angleText(limitMax)
-        },
-    ]
-    
     return (
-        <Card sx={{ minWidth: 275 }}>
+        <>
             <CardHeader title={"Servo "+id} action={ isReady && !disabled &&
                 <Switch checked={servo?.enabled || false} onChange={enableChanged} />
             }/>
@@ -118,20 +91,19 @@ export default function ServoCard({ id, disabled }: Props) {
             <CardActions>
             { isReady && !disabled && 
                 <Box sx={{ width: '100%', paddingLeft: 2, paddingRight: 2 }}>
-                    <Slider 
-                        value={servoAngle} 
-                        disabled={!servoEnabled}
-                        step={step}
-                        min={limitMin} 
-                        max={limitMax} 
-                        valueLabelFormat={angleText}
-                        valueLabelDisplay='auto'
-                        marks={marks}
-                        onChangeCommitted={angleChanged} 
-                    />
+                    <ServoAngleSlider id={id} disabled={disabled} />
                 </Box>
             }
             </CardActions>
-        </Card>
+        </>
+    )
+}
+
+
+export default function ServoCard({ id, disabled }: Props) {
+    return (
+        <Card sx={{ minWidth: 275 }}>
+            <ServoCardBody id={id} disabled={disabled} />
+       </Card>
     );
 }

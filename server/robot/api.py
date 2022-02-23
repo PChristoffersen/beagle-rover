@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from aiohttp.web import Application, RouteTableDef, Request, Response, FileResponse, json_response
+from aiohttp.web import Application, RouteTableDef, Request, Response, FileResponse
 from socketio import AsyncServer
 
 from .api_input import create_app as input_create_app
@@ -11,6 +11,7 @@ from .api_leds import create_app as leds_create_app
 from .api_rcreceiver import create_app as rc_create_app
 from .api_system import create_app as system_create_app
 from .error_handler import error_middleware
+from .serializer import json_request, json_response
 
 SERVER_ROOT = Path(__file__).parent.resolve().parent
 

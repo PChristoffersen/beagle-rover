@@ -7,7 +7,7 @@ from robotsystem import Robot
 
 from .api import create_app as api_create_app
 from .cors_handler import cors_middleware
-
+from . import serializer as _json
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def create_application() -> Application:
     app.on_cleanup.append(app_on_cleanup)
     app.on_shutdown.append(app_on_shutdown)
 
-    sio = AsyncServer(async_handlers = False, cors_allowed_origins='*')
+    sio = AsyncServer(async_handlers = False, cors_allowed_origins='*', json=_json)
     sio.attach(app)
     app["sio"] = sio
 

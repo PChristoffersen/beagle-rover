@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
+from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from dataclasses import dataclass
 
@@ -8,6 +8,7 @@ from robotsystem import RCReceiver, Subscription
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch
+from .serializer import json_request, json_response
 
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ async def index(request: Request) -> Response:
 async def put(request: Request) -> Response:
     robot = request.config_dict["robot"]
     rc = robot.rc_receiver
-    json = await request.json()
+    json = await json_request(request)
     set_rc_from_dict(rc, json)
     return json_response(rc2dict(rc))
 

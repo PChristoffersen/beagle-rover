@@ -1,7 +1,8 @@
 import logging
-from aiohttp.web import Application, RouteTableDef, Request, Response, json_response
-from socketio import AsyncNamespace, AsyncServer
+from aiohttp.web import Application, RouteTableDef, Request, Response
+from socketio import AsyncServer
 
+from .serializer import json_request, json_response
 
 logger = logging.getLogger(__name__)
 

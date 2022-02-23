@@ -4,11 +4,10 @@ import { range } from 'lodash';
 
 import Page from '../components/Page';
 
-import MotorCard from '../components/motor/MotorCard';
-import ServoCard from '../components/motor/ServoCard';
 import { DriveMode, useGetKinematicQuery } from '../services/kinematic';
-import { Stack } from '@mui/material';
+import { Grid, Stack } from '@mui/material';
 import { InputSource, useGetInputQuery } from '../services/input';
+import FullMotorCard from '../components/motor/FullMotorCard';
 
 
 
@@ -21,26 +20,13 @@ export default function Motors() {
 
     return (
         <Page>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    '& > :not(style)': {
-                    m: 1,
-                    width: 'fit-content',
-                    },
-                }}
-            >
+            <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ padding: { xs: 1, sm: 2 } }}>
                 {range(numMotors).map((id) => (
-                    <Stack 
-                        key={id} 
-                        spacing={2} 
-                    >
-                        <MotorCard key={"motor-"+id} id={id} disabled={!enabled} />
-                        <ServoCard key={"servo-"+id} id={id} disabled={!enabled} />
-                    </Stack>
+                    <Grid key={id} item xs={12} sm="auto">
+                        <FullMotorCard key={"motor-"+id} id={id} disabled={!enabled} />
+                    </Grid>
                 ))}
-            </Box>
+            </Grid>
         </Page>
     )
 }

@@ -1,8 +1,7 @@
 import _ from 'lodash';
-import { io } from 'socket.io-client';
 
-import { robotApi, socketPrefix } from './robot';
-import { RecursivePartial } from './util';
+import { robotApi } from './robot';
+import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
 export interface MotorServo {
     enabled: boolean,
@@ -41,38 +40,7 @@ const motorApi = robotApi.injectEndpoints({
             providesTags: (result, error, id) => [{ type: 'Motor', id }],
 
             async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                const sock = io(socketPrefix+"/motors");
-                const watchName = "update_motor_"+arg
-
-                try {
-                    sock.on("connect", () => {
-                        sock.emit("add_watch", watchName, (answer: RecursivePartial<Motor>) => {
-                            updateCachedData((draft) => {
-                                _.merge(draft, answer)
-                            })
-                        })
-                    })
-                        
-                    // wait for the initial query to resolve before proceeding
-                    await cacheDataLoaded
-
-                    sock.on(watchName, (data: RecursivePartial<Motor>) => {
-                        //console.log("MotorChanged", data)
-                        if (data?.id === arg) {
-                            updateCachedData((draft) => {
-                                _.merge(draft, data)
-                            })
-                        }
-                    })
-                    
-                } catch {
-                    // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
-                    // in which case `cacheDataLoaded` will throw
-                }
-   
-                await cacheEntryRemoved
-
-                sock.disconnect()
+                await handleUpdateSubscription("/motors", "update_motor_"+arg, updateCachedData, cacheDataLoaded, cacheEntryRemoved);
             }
         }),
 
@@ -91,7 +59,6 @@ const motorApi = robotApi.injectEndpoints({
             // @ts-expect-error
             invalidatesTags: (result, error, { id }) => [{ type: 'Motor', id }],
             */
-
             async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
                 const patchResult = dispatch(
                     motorApi.util.updateQueryData('getMotor', id, (draft) => {
@@ -111,7 +78,6 @@ const motorApi = robotApi.injectEndpoints({
                     dispatch(motorApi.util.invalidateTags([{ type: 'Motor', id }]))
                 }
             },
-
         }),
     }),
     overrideExisting: false,
