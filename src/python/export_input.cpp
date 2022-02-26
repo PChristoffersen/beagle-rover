@@ -28,17 +28,21 @@ void export_input()
         .value("CONTROLLER", InputSource::CONTROLLER)
         ;
 
-    py::class_<SoftwareInterface, boost::noncopyable>("InputInterface", py::no_init)
-        .def("steer", +[](SoftwareInterface &iface, float s, float t) { iface.steer(s,t); })
-        .def("steer", &SoftwareInterface::steer)
+    py::class_<SoftwareInterface, std::shared_ptr<SoftwareInterface>, py::bases<WithNotifyDefault>, boost::noncopyable>("InputInterface", py::no_init)
+        .add_property("steering", &SoftwareInterface::getSteering, &SoftwareInterface::setSteering)
+        .add_property("throttle", &SoftwareInterface::getThrottle, &SoftwareInterface::setThrottle)
+        .add_property("aux_x", &SoftwareInterface::getAuxX, &SoftwareInterface::setAuxX)
+        .add_property("aux_y", &SoftwareInterface::getAuxY, &SoftwareInterface::setAuxY)
+        .def("set_axis", +[](SoftwareInterface &iface, float s, float t) { iface.setAxis(s,t); })
+        .def("set_axis", &SoftwareInterface::setAxis)
         ;
 
     py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyDefault>, boost::noncopyable>("InputControl", py::no_init)
-        .add_property("source", &Control::getSource, &Control::setSource)
+        .add_property("axis_source", &Control::getAxisSource, &Control::setAxisSource)
         .add_property("kinematic_source", &Control::getKinematicSource, &Control::setKinematicSource)
         .add_property("led_source", &Control::getLedSource, &Control::setLedSource)
-        .add_property("manual", py::make_function(&Control::manual, py::return_internal_reference<>() ))
-        .add_property("web", py::make_function(&Control::web, py::return_internal_reference<>() ))
+        .add_property("manual", &Control::manual)
+        .add_property("web", &Control::web)
         .def("__enter__", +[](Control &self) {
             self.mutex_lock();
             return self.shared_from_this();

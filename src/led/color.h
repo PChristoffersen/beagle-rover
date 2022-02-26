@@ -65,12 +65,23 @@ namespace Robot::LED {
             Color(const std::string &value);
 
             constexpr Color opaque() const { return Color { m_data | ALPHA_MASK }; }
+
             constexpr Color withAlpha(channel_type alpha) const { return Color { (m_data & ~ALPHA_MASK)| (alpha<<ALPHA_SHIFT) }; }
             constexpr Color withAlpha(int alpha) const { return Color { (m_data & ~ALPHA_MASK)| (to_channel(alpha)<<ALPHA_SHIFT) }; }
             constexpr Color withAlpha(unsigned int alpha) const { return Color { (m_data & ~ALPHA_MASK)| (to_channel(alpha)<<ALPHA_SHIFT) }; }
             constexpr Color withAlpha(float alpha) const { return Color { (m_data & ~ALPHA_MASK)| (to_channel(alpha)<<ALPHA_SHIFT) }; }
-
-            static constexpr inline brightness_type clampBrightness(brightness_type b) { return std::clamp(b, BRIGHTNESS_MIN, BRIGHTNESS_MAX); }
+            constexpr Color withRed(channel_type red) const { return Color { (m_data & ~RED_MASK)| (red<<RED_SHIFT) }; }
+            constexpr Color withRed(int red) const { return Color { (m_data & ~RED_MASK)| (to_channel(red)<<RED_SHIFT) }; }
+            constexpr Color withRed(unsigned int red) const { return Color { (m_data & ~RED_MASK)| (to_channel(red)<<RED_SHIFT) }; }
+            constexpr Color withRed(float red) const { return Color { (m_data & ~RED_MASK)| (to_channel(red)<<RED_SHIFT) }; }
+            constexpr Color withGreen(channel_type green) const { return Color { (m_data & ~GREEN_MASK)| (green<<GREEN_SHIFT) }; }
+            constexpr Color withGreen(int green) const { return Color { (m_data & ~GREEN_MASK)| (to_channel(green)<<GREEN_SHIFT) }; }
+            constexpr Color withGreen(unsigned int green) const { return Color { (m_data & ~GREEN_MASK)| (to_channel(green)<<GREEN_SHIFT) }; }
+            constexpr Color withGreen(float green) const { return Color { (m_data & ~GREEN_MASK)| (to_channel(green)<<GREEN_SHIFT) }; }
+            constexpr Color withBlue(channel_type blue) const { return Color { (m_data & ~BLUE_MASK)| (blue<<BLUE_SHIFT) }; }
+            constexpr Color withBlue(int blue) const { return Color { (m_data & ~BLUE_MASK)| (to_channel(blue)<<BLUE_SHIFT) }; }
+            constexpr Color withBlue(unsigned int blue) const { return Color { (m_data & ~BLUE_MASK)| (to_channel(blue)<<BLUE_SHIFT) }; }
+            constexpr Color withBlue(float blue) const { return Color { (m_data & ~BLUE_MASK)| (to_channel(blue)<<BLUE_SHIFT) }; }
 
             constexpr inline channel_type red()   const { return (m_data >> RED_SHIFT) & CHANNEL_MASK; }
             constexpr inline channel_type green() const { return (m_data >> GREEN_SHIFT) & CHANNEL_MASK; }
@@ -94,6 +105,8 @@ namespace Robot::LED {
             static constexpr inline channel_type rawGreen(raw_type c) { return (c >> GREEN_SHIFT) & CHANNEL_MASK; }
             static constexpr inline channel_type rawBlue(raw_type c) { return (c >> BLUE_SHIFT) & CHANNEL_MASK; }
             static constexpr inline channel_type rawAlpha(raw_type c) { return (c >> ALPHA_SHIFT) & CHANNEL_MASK; }
+
+            static constexpr inline brightness_type clampBrightness(brightness_type b) { return std::clamp(b, BRIGHTNESS_MIN, BRIGHTNESS_MAX); }
 
             Color &operator=(const Color &other) { m_data = other.m_data; return *this; }
             Color &operator=(const raw_type other) { m_data = other; return *this; }
@@ -233,15 +246,14 @@ namespace Robot::LED {
 
 
     constexpr Color Color::TRANSPARENT { 0.0f, 0.0f, 0.0f, 0.0f };
-    constexpr Color Color::BLACK       { CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MIN };
-    constexpr Color Color::WHITE       { CHANNEL_MAX, CHANNEL_MAX, CHANNEL_MAX };
-    constexpr Color Color::RED         { CHANNEL_MAX, CHANNEL_MIN, CHANNEL_MIN };
-    constexpr Color Color::GREEN       { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MIN };
-    constexpr Color Color::BLUE        { CHANNEL_MIN, CHANNEL_MIN, CHANNEL_MAX };
-    constexpr Color Color::YELLOW      { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MAX };
-    constexpr Color Color::CYAN        { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MAX };
-    constexpr Color Color::MAGENTA     { CHANNEL_MIN, CHANNEL_MAX, CHANNEL_MAX };
-
+    constexpr Color Color::BLACK       { 0.0f, 0.0f, 0.0f, 1.0f };
+    constexpr Color Color::WHITE       { 1.0f, 1.0f, 1.0f, 1.0f };
+    constexpr Color Color::RED         { 1.0f, 0.0f, 0.0f, 1.0f };
+    constexpr Color Color::GREEN       { 0.0f, 1.0f, 0.0f, 1.0f };
+    constexpr Color Color::BLUE        { 0.0f, 0.0f, 1.0f, 1.0f };
+    constexpr Color Color::YELLOW      { 0.0f, 1.0f, 1.0f, 1.0f };
+    constexpr Color Color::CYAN        { 0.0f, 1.0f, 1.0f, 1.0f };
+    constexpr Color Color::MAGENTA     { 1.0f, 0.0f, 1.0f, 1.0f };
 
     /**
      * @brief LED Color correction values

@@ -10,7 +10,7 @@ namespace Robot::LED {
 
 
 static constexpr auto LAYER_NAME { "runninglight" };
-static constexpr auto TIMER_INTERVAL { 100ms };
+static constexpr auto TIMER_INTERVAL { 50ms };
 
 
 RunningLight::RunningLight(const std::shared_ptr<Robot::Context> &context) :

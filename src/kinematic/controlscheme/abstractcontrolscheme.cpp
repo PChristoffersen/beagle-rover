@@ -34,7 +34,7 @@ void AbstractControlScheme::updateOrientation(Orientation orientation)
         m_motor_map = MOTOR_MAP_EAST;
         break;
     case Orientation::WEST:
-        m_motor_map = MOTOR_MAP_NORTH;
+        m_motor_map = MOTOR_MAP_WEST;
         break;
     }
 }

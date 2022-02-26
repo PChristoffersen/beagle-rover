@@ -51,6 +51,7 @@ set(SRC
     src/robotlogging.cpp
     src/robotdebug.cpp
     src/rc/receiver.cpp
+    src/rc/inputsource.cpp
     src/rc/mappings/taranis_x9d.cpp
     src/common/asyncsignal.cpp
     src/motor/motor.cpp
@@ -85,7 +86,6 @@ set(SRC
     src/kinematic/controlscheme/passthrough.cpp
     src/input/control.cpp
     src/input/sources/software.cpp
-    src/input/sources/rc.cpp
     src/input/sources/gamepad.cpp
     src/system/network.cpp
     src/system/power.cpp

@@ -17,7 +17,6 @@ namespace Robot::Kinematic {
 
     class Kinematic : public std::enable_shared_from_this<Kinematic>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
         public:
-
             Kinematic(const std::shared_ptr<::Robot::Context> &context);
             Kinematic(const Kinematic&) = delete; // No copy constructor
             Kinematic(Kinematic&&) = delete; // No move constructor

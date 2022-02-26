@@ -15,8 +15,8 @@ namespace Robot::Python {
 
 void export_kinematic() 
 {
+    using namespace Kinematic;
     using Robot::Kinematic::Kinematic;
-    using Robot::Kinematic::DriveMode, Robot::Kinematic::Orientation;
 
     py::enum_<DriveMode>("DriveMode")
         .value("NONE", DriveMode::NONE)

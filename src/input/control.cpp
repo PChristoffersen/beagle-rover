@@ -2,19 +2,18 @@
 
 #include <boost/log/trivial.hpp>
 
+#include <rc/inputsource.h>
 #include "sources/software.h"
-#include "sources/rc.h"
 #include "sources/gamepad.h"
-
 
 namespace Robot::Input {
 
 Control::Control(const std::shared_ptr<Robot::Context> &context) :
-    m_source { InputSource::MANUAL },
+    m_axis_source { InputSource::MANUAL },
     m_kinematic_source { InputSource::MANUAL },
     m_led_source { InputSource::MANUAL },
-    m_manual_source { std::make_unique<SoftwareSource>("Manual", signals) },
-    m_web_source { std::make_unique<SoftwareSource>("WEB", signals) },
+    m_manual_source { std::make_shared<SoftwareSource>("Manual", signals) },
+    m_web_source { std::make_shared<SoftwareSource>("WEB", signals) },
     m_gamepad_source { std::make_unique<GamepadSource>(context, signals) }
 {
 }
@@ -25,14 +24,14 @@ Control::~Control()
 }
 
 
-SoftwareInterface *Control::manual() const 
+std::shared_ptr<SoftwareInterface> Control::manual() const 
 {
-    return m_manual_source.get();
+    return m_manual_source;
 }
 
-SoftwareInterface *Control::web() const
+std::shared_ptr<SoftwareInterface> Control::web() const
 {
-    return m_web_source.get();
+    return m_web_source;
 }
 
 void Control::init(const std::shared_ptr<Robot::RC::Receiver> &receiver)
@@ -43,14 +42,16 @@ void Control::init(const std::shared_ptr<Robot::RC::Receiver> &receiver)
     m_manual_source->init();
     m_web_source->init();
 
+    #if ROBOT_HAVE_RC
     if (receiver) {
-        m_rc_source = std::make_unique<RCSource>(signals);
+        m_rc_source = std::make_unique<Robot::RC::InputSource>(signals);
         m_rc_source->init(receiver);
     }
+    #endif
     m_gamepad_source->init();
 
     m_manual_source->setEnabled(true);
-    m_source = InputSource::MANUAL;
+    m_axis_source = InputSource::MANUAL;
     m_kinematic_source = InputSource::MANUAL;
     m_led_source = InputSource::MANUAL;
 }
@@ -62,7 +63,7 @@ void Control::cleanup()
         return;
     m_initialized = false;
 
-    m_source = InputSource::MANUAL;
+    m_axis_source = InputSource::MANUAL;
     m_kinematic_source = InputSource::MANUAL;
     m_led_source = InputSource::MANUAL;
 
@@ -77,21 +78,21 @@ void Control::cleanup()
 
 
 
-void Control::setSource(InputSource input)
+void Control::setAxisSource(InputSource input)
 {
     const guard lock(m_mutex);
-    if (input!=m_source) {
+    if (input!=m_axis_source) {
         BOOST_LOG_TRIVIAL(info) << "Input source: " << (int)input;
 
-        auto oldSource = findSource(m_source);
+        auto oldSource = findSource(m_axis_source);
         auto newSource = findSource(input);
         if (oldSource!=newSource) {
             oldSource->setEnabled(false);
-            m_source = input;
+            m_axis_source = input;
             newSource->setEnabled(true);
         }
         else if (newSource!=nullptr) {
-            m_source = input;
+            m_axis_source = input;
         }
 
         notify(NOTIFY_DEFAULT);

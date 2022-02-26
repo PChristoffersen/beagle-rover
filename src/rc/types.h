@@ -14,6 +14,7 @@
 namespace Robot::RC {
 
     class Receiver;
+    class InputSource;
 
     static constexpr auto MAX_CHANNELS { 24u };
 

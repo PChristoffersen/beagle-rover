@@ -8,7 +8,7 @@
 #include <robottypes.h>
 #include <common/withmutex.h>
 #include <common/withnotify.h>
-#include <rc/receiver.h>
+#include <rc/types.h>
 #include "types.h"
 #include "softwareinterface.h"
 
@@ -31,30 +31,30 @@ namespace Robot::Input {
             void init(const std::shared_ptr<::Robot::RC::Receiver> &receiver);
             void cleanup();
 
-            void setSource(InputSource input);
-            InputSource getSource() const { return m_source; }
+            void setAxisSource(InputSource input);
+            InputSource getAxisSource() const { return m_axis_source; }
             void setKinematicSource(InputSource input);
             InputSource getKinematicSource() const { return m_kinematic_source; }
             void setLedSource(InputSource input);
             InputSource getLedSource() const { return m_led_source; }
 
 
-            SoftwareInterface *manual() const;
-            SoftwareInterface *web() const;
+            std::shared_ptr<SoftwareInterface> manual() const;
+            std::shared_ptr<SoftwareInterface> web() const;
 
             Signals signals;
 
         private:
             bool m_initialized;
             
-            InputSource m_source;
+            InputSource m_axis_source;
             InputSource m_kinematic_source;
             InputSource m_led_source;
 
-            std::unique_ptr<class SoftwareSource> m_manual_source;
-            std::unique_ptr<class SoftwareSource> m_web_source;
+            std::shared_ptr<class SoftwareSource> m_manual_source;
+            std::shared_ptr<class SoftwareSource> m_web_source;
             #if ROBOT_HAVE_RC
-            std::unique_ptr<class RCSource> m_rc_source;
+            std::unique_ptr<class ::Robot::RC::InputSource> m_rc_source;
             #endif
             std::unique_ptr<class GamepadSource> m_gamepad_source;
 

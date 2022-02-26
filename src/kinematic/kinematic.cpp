@@ -128,7 +128,7 @@ void Kinematic::setOrientation(Orientation orientation)
   
     m_orientation = orientation;
 
-    BOOST_LOG_TRIVIAL(info) << "Kinematic orientation: " << (int)orientation;
+    BOOST_LOG_TRIVIAL(info) << "Kinematic orientation: " << static_cast<int>(orientation);
     m_control_scheme->updateOrientation(orientation);
 
     notify(NOTIFY_DEFAULT);

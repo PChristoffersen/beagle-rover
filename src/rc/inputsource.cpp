@@ -1,12 +1,12 @@
-#include "rc.h"
+#include "inputsource.h"
 
 #include <boost/log/trivial.hpp>
 
-#include <rc/receiver.h>
+#include "receiver.h"
 
 #if ROBOT_HAVE_RC
 
-namespace Robot::Input {
+namespace Robot::RC {
 
 enum Channel : size_t {
     THROTTLE,
@@ -16,7 +16,7 @@ enum Channel : size_t {
 };
 
 
-RCSource::RCSource(const Signals &signals) :
+InputSource::InputSource(const Robot::Input::Signals &signals) :
     AbstractSource { signals },
     m_initialized { false },
     m_enabled { false }
@@ -25,14 +25,14 @@ RCSource::RCSource(const Signals &signals) :
 }
 
 
-RCSource::~RCSource()
+InputSource::~InputSource()
 {
     cleanup();
 }
 
 
 
-void RCSource::init(const std::shared_ptr<::Robot::RC::Receiver> &receiver)
+void InputSource::init(const std::shared_ptr<Receiver> &receiver)
 {
     const guard lock(m_mutex);
     m_initialized = true;
@@ -41,7 +41,7 @@ void RCSource::init(const std::shared_ptr<::Robot::RC::Receiver> &receiver)
 }
 
 
-void RCSource::cleanup()
+void InputSource::cleanup()
 {
     const guard lock(m_mutex);
     if (!m_initialized) 
@@ -52,7 +52,7 @@ void RCSource::cleanup()
 }
 
 
-void RCSource::setEnabled(bool enabled)
+void InputSource::setEnabled(bool enabled)
 {
     const guard lock(m_mutex);
     if (enabled==m_enabled) 
@@ -62,7 +62,7 @@ void RCSource::setEnabled(bool enabled)
     if (m_enabled) {
         if (auto receiver = m_receiver.lock()) {
             receiver->setEnabled(true);
-            m_connection = receiver->sigData.connect(::Robot::RC::SignalData::slot_type(&RCSource::onRCData, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
+            m_connection = receiver->sigData.connect(SignalData::slot_type(&InputSource::onRCData, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
         }
     }
     else {
@@ -75,7 +75,7 @@ void RCSource::setEnabled(bool enabled)
 
 
 
-void RCSource::onRCData(::Robot::RC::Flags flags, ::Robot::RC::RSSI rssi, const ::Robot::RC::ChannelList &channels)
+void InputSource::onRCData(Flags flags, RSSI rssi, const ChannelList &channels)
 {
     const guard lock(m_mutex);
     if (!m_initialized) 

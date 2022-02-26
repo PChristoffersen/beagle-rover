@@ -72,6 +72,8 @@ namespace Robot::Kinematic {
         { 1, false } 
     }};
 
+    class Kinematic;
+
 }
 
 #endif
