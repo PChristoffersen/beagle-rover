@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Dict
 from aiohttp.web import Application, RouteTableDef, Request, Response, FileResponse
 from socketio import AsyncServer
 
@@ -13,17 +14,25 @@ from .api_system import create_app as system_create_app
 from .error_handler import error_middleware
 from .serializer import json_request, json_response
 
+from robotsystem import Robot
+
+
 SERVER_ROOT = Path(__file__).parent.resolve().parent
 
 logger = logging.getLogger(__name__)
 
 route = RouteTableDef()
 
+def robot2dict(robot: Robot) -> Dict:
+    return {
+
+    }
+
 
 @route.get("")
 async def index(request: Request) -> Response:
     robot = request.config_dict["robot"]
-    return json_response({})
+    return json_response(robot2dict(robot))
 
 
 @route.get('/openapi.yaml')

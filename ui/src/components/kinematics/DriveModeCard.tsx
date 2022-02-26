@@ -8,7 +8,7 @@ import { DriveMode, driveModes, useGetKinematicQuery, useSetKinematicMutation } 
 
 
 export default function DriveModeCard() {
-    const { data: kinematic, isError, isLoading, isSuccess } = useGetKinematicQuery()
+    const { data: kinematic, isLoading, isSuccess } = useGetKinematicQuery()
     const [ update ] = useSetKinematicMutation();
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {

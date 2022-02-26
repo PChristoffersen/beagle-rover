@@ -5,15 +5,18 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { InputSource, inputSources, useGetInputQuery, useSetInputMutation } from '../../services/input';
 
 
+interface Props {
+    source: "axis_source" | "kinematic_source" | "led_source";
+}
 
 
-export default function InputSourceCard() {
+export default function InputSourceCard({ source }: Props) {
     const { data: input, isError, isLoading, isSuccess } = useGetInputQuery()
     const [ update ] = useSetInputMutation();
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value as InputSource
-        update({ source: value })
+        update({ [source]: value })
     }
 
     return (
@@ -29,7 +32,7 @@ export default function InputSourceCard() {
                 { isSuccess &&
                     <RadioGroup 
                         name="input-source"
-                        value={input?.source}
+                        value={input?.[source]}
                         onChange={handleChange}
                     >
                         {inputSources.map(entry => (

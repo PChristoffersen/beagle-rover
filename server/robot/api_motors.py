@@ -28,7 +28,6 @@ SERVO_PROPERTIES = frozenset([
 ])
 
 
-
 def servo2dict(servo) -> Dict:
     return {
         "enabled": servo.enabled,
@@ -42,11 +41,11 @@ def servo2dict_update(servo) -> Dict:
     return {
         "enabled": servo.enabled,
         "angle": servo.angle,
-        "angle_degrees": servo.angle_degrees,
+        "pulse_us": servo.pulse_us,
     }
 
 def motor2dict(motor) -> Dict:
-    res = {
+    return {
         "id": motor.index,
         "enabled": motor.enabled,
         "duty": motor.duty,
@@ -56,7 +55,6 @@ def motor2dict(motor) -> Dict:
         "encoder": motor.encoder,
         "odometer": motor.odometer,
     }
-    return res
 
 def motor2dict_telemetry(motor) -> Dict:
     res = {
@@ -66,6 +64,7 @@ def motor2dict_telemetry(motor) -> Dict:
         "odometer": motor.odometer,
     }
     return res
+
 
 
 def set_servo_from_dict(servo, json: dict) -> None:

@@ -1,7 +1,4 @@
-import { Box, Grid, IconButton, Slider } from "@mui/material";
-import StopCircleIcon from '@mui/icons-material/StopCircle';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { Box, Grid, Slider } from "@mui/material";
 import { useGetMotorQuery, useSetMotorMutation } from "../../services/motors";
 import { useState } from "react";
 
@@ -27,7 +24,7 @@ export default function ServoAngleSlider({ id, disabled=false }: Props) {
     const [angle, setAngle ] = useState<number>(0.0);
     const [serverAngle, setServerAngle ] = useState<number>(servo?.angle||0.0);
 
-    if (isSuccess && servo!=undefined && serverAngle!==servo.angle) {
+    if (isSuccess && servo!==undefined && serverAngle!==servo.angle) {
         setServerAngle(servo.angle)
         setAngle(servo.angle);
     }
@@ -64,7 +61,7 @@ export default function ServoAngleSlider({ id, disabled=false }: Props) {
         update({ id: id, servo: { angle: value } })
             .unwrap()
             .then(payload => {
-                if (payload.servo?.angle!=undefined) {
+                if (payload.servo?.angle!==undefined) {
                     setAngle(payload.servo.angle);
                 }
             });

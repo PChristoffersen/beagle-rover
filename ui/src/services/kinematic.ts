@@ -1,7 +1,5 @@
-import _ from 'lodash';
-
 import { robotApi } from './robot';
-import { handleUpdateSubscription, RecursivePartial } from './util';
+import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
 
 export enum DriveMode {
@@ -75,23 +73,8 @@ const kinematicApi = robotApi.injectEndpoints({
                     body: data,
                 }
             },
-
             async onQueryStarted({ ...patch }, { dispatch, queryFulfilled }) {
-                const patchResult = dispatch(
-                    kinematicApi.util.updateQueryData('getKinematic', undefined, (draft) => {
-                        _.merge(draft, patch)
-                    })
-                )
-                try {
-                    const { data } = await queryFulfilled
-                    dispatch(kinematicApi.util.updateQueryData('getKinematic', undefined, (draft) => {
-                        _.merge(draft, data)
-                    }));
-                } catch {
-                    patchResult.undo()
-                    // @ts-expect-error
-                    dispatch(kinematicApi.util.invalidateTags(['Kinematic']))
-                }
+                await handleUpdateQuery(undefined, patch, 'getKinematic', ['Kinematic'], dispatch, queryFulfilled, kinematicApi.util.updateQueryData, kinematicApi.util.invalidateTags);
             },
         })
     }),

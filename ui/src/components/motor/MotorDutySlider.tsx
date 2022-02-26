@@ -1,7 +1,4 @@
-import { Box, Grid, IconButton, Slider } from "@mui/material";
-import StopCircleIcon from '@mui/icons-material/StopCircle';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { Box, Grid, Slider } from "@mui/material";
 import { useGetMotorQuery, useSetMotorMutation } from "../../services/motors";
 import { useState } from "react";
 
@@ -27,7 +24,7 @@ export default function MotorDutySlider({ id, disabled = false }: Props) {
     const [duty, setDuty ] = useState<number>(0.0);
     const [serverDuty, setServerDuty ] = useState<number>(motor?.duty||0.0);
 
-    if (isSuccess && motor!=undefined && serverDuty!==motor.duty) {
+    if (isSuccess && motor!==undefined && serverDuty!==motor.duty) {
         setServerDuty(motor.duty)
         setDuty(motor.duty);
     }

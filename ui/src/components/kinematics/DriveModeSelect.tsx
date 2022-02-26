@@ -16,7 +16,7 @@ export default function DriveModeSelect() {
     const value = kinematic?.drive_mode || "unk";
 
     return (
-        <FormControl fullWidth error={isError} >
+        <FormControl fullWidth variant="standard" error={isError} >
             <InputLabel id="drive-mode-select-label">Drive mode</InputLabel>
             <Select
                 labelId="drive-mode-select-label"

@@ -1,4 +1,4 @@
-import { Card, CardActions, CardHeader, CardContent, Box, Slider, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
+import { Card, CardActions, CardHeader, CardContent, Box, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 import { useGetMotorQuery, useSetMotorMutation } from "../../services/motors";
@@ -39,8 +39,6 @@ export function MotorCardBody({ id, disabled }: Props) {
             update({ id: id, enabled: v, duty: 0.0 });
         }
     }
-
-    const motorEnabled = !disabled && (motor?.enabled || false);
 
     return (
         <>

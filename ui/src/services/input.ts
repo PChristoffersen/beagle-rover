@@ -1,15 +1,13 @@
-import _ from 'lodash';
-
 import { robotApi } from './robot';
-import { handleUpdateSubscription, RecursivePartial } from './util';
+import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
 
 export interface InputState {
     controller: string,
     steering: number,
     throttle: number,
-    aux_x?: number,
-    aux_y?: number,
+    aux_x: number,
+    aux_y: number,
 }
 
 export enum InputSource {
@@ -27,8 +25,8 @@ export const inputSources = [
 ]
 
 export interface Input {
-    source: InputSource,
-    kinematric_source: InputSource,
+    axis_source: InputSource,
+    kinematic_source: InputSource,
     led_source: InputSource,
 }
 
@@ -48,6 +46,7 @@ const inputApi = robotApi.injectEndpoints({
             }
         }),
 
+
         setInput: builder.mutation<Input, RecursivePartial<Input>>({
             query(data) {
                 return {
@@ -56,36 +55,34 @@ const inputApi = robotApi.injectEndpoints({
                     body: data,
                 }
             },
-
             async onQueryStarted({ ...patch }, { dispatch, queryFulfilled }) {
-                const patchResult = dispatch(
-                    inputApi.util.updateQueryData('getInput', undefined, (draft) => {
-                        _.merge(draft, patch)
-                    })
-                )
-                try {
-                    const { data } = await queryFulfilled
-                    dispatch(inputApi.util.updateQueryData('getInput', undefined, (draft) => {
-                        _.merge(draft, data)
-                    }));
-                } catch {
-                    patchResult.undo()
-                    // @ts-expect-error
-                    dispatch(kinematicApi.util.invalidateTags(['Input']))
-                }
+                await handleUpdateQuery(undefined, patch, 'getInput', ['Input'], dispatch, queryFulfilled, inputApi.util.updateQueryData, inputApi.util.invalidateTags);
             },
         }),
 
 
-        getInputSteering: builder.query<InputState, void>({
-            query: () => `input/steer`,
+        getInputState: builder.query<InputState, void>({
+            query: () => `input/state`,
 
             // @ts-expect-error
-            providesTags: (result, error, id) => [ 'InputSteer' ],
+            providesTags: (result, error, id) => [ 'InputState' ],
 
             async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                await handleUpdateSubscription("/input", "update_steer", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
+                await handleUpdateSubscription("/input", "update_state", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
             }
+        }),
+
+        setInputState: builder.mutation<InputState, RecursivePartial<InputState>>({
+            query(data) {
+                return {
+                    url: `input/state`,
+                    method: 'PUT',
+                    body: data,
+                }
+            },
+            async onQueryStarted({ ...patch }, { dispatch, queryFulfilled }) {
+                await handleUpdateQuery(undefined, patch, 'getInputState', ['InputState'], dispatch, queryFulfilled, inputApi.util.updateQueryData, inputApi.util.invalidateTags);
+            },
         }),
 
     }),
@@ -99,5 +96,6 @@ const inputApi = robotApi.injectEndpoints({
 export const { 
     useGetInputQuery,
     useSetInputMutation,
-    useGetInputSteeringQuery,
+    useGetInputStateQuery,
+    useSetInputStateMutation,
 } = inputApi;

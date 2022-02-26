@@ -7,8 +7,6 @@ import Page from '../components/Page';
 
 
 export default function Home() {
-    const index = 0
-
     return (
         <Page>
             <Typography variant="h4" component="h4" gutterBottom>

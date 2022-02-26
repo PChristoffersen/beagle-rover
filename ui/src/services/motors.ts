@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
@@ -54,29 +52,8 @@ const motorApi = robotApi.injectEndpoints({
                     body,
                 }
             },
-
-            /*
-            // @ts-expect-error
-            invalidatesTags: (result, error, { id }) => [{ type: 'Motor', id }],
-            */
             async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
-                const patchResult = dispatch(
-                    motorApi.util.updateQueryData('getMotor', id, (draft) => {
-                        _.merge(draft, patch)
-                    })
-                )
-                try {
-                    const { data } = await queryFulfilled
-                    if (data?.id === id) {
-                        dispatch(motorApi.util.updateQueryData('getMotor', id, (draft) => {
-                            _.merge(draft, data)
-                        }));
-                    }
-                } catch {
-                    patchResult.undo()
-                    // @ts-expect-error
-                    dispatch(motorApi.util.invalidateTags([{ type: 'Motor', id }]))
-                }
+                await handleUpdateQuery(id, patch, 'getMotor', [{ type: 'Motor', id }], dispatch, queryFulfilled, motorApi.util.updateQueryData, motorApi.util.invalidateTags);
             },
         }),
     }),

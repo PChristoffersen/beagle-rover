@@ -14,6 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { pages } from '../../Router';
 import Logo from '../../components/Logo';
 import RobotStatus from './RobotStatus';
+import { Tab, Tabs } from '@mui/material';
 
 
 
@@ -87,19 +88,31 @@ export default function Navbar() {
                     >
                         <Logo />
                     </Typography>
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                    {false && <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                        <Tabs value={currentPage?.id}>
+                            {pages.map((page) => (
+                                <Tab
+                                    key={page.name}
+                                    component={RouterLink}
+                                    to={page.to}
+                                    label={page.name}
+                                    value={page.id}
+                                />
+                            ))}
+                        </Tabs>
+                    </Box>}
+                    {true && <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         {pages.map((page) => (
                             <Button
                                 key={page.name}
                                 component={RouterLink}
                                 to={page.to}
-                                sx={{ my: 2, display: 'block' }}
-                                color={page.id===currentPage?.id ? "inherit" : "info"}
+                                color={page.id===currentPage?.id ?'inherit': undefined}
                             >
                                 {page.name}
                             </Button>
                         ))}
-                    </Box>
+                    </Box>}
 
                     <Box sx={{ flexGrow: 0, verticalAlign: 'bottom' }}>
                         <RobotStatus />

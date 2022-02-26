@@ -1,14 +1,22 @@
-import { Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
-import Page from "../components/Page";
-import RestUI from "../components/rest/RestUI";
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import { Button } from '@mui/material';
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
+import RestUIStock from "../components/rest/RestUIStock";
+
+
+const PageStyle = styled('div')(({ theme }) => ({
+    height: '100%',
+    width: '100%',
+}));
 
 
 const Root = styled('div')(({ theme }) => ({
+    height: '100%',
+    width: '100%',
     position: "relative",
 }));
+
 
 const Body = styled('div')(({ theme }) => ({
     position: "absolute",
@@ -20,27 +28,27 @@ const Body = styled('div')(({ theme }) => ({
 const Controls = styled('div')(({ theme }) => ({
     position: "absolute",
     right: 0,
-    top: 0,
+    bottom: 0,
     zIndex: 300,
 }));
 
 
-export default function RestAPI() {
+export default function FullscreenRestAPI() {
     return (
-        <Page sx={{ padding: { xs: 1, sm: 2 }}}>
+        <PageStyle>
             <Root>
                 <Body>
-                    <RestUI />
+                    <RestUIStock />
                 </Body>
                 <Controls>
                     <Button
                         component={RouterLink}
-                        to="/rest-full"
+                        to="/rest"
                     >
-                        <OpenInFullIcon fontSize='medium'/>
+                        <CloseFullscreenIcon fontSize='large'/>
                     </Button>
                 </Controls>
             </Root>
-        </Page>
+        </PageStyle>
     )
 }

@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, CardHeader } from "@mui/material";
+import { Box, Card, CardContent, CardHeader, Typography } from "@mui/material";
 import Chassis from "../components/chassis/beaglerover/Chassis";
 import Page from "../components/Page";
 
@@ -8,23 +8,13 @@ export default function Test() {
         <Page>
             <Box
                 sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    '& > :not(style)': {
-                        m: 1,
-                        width: 'fit-content',
-                        minWidth: 300,
-                    },
+                    backgroundColor: "red",
+                    height: "100%",
                 }}
             >
-                <Card>
-                    <CardHeader title="Chassis" />
-                    <CardContent>
-                        <Box sx={{ }}>
-                            <Chassis />
-                        </Box>
-                    </CardContent>
-                </Card>
+                <Typography variant="h1" >
+                    Hello world
+                </Typography>
             </Box>
         </Page>
     );

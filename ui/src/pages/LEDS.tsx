@@ -1,10 +1,8 @@
 import { Card, CardContent, CardHeader, Grid, Stack } from '@mui/material';
-import Box from '@mui/material/Box';
-import AnimationModeCard from '../components/leds/AnimationModeCard';
+import InputSourceSelect from '../components/input/InputSourceSelect';
 import AnimationModeSelect from '../components/leds/AnimationModeSelect';
 import BackgroundPicker from '../components/leds/BackgroundPicker';
 import BrightnessSlider from '../components/leds/BrightnessSlider';
-import IndicatorModeCard from '../components/leds/IndicatorModeCard';
 import IndicatorModeSelect from '../components/leds/IndicatorModeSelect';
 import OutputCard from '../components/leds/OutputCard';
 
@@ -17,6 +15,7 @@ function SettingsCard() {
             <CardHeader title="Settings" />
             <CardContent>
                 <Stack spacing={3}>
+                    <InputSourceSelect title="Controller" source="led_source" />
                     <AnimationModeSelect />
                     <IndicatorModeSelect />
                     <BackgroundPicker />

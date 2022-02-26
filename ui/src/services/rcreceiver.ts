@@ -1,8 +1,5 @@
-import _ from 'lodash';
-import { io } from 'socket.io-client';
-
-import { robotApi, socketPrefix } from './robot';
-import { handleUpdateSubscription, RecursivePartial } from './util';
+import { robotApi } from './robot';
+import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
 
 export interface RCReceiver {
@@ -34,23 +31,8 @@ const rcreceiverApi = robotApi.injectEndpoints({
                     body: data,
                 }
             },
-
             async onQueryStarted({ ...patch }, { dispatch, queryFulfilled }) {
-                const patchResult = dispatch(
-                    rcreceiverApi.util.updateQueryData('getRCReceiver', undefined, (draft) => {
-                        _.merge(draft, patch)
-                    })
-                )
-                try {
-                    const { data } = await queryFulfilled
-                    dispatch(rcreceiverApi.util.updateQueryData('getRCReceiver', undefined, (draft) => {
-                        _.merge(draft, data)
-                    }));
-                } catch {
-                    patchResult.undo()
-                    // @ts-expect-error
-                    dispatch(rcreceiverApi.util.invalidateTags(['RCReceiver']))
-                }
+                await handleUpdateQuery(undefined, patch, 'getRCReceiver', ['RCReceiver'], dispatch, queryFulfilled, rcreceiverApi.util.updateQueryData, rcreceiverApi.util.invalidateTags);
             },
         })
     }),

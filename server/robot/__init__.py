@@ -3,7 +3,7 @@ from pathlib import Path
 from aiohttp.web import Application, RouteTableDef, Request, Response, FileResponse, HTTPNotFound, static
 from socketio import AsyncServer
 
-from robotsystem import Robot
+from robotsystem import Robot, InputSource
 
 from .api import create_app as api_create_app
 from .cors_handler import cors_middleware
@@ -20,6 +20,7 @@ async def app_on_startup(app: Application):
     logger.info("Startup")
     robot = Robot()
     robot.init()
+    robot.input.led_source = InputSource.WEB
     app['robot'] = robot
 
 

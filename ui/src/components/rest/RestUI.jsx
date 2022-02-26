@@ -1,4 +1,4 @@
-import { useTheme } from '@emotion/react';
+import { useTheme } from '@mui/system';
 import 'rapidoc';
 
 export default function RestUI() {
@@ -16,6 +16,7 @@ export default function RestUI() {
             text-color = {palette.text.secondary}
             primary-color = {palette.primary.main}
             regular-font = {typography.fontFamily}
+            mono-font = {typography.mono.fontFamily}
             nav-text-color = {palette.primary.main}
             nav-hover-bg-color = {palette.action.hover}
             nav-hover-text-color = {palette.text.primary}

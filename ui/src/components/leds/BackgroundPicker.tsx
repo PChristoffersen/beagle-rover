@@ -1,7 +1,8 @@
-import { useEffect, useState, KeyboardEvent } from "react";
+import { useEffect, useState, KeyboardEvent, useCallback } from "react";
 import { Color, ColorError, ColorPicker, ColorValue, createColor } from "@dmitrychebayewski/mui-color";
-import { Box, FormControl } from "@mui/material";
+import { Box } from "@mui/material";
 import { useGetLEDSQuery, useSetLEDSMutation } from "../../services/leds";
+import { InputSource, useGetInputQuery } from "../../services/input";
 
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 
 export default function BackgroundPicker({ disabled=false }: Props) {
     const { data: leds, isSuccess, isError } = useGetLEDSQuery()
+    const { data: input } = useGetInputQuery();
     const [ update ] = useSetLEDSMutation()
 
     const [ serverColor, setServerColor ] = useState<string>(leds?.background || "#000000")
@@ -18,7 +20,7 @@ export default function BackgroundPicker({ disabled=false }: Props) {
     const [ error, setError ] = useState<string|undefined>(undefined)
 
 
-    if (isSuccess && leds!=undefined && serverColor!==leds.background) {
+    if (isSuccess && leds!==undefined && (serverColor !== leds.background)) {
         setServerColor(leds.background);
         setColor(createColor("#"+leds.background));
     }
@@ -44,7 +46,7 @@ export default function BackgroundPicker({ disabled=false }: Props) {
 
         setColor(newValue)
     }
-    const handleChangeCommit = () => {
+    const handleChangeCommit = useCallback(() => {
         let value = color;
         const valueType = typeof value;
 
@@ -62,7 +64,7 @@ export default function BackgroundPicker({ disabled=false }: Props) {
                 update({ background: col.hex });
             }
         }
-    }
+    }, [color, update, leds]);
     const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
         if (event.key === "Enter") {
             handleChangeCommit();
@@ -83,9 +85,9 @@ export default function BackgroundPicker({ disabled=false }: Props) {
         else {
             return () => {}
         }
-    }, [color]);
+    }, [color, isOpen, handleChangeCommit]);
 
-    const isDisabled = disabled || !isSuccess;
+    const isDisabled = disabled || !isSuccess || input?.led_source !== InputSource.WEB;;
 
     return (
         <Box>

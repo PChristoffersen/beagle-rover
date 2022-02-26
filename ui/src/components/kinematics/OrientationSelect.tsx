@@ -11,7 +11,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 
 export default function OrientationSelect() {
-    const { data: kinematic, isError, isLoading, isSuccess } = useGetKinematicQuery()
+    const { data: kinematic, isError, isSuccess } = useGetKinematicQuery()
     const [ update ] = useSetKinematicMutation();
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -22,7 +22,7 @@ export default function OrientationSelect() {
     const value = kinematic?.orientation || "unk";
 
     return (
-        <FormControl fullWidth error={isError} >
+        <FormControl fullWidth variant="standard" error={isError} >
             <InputLabel id="orientation-select-label">Orientation</InputLabel>
             <Select
                 labelId="orientation-select-label"

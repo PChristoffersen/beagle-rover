@@ -36,6 +36,7 @@ def set_kinematic_from_dict(kinematic: Kinematic, json: dict):
             if key == "drive_mode":
                 value = to_enum(DriveMode, value)
             elif key == "orientation":
+                logger.info(f"SetOrientation: {value} {to_enum(Orientation, value)}")
                 value = to_enum(Orientation, value)
             setattr(kinematic, key, value)
 

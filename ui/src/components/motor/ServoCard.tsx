@@ -1,4 +1,4 @@
-import { Card, CardActions, CardHeader, CardContent, Box, Slider, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
+import { Card, CardActions, CardHeader, CardContent, Box, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 import { useGetMotorQuery, useSetMotorMutation } from "../../services/motors";
@@ -39,12 +39,6 @@ export function ServoCardBody({ id, disabled }: Props) {
         }
         else {
             update({ id: id, servo: { enabled: v, angle: 0.0 } });
-        }
-    }
-    const angleChanged = (event: any, value: number | number[]) => {
-        const v = (value as number);
-        if (servo && servo.angle !== v) {
-            update({ id: id, servo: { angle: v } });
         }
     }
 

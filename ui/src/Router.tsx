@@ -10,6 +10,7 @@ import Telemetry from './pages/Telemetry';
 import FullscreenLayout from './layouts/fullscreen';
 import Test from './pages/Test';
 import RestAPI from './pages/RestAPI';
+import FullscreenRestAPI from './pages/FullscreenRestAPI';
 
 
 interface PageDefinition {
@@ -49,6 +50,7 @@ export default function Router() {
                 element: <FullscreenLayout />,
                 
                 children: [
+                    { path: 'rest-full', element: <FullscreenRestAPI /> },
                     { path: 'fullscreen', element: <Test /> },
                 ]
             },

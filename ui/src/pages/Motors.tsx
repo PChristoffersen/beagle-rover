@@ -1,12 +1,8 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
 import { range } from 'lodash';
-
-import Page from '../components/Page';
-
+import { Grid } from '@mui/material';
 import { DriveMode, useGetKinematicQuery } from '../services/kinematic';
-import { Grid, Stack } from '@mui/material';
 import { InputSource, useGetInputQuery } from '../services/input';
+import Page from '../components/Page';
 import FullMotorCard from '../components/motor/FullMotorCard';
 
 
@@ -14,7 +10,7 @@ import FullMotorCard from '../components/motor/FullMotorCard';
 export default function Motors() {
     const { data: kinematic } = useGetKinematicQuery();
     const { data: input } = useGetInputQuery();
-    const enabled = kinematic?.drive_mode === DriveMode.NONE && input?.source === InputSource.WEB;
+    const enabled = kinematic?.drive_mode === DriveMode.NONE && input?.kinematic_source === InputSource.WEB;
 
     const numMotors = 4;
 

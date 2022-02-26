@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, Grid, Stack } from '@mui/material';
-import Box from '@mui/material/Box';
 import InputSourceCard from '../components/input/InputSourceCard';
 import InputSourceSelect from '../components/input/InputSourceSelect';
+import SteeringCard from '../components/input/SteeringCard';
 import DriveModeCard from '../components/kinematics/DriveModeCard';
 import DriveModeSelect from '../components/kinematics/DriveModeSelect';
 import OrientationSelect from '../components/kinematics/OrientationSelect';
@@ -15,7 +15,9 @@ function SettingsCard() {
             <CardHeader title="Settings" />
             <CardContent>
                 <Stack spacing={3}>
-                    <InputSourceSelect />
+                    <InputSourceSelect source="axis_source" />
+                    <InputSourceSelect source="kinematic_source" />
+                    <InputSourceSelect source="led_source" />
                     <DriveModeSelect />
                     <OrientationSelect />
                 </Stack>
@@ -32,11 +34,14 @@ export default function Controls() {
                 <Grid item xs={12} sm="auto" >
                     <SettingsCard />
                 </Grid>
-                <Grid item xs={12} sm="auto">
-                    <InputSourceCard />
+{/*                 <Grid item xs={12} sm="auto">
+                    <InputSourceCard source="axis_source"/>
                 </Grid>
                 <Grid item xs={12} sm="auto">
                     <DriveModeCard />
+                </Grid>
+ */}                <Grid item xs={12} sm="auto">
+                    <SteeringCard />
                 </Grid>
             </Grid>
         </Page>

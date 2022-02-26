@@ -1,6 +1,8 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
 import { red } from '@mui/material/colors';
+import "@fontsource/varela-round";
+import "@fontsource/source-code-pro";
 
 interface Props {
     children: React.ReactNode;
@@ -20,6 +22,16 @@ const theme = createTheme({
               main: red.A400,
         },
     },
+    typography: {
+        fontFamily: `"Varela Round", "Helvetica", "Arial", "sans-serif"`,
+
+        // @ts-expect-error
+        mono: {
+            fontFamily: `"Source Code Pro", "Courier", monospace`,
+            fontSize: 14,
+            fontWeight: 400,
+        }
+    }
 });
   
 export default function ThemeConfig({ children }: Props) {

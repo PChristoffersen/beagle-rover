@@ -3,7 +3,7 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import { useGetLEDSQuery, useSetLEDSMutation } from "../../services/leds";
 import { useState } from "react";
-import { UseQueryStateResult } from "@reduxjs/toolkit/dist/query/react/buildHooks";
+import { InputSource, useGetInputQuery } from "../../services/input";
 
 
 
@@ -14,12 +14,13 @@ interface Props {
 
 export default function BrightnessSlider({ disabled = false }: Props) {
     const { data: leds, isSuccess, isError } = useGetLEDSQuery()
+    const { data: input } = useGetInputQuery();
     const [ update ] = useSetLEDSMutation()
 
     const [brightness, setBrightness ] = useState<number>(1.0);
     const [serverBrightness, setServerBrightness ] = useState<number>(leds?.brightness||1.0);
 
-    if (isSuccess && leds!=undefined && serverBrightness!==leds.brightness) {
+    if (isSuccess && leds!==undefined && serverBrightness!==leds.brightness) {
         setServerBrightness(leds.brightness);
         setBrightness(leds.brightness);
     }
@@ -37,7 +38,7 @@ export default function BrightnessSlider({ disabled = false }: Props) {
             })
     }
 
-    const isDisabled = disabled || !isSuccess;
+    const isDisabled = disabled || !isSuccess || input?.led_source !== InputSource.WEB;
 
     return (
         <Box>

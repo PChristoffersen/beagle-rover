@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
@@ -87,21 +85,7 @@ const ledsApi = robotApi.injectEndpoints({
             },
 
             async onQueryStarted({ ...patch }, { dispatch, queryFulfilled }) {
-                const patchResult = dispatch(
-                    ledsApi.util.updateQueryData('getLEDS', undefined, (draft) => {
-                        _.merge(draft, patch)
-                    })
-                )
-                try {
-                    const { data } = await queryFulfilled
-                    dispatch(ledsApi.util.updateQueryData('getLEDS', undefined, (draft) => {
-                        _.merge(draft, data)
-                    }));
-                } catch {
-                    patchResult.undo()
-                    // @ts-expect-error
-                    dispatch(ledsApi.util.invalidateTags(['LEDS']))
-                }
+                await handleUpdateQuery(undefined, patch, 'getLEDS', ['LEDS'], dispatch, queryFulfilled, ledsApi.util.updateQueryData, ledsApi.util.invalidateTags);
             },
         }),
 
