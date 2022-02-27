@@ -16,6 +16,7 @@ namespace Robot::Kinematic {
 
         protected:
             virtual void setMotors(float left, float right) override;
+            virtual void setMotorDuty(float steering, float throttle, float outer_dist, float inner_dist, float inner_angle) override;
     };
 
 }

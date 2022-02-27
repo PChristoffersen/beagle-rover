@@ -27,9 +27,24 @@ namespace Robot::Kinematic {
             AbstractControlScheme(std::shared_ptr<Kinematic> kinematic);
 
             bool m_initialized;
+            Orientation m_orientation;
+            bool m_orientation_reverse;
             MotorMap m_motor_map;
             std::shared_ptr<Robot::Context> m_context;
             std::shared_ptr<Robot::Motor::Control> m_motor_control;
+
+            float m_last_steering;
+            float m_last_throttle;
+            float m_last_aux_x;
+            float m_last_aux_y;
+
+            void setLastSteering(float steering, float throttle, float aux_x, float aux_y) 
+            {
+                m_last_steering = steering;
+                m_last_throttle = throttle;
+                m_last_aux_x = aux_x;
+                m_last_aux_y = aux_y;
+            }
 
             inline auto &motor(MotorPosition position) const 
             {
@@ -41,13 +56,17 @@ namespace Robot::Kinematic {
             }
             inline void motorDuty(MotorPosition position, float value) {
                 auto &entry = m_motor_map[position];
-                m_motor_control->getMotors()[entry.index]->setDuty(entry.invert ? -value : value);
+                m_motor_control->getMotors()[entry.index]->setDuty(entry.invert_duty ? -value : value);
             }
             inline void motorSet(MotorPosition position, Value servo, float throttle) {
                 auto &entry = m_motor_map[position];
                 auto &motor = m_motor_control->getMotors()[entry.index];
                 motor->servo()->setValue(entry.invert ? -servo : servo);
-                motor->setDuty(entry.invert ? -throttle : throttle);
+                motor->setDuty(entry.invert_duty ? -throttle : throttle);
+            }
+
+            virtual void orientationUpdated(Orientation orientation) {
+                steer(m_last_steering, m_last_throttle, m_last_aux_x, m_last_aux_y);
             }
     };
 

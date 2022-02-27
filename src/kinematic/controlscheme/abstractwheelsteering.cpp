@@ -26,12 +26,12 @@ void AbstractWheelSteering::init()
 {
     const guard lock(m_mutex);
 
-    resetMotors();
+    resetMotors(0.0f);
 
     const auto &motors = m_motor_control->getMotors();
     for (auto &motor : motors) {
         motor->setDuty(0.0);
-        motor->setEnabled(false);
+        motor->setEnabled(true);
         motor->servo()->setEnabled(true);
 
     }
@@ -50,38 +50,34 @@ void AbstractWheelSteering::cleanup()
     const auto &motors = m_motor_control->getMotors();
     for (auto &motor : motors) {
         motor->setDuty(0.0);
+        motor->setEnabled(false);
+        motor->servo()->setEnabled(false);
     }
 }
 
 
-void AbstractWheelSteering::updateOrientation(Orientation orientation)
+
+void AbstractWheelSteering::resetMotors(float throttle)
 {
-    const guard lock(m_mutex);
-    AbstractControlScheme::updateOrientation(orientation);
-    if (m_initialized) {
-        resetMotors();
-    }
+    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
+    motorSet(FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
+    motorSet(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
+    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
 }
 
 
-void AbstractWheelSteering::resetMotors()
-{
-    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(FRONT_RIGHT,Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(REAR_LEFT,  Value::fromAngle(-WHEEL_STRAIGHT_ANGLE), 0.0);
-    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0);
-}
 
 
 void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, float aux_y) 
 {
     const guard lock(m_mutex);
+    setLastSteering(steering, throttle, aux_x, aux_y);
 
     const auto asteering = abs(steering);
     
     // Just go straight (to avoid infinite numbers for turning radius)
     if (asteering < 0.01) {
-        resetMotors();
+        resetMotors(throttle);
         return;
     }
 
@@ -89,17 +85,23 @@ void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, f
     auto inner_angle = asteering * WHEEL_MAX_TURN_ANGLE;
 
     // Inner wheel turning circle center from inner wheels centerpoint.
-    auto turning_circle_dist = tan(M_PI_2-inner_angle) * m_wheel_base_factor;
+    auto inner_circle_dist = tan(M_PI_2-inner_angle) * m_wheel_base_factor;
 
     // Calculate outer angle
-    auto outer_angle = atan(m_wheel_base_factor/(turning_circle_dist+WHEEL_BASE_MM));
+    auto outer_angle = atan(m_wheel_base_factor/(inner_circle_dist+WHEEL_BASE_MM));
+    // Outer turning circle radius
+    auto outer_circle_dist = tan(M_PI_2-outer_angle) * m_wheel_base_factor;
+
 
     if (steering > 0.0) {
         setMotors(-outer_angle, inner_angle);
+        setMotorDuty(steering, throttle, outer_circle_dist, inner_circle_dist, inner_angle);
     }
     else {
         setMotors(inner_angle, -outer_angle);
+        setMotorDuty(steering, throttle, outer_circle_dist, inner_circle_dist, inner_angle);
     }
+
 }
 
 

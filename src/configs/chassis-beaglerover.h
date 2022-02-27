@@ -25,8 +25,8 @@ namespace Robot::Config {
     // Wheel servo limits 
     inline constexpr auto WHEEL_SERVO_LIMIT_MIN { 650u };
     inline constexpr auto WHEEL_SERVO_LIMIT_MAX { 2350u };
-    inline constexpr auto WHEEL_MIN_ANGLE { (float)M_PI * (float)((int)WHEEL_SERVO_LIMIT_MIN-SERVO_CENTER)/SERVO_RANGE };
-    inline constexpr auto WHEEL_MAX_ANGLE { (float)M_PI * (float)((int)WHEEL_SERVO_LIMIT_MAX-SERVO_CENTER)/SERVO_RANGE };
+    inline constexpr auto WHEEL_MIN_ANGLE { static_cast<float>(M_PI) * (float)(static_cast<int>(WHEEL_SERVO_LIMIT_MIN)-static_cast<int>(SERVO_CENTER))/SERVO_RANGE };
+    inline constexpr auto WHEEL_MAX_ANGLE { static_cast<float>(M_PI) * (float)((int)WHEEL_SERVO_LIMIT_MAX-SERVO_CENTER)/SERVO_RANGE };
     inline constexpr auto WHEEL_CENTER_ANGLE { 0.0f };
     inline constexpr auto WHEEL_STRAIGHT_ANGLE { (float)M_PI_4 };
     inline constexpr auto WHEEL_MAX_TURN_ANGLE { std::min(-(WHEEL_STRAIGHT_ANGLE+WHEEL_MIN_ANGLE), WHEEL_MAX_ANGLE-WHEEL_STRAIGHT_ANGLE) };

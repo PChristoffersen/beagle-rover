@@ -10,6 +10,9 @@
 
 namespace Robot::Kinematic {
 
+constexpr auto THROTTLE_SCALE { 1.0f };
+
+
 ControlSchemeSpinning::ControlSchemeSpinning(std::shared_ptr<Kinematic> kinematic) :
     AbstractControlScheme { kinematic }
 {
@@ -48,9 +51,10 @@ void ControlSchemeSpinning::steer(float steering, float throttle, float aux_x, f
 {
     const guard lock(m_mutex);
 
+    const auto duty = THROTTLE_SCALE * throttle;
     const auto &motors = m_motor_control->getMotors();
     for (auto &motor : motors) {
-        motor->setDuty(throttle);
+        motor->setDuty(duty);
     }
 }
 

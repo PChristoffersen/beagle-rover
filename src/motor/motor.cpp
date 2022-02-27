@@ -140,7 +140,7 @@ void Motor::setDuty(float duty)
 {
     const guard lock(m_mutex);
     if (duty != m_duty || m_mode != Mode::DUTY) {
-        BOOST_LOG_TRIVIAL(info) << *this << " setDuty(" << duty << ")";
+        BOOST_LOG_TRIVIAL(trace) << *this << " setDuty(" << duty << ")";
         m_mode = Mode::DUTY;
         m_duty = duty;
 

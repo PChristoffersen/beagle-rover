@@ -32,6 +32,8 @@ namespace Robot::Kinematic {
         EAST,
         WEST
     };
+    std::ostream &operator<<(std::ostream &os, const Orientation &orientation);
+
 
     enum MotorPosition {
         FRONT_LEFT = 0,
@@ -43,33 +45,34 @@ namespace Robot::Kinematic {
     struct MotorMapEntry {
         size_t index;
         bool invert;
+        bool invert_duty;
     };
 
     using MotorMap = std::array<MotorMapEntry, ::Robot::Motor::MOTOR_COUNT>;
 
     constexpr MotorMap MOTOR_MAP_NORTH {{
-        { 0, false }, 
-        { 1, false }, 
-        { 2, false }, 
-        { 3, false } 
+        { 0, false, false }, 
+        { 1, true,  true  }, 
+        { 2, true,  false }, 
+        { 3, false, true  },
     }};
     constexpr MotorMap MOTOR_MAP_SOUTH {{
-        { 3, false }, 
-        { 2, false }, 
-        { 1, false }, 
-        { 0, false } 
-    }};
-    constexpr MotorMap MOTOR_MAP_EAST {{ 
-        { 1, false }, 
-        { 3, false }, 
-        { 0, false }, 
-        { 2, false } 
+        { 3, false, false }, 
+        { 2, true,  true  }, 
+        { 1, true,  false }, 
+        { 0, false, true  } 
     }};
     constexpr MotorMap MOTOR_MAP_WEST {{
-        { 2, false }, 
-        { 0, false }, 
-        { 3, false }, 
-        { 1, false } 
+        { 2, false, false }, 
+        { 0, true,  true  }, 
+        { 3, true,  false }, 
+        { 1, false, true  } 
+    }};
+    constexpr MotorMap MOTOR_MAP_EAST {{ 
+        { 1, false, false }, 
+        { 3, true,  true  }, 
+        { 0, true,  false }, 
+        { 2, false, true  } 
     }};
 
     class Kinematic;

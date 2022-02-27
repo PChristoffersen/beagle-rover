@@ -23,6 +23,28 @@ using namespace std::literals;
 
 namespace Robot::Kinematic {
 
+
+std::ostream &operator<<(std::ostream &os, const Orientation &orientation)
+{
+    switch (orientation) {
+        case Orientation::NORTH:
+            os << "NORTH";
+            break;
+        case Orientation::SOUTH:
+            os << "SOUTH";
+            break;
+        case Orientation::EAST:
+            os << "EAST";
+            break;
+        case Orientation::WEST:
+            os << "WEST";
+            break;
+    }
+    return os;
+}
+
+
+
 Kinematic::Kinematic(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_context { context },
@@ -128,7 +150,7 @@ void Kinematic::setOrientation(Orientation orientation)
   
     m_orientation = orientation;
 
-    BOOST_LOG_TRIVIAL(info) << "Kinematic orientation: " << static_cast<int>(orientation);
+    BOOST_LOG_TRIVIAL(info) << "Kinematic orientation: " << orientation;
     m_control_scheme->updateOrientation(orientation);
 
     notify(NOTIFY_DEFAULT);

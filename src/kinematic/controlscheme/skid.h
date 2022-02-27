@@ -17,8 +17,6 @@ namespace Robot::Kinematic {
             virtual void init() override;
             virtual void cleanup() override;
 
-            virtual void updateOrientation(Orientation orientation) override;
-
             virtual void steer(float steering, float throttle, float aux_x, float aux_y) override;
 
         private:

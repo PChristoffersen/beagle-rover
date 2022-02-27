@@ -28,8 +28,28 @@ ControlSchemeFrontWheel::~ControlSchemeFrontWheel()
 
 void ControlSchemeFrontWheel::setMotors(float left, float right) 
 {
-    motorServo(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left));
-    motorServo(FRONT_RIGHT, -Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right));
+    motorServo(FRONT_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left));
+    motorServo(FRONT_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right));
+    motorServo(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE));
+    motorServo(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE));
+}
+
+
+void ControlSchemeFrontWheel::setMotorDuty(float steering, float throttle, float outer_dist, float inner_dist, float inner_angle)
+{
+    auto factor = inner_dist/outer_dist;
+    if (steering>=0.0f) {
+        motorDuty(FRONT_LEFT, throttle);
+        motorDuty(FRONT_RIGHT, throttle*factor);
+        motorDuty(REAR_LEFT, throttle);
+        motorDuty(REAR_RIGHT, throttle*factor);
+    }
+    else {
+        motorDuty(FRONT_LEFT, throttle*factor);
+        motorDuty(FRONT_RIGHT, throttle);
+        motorDuty(REAR_LEFT, throttle*factor);
+        motorDuty(REAR_RIGHT, throttle);
+    }
 }
 
 
