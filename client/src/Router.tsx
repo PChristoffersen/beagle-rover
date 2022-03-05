@@ -42,6 +42,7 @@ export default function Router() {
                     { path: 'telemetry', element: <Telemetry /> },
                     { path: 'motors', element: <Motors /> },
                     { path: 'rest', element: <RestAPI /> },
+                    { path: 'test', element: <Test /> },
                     { element: <Home />, index: true },
                 ]
             },

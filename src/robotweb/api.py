@@ -14,8 +14,7 @@ from .api_system import create_app as system_create_app
 from .error_handler import error_middleware
 from .serializer import json_request, json_response
 
-from robotsystem import Robot, InputSource
-
+from robotsystem import Robot, InputSource, robot_version_full
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +30,13 @@ def robot2dict(robot: Robot) -> Dict:
 async def index(request: Request) -> Response:
     robot = request.config_dict["robot"]
     return json_response(robot2dict(robot))
+
+@route.get("/versions")
+async def versions(request: Request) -> Response:
+    return json_response({
+        "version": request.config_dict["version"],
+        "robotsystem": robot_version_full(),
+    })
 
 
 @route.get('/openapi.yaml')

@@ -10,7 +10,7 @@ import FullMotorCard from '../components/motor/FullMotorCard';
 export default function Motors() {
     const { data: kinematic } = useGetKinematicQuery();
     const { data: input } = useGetInputQuery();
-    const enabled = kinematic?.drive_mode === DriveMode.NONE && input?.kinematic_source === InputSource.WEB;
+    const enabled = kinematic?.drive_mode === DriveMode.NONE && input?.kinematic_source === InputSource.WEB && input?.axis_source === InputSource.WEB;
 
     const numMotors = 4;
 

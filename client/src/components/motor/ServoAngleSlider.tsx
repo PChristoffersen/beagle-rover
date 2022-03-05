@@ -13,7 +13,7 @@ function angleText(value: number|undefined): string {
     if (value === undefined) {
         return ""
     }
-    return (value * 180.0 / Math.PI).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "°"
+    return (value).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "°"
 }
 
 
@@ -31,8 +31,8 @@ export default function ServoAngleSlider({ id, disabled=false }: Props) {
     }
 
     const servoEnabled = !disabled && (servo?.enabled || false);
-    const limitMin = servo?.limit_min || -Math.PI/2.0;
-    const limitMax = servo?.limit_max || Math.PI/2.0;
+    const limitMin = servo?.limit_min || -90;
+    const limitMax = servo?.limit_max || 90;
     const step = (limitMax-limitMin)/180.0;
 
     const isDisabled = disabled || !isSuccess || !servoEnabled;
@@ -83,7 +83,6 @@ export default function ServoAngleSlider({ id, disabled=false }: Props) {
                         marks={marks}
                         onChange={handleChange}
                         onChangeCommitted={handleChangeCommit} 
-
                     />
                 </Grid>
             </Grid>

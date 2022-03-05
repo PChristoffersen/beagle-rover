@@ -1,9 +1,23 @@
-from importlib.metadata import entry_points
 from setuptools import setup, find_packages
 from pathlib import Path
 
+
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
+
+def read(rel_path: str) -> str:
+    here = Path(__file__).parent.absolute()
+    file = here / rel_path
+    with file.open("r") as f:
+        return f.read()
+
+def get_version(rel_path: str) -> str:
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
 
 def glob_fix(package_name, glob):
     # this assumes setup.py lives in the folder that contains the package
@@ -13,7 +27,7 @@ def glob_fix(package_name, glob):
 
 setup(
     name="robotweb",
-    version="0.0.1",
+    version=get_version("src/robotweb/__init__.py"),
     author="Peter Christoffersen",
     author_email="pch@plyt.dk",
     description="Web UI for robot",
@@ -43,12 +57,12 @@ setup(
         ]
     },
 
-    requires=[
+    #requires=[
         #"setproctitle",
         #"aiohttp",
         #"python-socketio",
         #"orjson",
-    ]
+    #],
 
     python_requires=">=3.6",
 )

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 from dataclasses import dataclass
 from typing import Dict
 from aiohttp.web import Application, RouteTableDef, Request, Response
@@ -33,8 +34,8 @@ def servo2dict(servo) -> Dict:
         "enabled": servo.enabled,
         "angle": servo.angle,
         "pulse_us": servo.pulse_us,
-        "limit_min": servo.limit_min,
-        "limit_max": servo.limit_max,
+        "limit_min": 180.0 * servo.limit_min / math.pi,
+        "limit_max": 180.0 * servo.limit_max / math.pi,
     }
 
 def servo2dict_update(servo) -> Dict:

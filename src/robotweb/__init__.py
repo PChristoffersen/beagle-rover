@@ -8,6 +8,8 @@ from .api import create_app as api_create_app
 from .cors_handler import cors_middleware
 from . import serializer as _json
 
+__version__ = "1.0"
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,6 +46,7 @@ async def default_index(request: Request) -> Response:
 
 def create_application() -> Application:
     app = Application(middlewares=[cors_middleware])
+    app["version"] = __version__
 
     sio = AsyncServer(async_handlers = False, cors_allowed_origins='*', json=_json)
     sio.attach(app)
@@ -61,3 +64,4 @@ def create_application() -> Application:
         app.add_routes([get("/", default_index)])
 
     return app
+

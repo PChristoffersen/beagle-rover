@@ -1,13 +1,11 @@
 import { Box } from "@mui/material";
+import { GiVintageRobot } from "react-icons/gi";
 
 
 export default function Logo() {
     return (
-        <Box
-            maxHeight={60}
-            component="img"
-            src="/logo192.png"
-            alt="ROBOT"
-        />
-    )
+        <Box display="flex" height="100%">
+            <GiVintageRobot size={46}/>
+        </Box>
+    );
 }

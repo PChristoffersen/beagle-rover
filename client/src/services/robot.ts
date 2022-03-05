@@ -6,8 +6,15 @@ export const socketPrefix = "http://localhost:5000";
 //export const socketPrefix = "http://beaglebone-blue:5000";
 
 
-export const robotSocket = io(socketPrefix);
 
+interface Versions {
+    version: string;
+    robotsystem: string;
+}
+
+
+
+export const robotSocket = io(socketPrefix);
 
 robotSocket.on("connect", () => {
     console.log("RobotConnect", robotSocket.id);
@@ -21,5 +28,17 @@ robotSocket.on("disconnect", () => {
 export const robotApi = createApi({
     reducerPath: 'robotApi',
     baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
-    endpoints: () => ({}),
+    endpoints: (builder) => ({
+
+        getVersions: builder.query<Versions, void>({
+            query: () => `versions`,
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'versions' ],
+        }),
+
+    }),
 })
+
+export const {
+    useGetVersionsQuery,
+} = robotApi;

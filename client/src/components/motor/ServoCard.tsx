@@ -22,7 +22,7 @@ function angleTextTable(value: number|undefined): string {
     if (value === undefined) {
         return "0.0"
     }
-    return float2string(value * 180.0 / Math.PI, 1)
+    return float2string(value, 1)
 }
 
 

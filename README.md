@@ -5,7 +5,7 @@
 ## Create virtual env
 
 ```
-virtualenv --system-site-packages .env
+python3 -m venv --system-site-packages .env
 ```
 
 ## Run server
