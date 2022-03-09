@@ -1,65 +1,6 @@
+import { AnimationModeDescriptionList, IndicatorModeDescriptionList, LEDControl, LEDOutput } from './model';
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
-
-export enum AnimationMode {
-    NONE = "NONE",
-    HEADLIGHTS = "HEADLIGHTS",
-    CONSTRUCTION = "CONSTRUCTION",
-    POLICE = "POLICE",
-    AMBULANCE = "AMBULANCE",
-    RUNNING_LIGHT = "RUNNING_LIGHT",
-    KNIGHT_RIDER = "KNIGHT_RIDER",
-    RAINBOW = "RAINBOW",
-    RAINBOW_WAVE = "RAINBOW_WAVE",
-}
-
-export const animationModes = [
-    { key: AnimationMode.NONE,         disabled: false, name: "None" },
-    { key: AnimationMode.HEADLIGHTS,   disabled: false, name: "Headlights" },
-    { key: AnimationMode.CONSTRUCTION, disabled: false, name: "Construction" },
-    { key: AnimationMode.POLICE,       disabled: false, name: "Police" },
-    { key: AnimationMode.AMBULANCE,    disabled: false, name: "Ambulance" },
-    { key: AnimationMode.RUNNING_LIGHT, disabled: false, name: "Running Light" },
-    { key: AnimationMode.KNIGHT_RIDER, disabled: false, name: "Knight Rider" },
-    { key: AnimationMode.RAINBOW,      disabled: false, name: "Rainbow" },
-    { key: AnimationMode.RAINBOW_WAVE, disabled: false, name: "Rainbow Wave" },
-]
-
-
-export enum IndicatorMode {
-    NONE = "NONE",
-    LEFT = "LEFT",
-    RIGHT = "RIGHT",
-    HAZARD = "HAZARD",
-}
-
-export const indicatorModes = [
-    { key: IndicatorMode.NONE,   disabled: false, name: "None" },
-    { key: IndicatorMode.LEFT,   disabled: false, name: "Turn Left" },
-    { key: IndicatorMode.RIGHT,  disabled: false, name: "Turn Right" },
-    { key: IndicatorMode.HAZARD, disabled: false, name: "Hazard" },
-]
-
-export interface LEDControl {
-    background: string,
-    brightness: number,
-    animation: AnimationMode,
-    indicators: IndicatorMode,
-}
-
-export type ColorSegment = Array<String>;
-
-export type ColorSegments = Map<String, ColorSegment>;
-
-export type LEDOutput = ColorSegments;
-
-export interface ColorLayer {
-    id: number,
-    visible: boolean,
-    depth: number,
-    segments: ColorSegments,
-}
-
 
 
 const ledsApi = robotApi.injectEndpoints({
@@ -100,6 +41,16 @@ const ledsApi = robotApi.injectEndpoints({
             }
         }),
 
+        getAnimationModes: builder.query<AnimationModeDescriptionList, void>({
+            query: () => `leds/animations`,
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'LEDS/Animations' ],
+        }),
+        getIndicatorModes: builder.query<IndicatorModeDescriptionList, void>({
+            query: () => `leds/indicators`,
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'LEDS/Indicators' ],
+        }),
     }),
 
     overrideExisting: false,
@@ -112,4 +63,6 @@ export const {
     useGetLEDSQuery,
     useSetLEDSMutation,
     useGetOutputQuery,
+    useGetAnimationModesQuery,
+    useGetIndicatorModesQuery,
 } = ledsApi;

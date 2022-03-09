@@ -1,60 +1,12 @@
+import { DriveModeDescriptionList, KinematicControl, OrientationDescriptionList } from './model';
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
-
-
-export enum DriveMode {
-    NONE = "NONE",
-    ALL = "ALL",
-    FRONT = "FRONT",
-    REAR = "REAR",
-    SKID = "SKID",
-    SPINNING = "SPINNING",
-    BALANCING = "BALANCING",
-    PASSTHROUGH = "PASSTHROUGH",
-}
-
-export const driveModes = [
-    { key: DriveMode.NONE,        disabled: false,  name: "None" },
-    { key: DriveMode.ALL,         disabled: false,  name: "All wheel steer" },
-    { key: DriveMode.FRONT,       disabled: false,  name: "Front wheel steer" },
-    { key: DriveMode.REAR,        disabled: false,  name: "Rear wheel steer" },
-    { key: DriveMode.SKID,        disabled: false,  name: "Skid steer" },
-    { key: DriveMode.SPINNING,    disabled: false,  name: "Spinning" },
-    { key: DriveMode.BALANCING,   disabled: false,  name: "Balancing" },
-    { key: DriveMode.PASSTHROUGH, disabled: true,   name: "RC Passthrough" },
-]
-
-export enum Orientation {
-    NORTH = "NORTH",
-    SOUTH = "SOUTH",
-    EAST = "EAST",
-    WEST = "WEST",
-}
-
-
-export const orientations = [
-    { key: Orientation.NORTH, name: "Default" },
-    { key: Orientation.SOUTH, name: "Reverse" },
-    { key: Orientation.EAST,  name: "Left" },
-    { key: Orientation.WEST,  name: "Right" },
-]
-
-export function orientationName(orientation: Orientation): string|undefined {
-    return orientations.find((value) => value.key===orientation)?.name;
-}
-
-
-
-export interface Kinematic {
-    drive_mode: DriveMode,
-    orientation: Orientation,
-}
 
 
 const kinematicApi = robotApi.injectEndpoints({
     
     endpoints: (builder) => ({
-        getKinematic: builder.query<Kinematic, void>({
+        getKinematic: builder.query<KinematicControl, void>({
             query: () => `kinematic`,
 
             // @ts-expect-error
@@ -65,7 +17,7 @@ const kinematicApi = robotApi.injectEndpoints({
             }
         }),
 
-        setKinematic: builder.mutation<Kinematic, RecursivePartial<Kinematic>>({
+        setKinematic: builder.mutation<KinematicControl, RecursivePartial<KinematicControl>>({
             query(data) {
                 return {
                     url: `kinematic`,
@@ -76,7 +28,18 @@ const kinematicApi = robotApi.injectEndpoints({
             async onQueryStarted({ ...patch }, { dispatch, queryFulfilled }) {
                 await handleUpdateQuery(undefined, patch, 'getKinematic', ['Kinematic'], dispatch, queryFulfilled, kinematicApi.util.updateQueryData, kinematicApi.util.invalidateTags);
             },
-        })
+        }),
+
+        getDriveModes: builder.query<DriveModeDescriptionList, void>({
+            query: () => `kinematic/drive-modes`,
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'Kinematic/DriveModes' ],
+        }),
+        getOrientations: builder.query<OrientationDescriptionList, void>({
+            query: () => `kinematic/orientations`,
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'Kinematic/Orientations' ],
+        }),
     }),
 
     overrideExisting: false,
@@ -88,4 +51,6 @@ const kinematicApi = robotApi.injectEndpoints({
 export const { 
     useGetKinematicQuery,
     useSetKinematicMutation,
+    useGetDriveModesQuery,
+    useGetOrientationsQuery,
 } = kinematicApi;

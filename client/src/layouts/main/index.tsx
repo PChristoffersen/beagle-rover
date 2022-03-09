@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 
 import Navbar from './Navbar';
+import { Box, Container } from '@mui/material';
 
 const RootStyle = styled('div')(({ theme }) => ({
     height: '100vh',
@@ -16,6 +17,10 @@ const HeaderStyle = styled('div')(({ theme }) => ({
 
 const BodyStyle = styled('div')(({ theme }) => ({
     flex: '1 1 auto',
+    width: "100%",
+    maxWidth: theme.breakpoints.values.xl,
+    marginLeft: "auto",
+    marginRight: "auto",
 }));
 
 

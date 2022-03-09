@@ -14,16 +14,19 @@ import MenuItem from '@mui/material/MenuItem';
 import { pages } from '../../Router';
 import Logo from '../../components/Logo';
 import RobotStatus from './RobotStatus';
-import { Tab, Tabs } from '@mui/material';
+import { Tab, Tabs, useTheme } from '@mui/material';
 
 
 
 export default function Navbar() {
+    const { palette } = useTheme();
     const { pathname } = useLocation();
     const currentPage = pages.find((page) => !!matchPath(page.to + "/*", pathname))
 
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   
+    console.log(palette);
+
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
       setAnchorElNav(event.currentTarget);
     };

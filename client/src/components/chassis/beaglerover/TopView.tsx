@@ -1,12 +1,12 @@
 import { range } from 'lodash';
+import { LEDOutput } from '../../../services/model';
 import Body from "./pieces/Body";
 import Connector from "./pieces/Connector";
+import LEDStrip from './pieces/LEDStrip';
 import Motor from "./pieces/Motor";
 import ServoArm from "./pieces/ServoArm";
 import Wheel from "./pieces/Wheel";
 import WheelArm from "./pieces/WheelArm";
-import { useGetMotorQuery } from '../../../services/motors';
-
 
 const wheelPosX = 48.2;
 const wheelPosY = 48.2;
@@ -47,30 +47,24 @@ function rotate(idx: number, angle: number) {
 
 
 
-export default function TopView() {
-    const { data: motor0 } = useGetMotorQuery(0)
-    const { data: motor1 } = useGetMotorQuery(1)
-    const { data: motor2 } = useGetMotorQuery(2)
-    const { data: motor3 } = useGetMotorQuery(3)
-    
-    const wheelAngles = [
-        motor0?.servo?.angle || 0.0,
-        motor1?.servo?.angle || 0.0,
-        motor2?.servo?.angle || 0.0,
-        motor3?.servo?.angle || 0.0,
-    ]
+interface Props extends React.SVGProps<SVGSVGElement> {
+    wheelAngles: Array<number>;
+    leds?: LEDOutput;
+}
 
 
+export default function TopView({ wheelAngles, leds, ...props }: Props) {
 
     return (
         <svg
             width="100%"
             viewBox="0 0 275 275"
             xmlns="http://www.w3.org/2000/svg"
+            {...props}
         >
 
             {range(4).map((idx) => (
-                <g id={"motor"+idx} transform={"translate("+wheelPositions[idx][0]+","+wheelPositions[idx][1]+") " + rotate(idx, wheelAngles[idx])}>
+                <g key={"motor"+idx} transform={"translate("+wheelPositions[idx][0]+","+wheelPositions[idx][1]+") " + rotate(idx, wheelAngles[idx])}>
                     <Motor />
                 </g>
             ))}
@@ -78,11 +72,11 @@ export default function TopView() {
             <Body />
 
             {range(4).map((idx) => (
-                <g id={"wheels"+idx}>
+                <g key={"wheel"+idx}>
                     <g transform={"translate("+servoPositions[idx][0]+","+servoPositions[idx][1]+") " + rotate(idx, wheelAngles[idx])}>
                         <ServoArm />
                     </g>
-                    <g id={"wheel"+idx} transform={"translate("+wheelPositions[idx][0]+","+wheelPositions[idx][1]+") " + rotate(idx, wheelAngles[idx])}>
+                    <g transform={"translate("+wheelPositions[idx][0]+","+wheelPositions[idx][1]+") " + rotate(idx, wheelAngles[idx])}>
                         <WheelArm />
                         <g transform={"translate(-18, 10) rotate("+wheelAngles[idx]+")"}>
                             <Connector />
@@ -93,11 +87,22 @@ export default function TopView() {
                     </g>
 
 
-                    <g id={"wheel"+idx} transform={"translate("+wheelPositions[idx][0]+","+wheelPositions[idx][1]+") " + rotate(idx, wheelAngles[idx])}>
+                    <g transform={"translate("+wheelPositions[idx][0]+","+wheelPositions[idx][1]+") " + rotate(idx, wheelAngles[idx])}>
                         <Wheel />
                     </g>
                 </g>
             ))}    
+
+            { leds?.front && 
+                <g transform="translate(137.5, 64.5)">
+                    <LEDStrip segment={leds.front} />
+                </g>
+            }
+            { leds?.back && 
+                <g transform="translate(137.5, 64.5) rotate(180, 0, 73)">
+                    <LEDStrip segment={leds.back} />
+                </g>
+            }
 
         </svg>
     )

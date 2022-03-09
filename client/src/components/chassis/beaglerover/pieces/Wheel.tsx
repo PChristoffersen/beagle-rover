@@ -1,13 +1,12 @@
 import { css } from "@emotion/react"
+import { DefaultColors } from "../Colors";
 
 
-interface WheelProps {
-    color?: string;
-    tyreColor?: string;
-    strokeColor?: string;
-}
+export default function Wheel() {
+    const color = DefaultColors.wheelColor;
+    const tyreColor = DefaultColors.strokeColor;
+    const strokeColor = DefaultColors.strokeColor;
 
-export default function Wheel({ color="grey", tyreColor="black", strokeColor="black" }: WheelProps) {
     return (
         /*
         <svg

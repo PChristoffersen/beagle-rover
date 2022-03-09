@@ -1,5 +1,4 @@
-import { BoxProps } from "@mui/material";
-import BeagleRoverRender from "./beaglerover/BeagleRoverRender";
+import { Box, BoxProps } from "@mui/material";
 
 
 export type RobotRenderViewType = "default" | "top" | "front" | "side";
@@ -9,8 +8,26 @@ export interface RobotRenderProps extends BoxProps {
 }
 
 
-export default function RobotRender(props: RobotRenderProps) {
+function view2src(view: RobotRenderViewType): string {
+    switch (view) {
+        case "top":
+            return "/images/beaglerover/top.png";
+        case "default":
+        default:
+            return "/images/beaglerover/default.png";
+    }
+}
+
+
+
+export default function RobotRender({ view="default", ...props }: RobotRenderProps) {
+    const src = view2src(view);
+
     return (
-        <BeagleRoverRender {...props} />
-    );
+        <Box
+            component="img"
+            src={src}
+            {...props}
+        />
+    )
 }

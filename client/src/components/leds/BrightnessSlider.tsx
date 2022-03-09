@@ -3,7 +3,8 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import { useGetLEDSQuery, useSetLEDSMutation } from "../../services/leds";
 import { useState } from "react";
-import { InputSource, useGetInputQuery } from "../../services/input";
+import { useGetInputQuery } from "../../services/input";
+import { InputSource } from "../../services/model";
 
 
 

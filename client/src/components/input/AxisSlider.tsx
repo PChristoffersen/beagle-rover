@@ -1,13 +1,14 @@
 import { Box, FormLabel, Typography } from "@mui/material";
 import { useState } from "react";
-import { InputSource, useGetInputQuery, useGetInputStateQuery, useSetInputStateMutation } from "../../services/input";
+import { useGetInputQuery, useGetInputStateQuery, useSetInputStateMutation } from "../../services/input";
+import { InputSource } from "../../services/model";
 import CenterSlider from "../common/CenterSlider";
 
 
 export interface AxisSliderProps {
     disabled?: boolean;
     title?: string;
-    axis: "steering" | "throttle" | "aux_x" | "aux_y";
+    axis: "direction" | "throttle" | "aux_x" | "aux_y";
 }
 
 export default function AxisSlider({ disabled, axis, title }: AxisSliderProps) {

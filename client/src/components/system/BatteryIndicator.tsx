@@ -15,7 +15,8 @@ import BatteryCharging90Icon from '@mui/icons-material/BatteryCharging90';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import PowerIcon from '@mui/icons-material/Power';
 
-import { PowerSourceBattery, PowerSourceType, useGetSystemQuery } from "../../services/system";
+import { useGetSystemQuery } from "../../services/system";
+import { PowerSourceBattery, PowerSourceType } from "../../services/model";
 
 
 export default function BatteryIndicator() {

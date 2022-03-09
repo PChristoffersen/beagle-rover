@@ -1,26 +1,6 @@
+import { Motor, MotorControl, ResetOdometerAction } from './model';
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
-
-export interface MotorServo {
-    enabled: boolean,
-    angle: number,
-    pulse_us: number,
-    limit_min: number,
-    limit_max: number,
-}
-
-export interface Motor {
-    id: number,
-    enabled: boolean,
-    duty: number,
-    target_rpm: number,
-    rpm: number,
-    encoder: number,
-    odometer: number,
-    servo?: MotorServo,
-}
-
-
 
 
 robotApi.enhanceEndpoints({
@@ -31,6 +11,27 @@ robotApi.enhanceEndpoints({
 const motorApi = robotApi.injectEndpoints({
     
     endpoints: (builder) => ({
+        getMotorControl: builder.query<MotorControl, void>({
+            query: () => `motors`,
+
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'Motor/Control' ],
+
+            async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
+                await handleUpdateSubscription("/motors", "update", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
+            }
+        }),
+
+        motorControlAction: builder.mutation<ResetOdometerAction, void>({
+            query: (data) => {
+                return {
+                    url: `motors`,
+                    method: 'POST',
+                    data,
+                }
+            },
+        }),
+
         getMotor: builder.query<Motor, number>({
             query: (id) => `motors/${id}`,
 
@@ -63,6 +64,8 @@ const motorApi = robotApi.injectEndpoints({
 // Export hooks for usage in functional components, which are
 // auto-generated based on the defined endpoints
 export const { 
+    useGetMotorControlQuery,
     useGetMotorQuery,
     useSetMotorMutation,
+    useMotorControlActionMutation,
 } = motorApi;

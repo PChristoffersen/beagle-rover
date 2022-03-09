@@ -30,11 +30,11 @@ function SettingsCard() {
 export default function LEDS() {
     return (
         <Page>
-            <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ padding: { xs: 1, sm: 2 } }}>
-                <Grid item xs={12} sm="auto">
+            <Grid container spacing={{ xs: 1, md: 2 }} sx={{ padding: { xs: 1, md: 2 } }}>
+                <Grid item xs={12} order={{ xs: 2, md: 1 }} md="auto">
                     <SettingsCard />
                 </Grid>
-                <Grid item xs={12} sm>
+                <Grid item xs={12} order={{ xs: 1, md: 2 }} md>
                     <OutputCard />
                 </Grid>
             </Grid>

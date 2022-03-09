@@ -2,42 +2,13 @@ import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 import { io, Socket } from 'socket.io-client';
 import { socketPrefix } from "./robot";
-
-
-export interface InputState {
-    controller: string,
-    steering: number,
-    throttle: number,
-    aux_x: number,
-    aux_y: number,
-}
-
-export enum InputSource {
-    MANUAL = "MANUAL",
-    RC = "RC",
-    WEB = "WEB",
-    CONTROLLER = "CONTROLLER",
-}
-
-export const inputSources = [
-    { key: InputSource.MANUAL,     disabled: false,   name: "Server" },
-    { key: InputSource.RC,         disabled: false,  name: "Remote controller" },
-    { key: InputSource.WEB,        disabled: false,  name: "Browser" },
-    { key: InputSource.CONTROLLER, disabled: true,  name: "Game controller" },
-]
-
-export interface Input {
-    axis_source: InputSource,
-    kinematic_source: InputSource,
-    led_source: InputSource,
-}
-
+import { InputControl, InputSourceDescriptionList, InputState } from './model';
 
 
 const inputApi = robotApi.injectEndpoints({
     
     endpoints: (builder) => ({
-        getInput: builder.query<Input, void>({
+        getInput: builder.query<InputControl, void>({
             query: () => `input`,
 
             // @ts-expect-error
@@ -49,7 +20,7 @@ const inputApi = robotApi.injectEndpoints({
         }),
 
 
-        setInput: builder.mutation<Input, RecursivePartial<Input>>({
+        setInput: builder.mutation<InputControl, RecursivePartial<InputControl>>({
             query(data) {
                 return {
                     url: `input`,
@@ -87,6 +58,12 @@ const inputApi = robotApi.injectEndpoints({
             },
         }),
 
+        getInputSources: builder.query<InputSourceDescriptionList, void>({
+            query: () => `input/sources`,
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'input/sources' ],
+        }),
+
     }),
 
     overrideExisting: false,
@@ -109,4 +86,5 @@ export const {
     useSetInputMutation,
     useGetInputStateQuery,
     useSetInputStateMutation,
+    useGetInputSourcesQuery,
 } = inputApi;

@@ -1,6 +1,7 @@
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { InputSource, useGetInputQuery } from "../../services/input";
-import { AnimationMode, animationModes, useGetLEDSQuery, useSetLEDSMutation } from '../../services/leds';
+import { useGetInputQuery } from "../../services/input";
+import { useGetAnimationModesQuery, useGetLEDSQuery, useSetLEDSMutation } from '../../services/leds';
+import { AnimationMode, AnimationModeDescription, InputSource } from "../../services/model";
 
 
 interface Props {
@@ -9,9 +10,10 @@ interface Props {
 
 
 export default function AnimationModeSelect({ disabled }: Props) {
-    const { data: leds, isSuccess, isError } = useGetLEDSQuery()
+    const { data: modes } = useGetAnimationModesQuery();
+    const { data: leds, isSuccess, isError } = useGetLEDSQuery();
     const { data: input } = useGetInputQuery();
-    const [ update ] = useSetLEDSMutation()
+    const [ update ] = useSetLEDSMutation();
 
     const handleChange = (event: SelectChangeEvent) => {
         const value = event.target.value as AnimationMode;
@@ -32,7 +34,7 @@ export default function AnimationModeSelect({ disabled }: Props) {
                 onChange={handleChange}
                 disabled={isDisabled}
             >
-                { isSuccess && animationModes.map(entry => (
+                { isSuccess && modes && modes.map((entry: AnimationModeDescription) => (
                     <MenuItem key={entry.key} value={entry.key} disabled={entry.disabled}>{entry.name}</MenuItem>
                 ))}
                 { !isSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}

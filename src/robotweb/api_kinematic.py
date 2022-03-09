@@ -23,6 +23,24 @@ KINEMATIC_PROPERTIES = frozenset([
 ])
 
 
+DRIVE_MODES = [
+    { "key": str(DriveMode.NONE),        "disabled": False,  "name": "None" },
+    { "key": str(DriveMode.ALL),         "disabled": False,  "name": "All wheel steer" },
+    { "key": str(DriveMode.FRONT),       "disabled": False,  "name": "Front wheel steer" },
+    { "key": str(DriveMode.REAR),        "disabled": False,  "name": "Rear wheel steer" },
+    { "key": str(DriveMode.SKID),        "disabled": False,  "name": "Skid steer" },
+    { "key": str(DriveMode.SPINNING),    "disabled": False,  "name": "Spinning" },
+    { "key": str(DriveMode.BALANCING),   "disabled": False,  "name": "Balancing" },
+    { "key": str(DriveMode.PASSTHROUGH), "disabled": True,   "name": "RC Passthrough" },
+]
+
+ORIENTATIONS = [
+    { "key": str(Orientation.NORTH), "name": "Default" },
+    { "key": str(Orientation.SOUTH), "name": "Reverse" },
+    { "key": str(Orientation.EAST),  "name": "Left" },
+    { "key": str(Orientation.WEST),  "name": "Right" },
+]
+
 
 def kinematic2dict(kinematic: Kinematic) -> dict:
     return {
@@ -57,11 +75,11 @@ async def put(request: Request) -> Response:
 
 @route.get("/drive-modes")
 async def indicators(request: Request) -> Response:
-    return json_response([ str(v) for _,v in DriveMode.values.items() ])
+    return json_response(DRIVE_MODES)
 
 @route.get("/orientations")
 async def indicators(request: Request) -> Response:
-    return json_response([ str(v) for _,v in Orientation.values.items() ])
+    return json_response(ORIENTATIONS)
 
 
 class KinematicWatch(SubscriptionWatch):

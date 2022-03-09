@@ -2,7 +2,8 @@ import { Box, CircularProgress, Grid, Stack, Theme, Typography } from "@mui/mate
 import { SxProps, SystemProps } from '@mui/system';
 import CircleIcon from '@mui/icons-material/Circle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { ColorSegment, useGetOutputQuery } from "../../services/leds";
+import { useGetOutputQuery } from "../../services/leds";
+import { Color, ColorSegment } from "../../services/model";
 
 
 interface SegmentProps {
@@ -10,14 +11,14 @@ interface SegmentProps {
     colors: ColorSegment,
 };
 
-function Segment({name, colors}: SegmentProps) {
+function Segment({ name, colors }: SegmentProps) {
     return (
         <Box sx={{ minWidth: 200 }}>
             <Typography variant="overline">
                 {name}
             </Typography>
             <Stack direction="row" >
-                {colors.map((col, index) => (
+                {colors.map((col: Color, index: number) => (
                     <CircleIcon key={index} fontSize="large" htmlColor={"#"+col} />
                 ))}
             </Stack>

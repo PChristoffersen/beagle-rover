@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { InputSource, inputSources, useGetInputQuery, useSetInputMutation } from '../../services/input';
+import { useGetInputQuery, useGetInputSourcesQuery, useSetInputMutation } from '../../services/input';
+import { InputSource, InputSourceDescription } from '../../services/model';
 
 
 interface Props {
@@ -9,7 +10,8 @@ interface Props {
 }
 
 export default function InputSourceSelect({ title, source }: Props) {
-    const { data: input, isError, isSuccess } = useGetInputQuery()
+    const { data: inputSources } = useGetInputSourcesQuery();
+    const { data: input, isError, isSuccess } = useGetInputQuery();
     const [ update ] = useSetInputMutation();
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -35,7 +37,7 @@ export default function InputSourceSelect({ title, source }: Props) {
                 onChange={handleChange}
                 disabled={!isSuccess}
             >
-                { isSuccess && inputSources.map(entry => (
+                { isSuccess && inputSources && inputSources.map((entry: InputSourceDescription) => (
                     <MenuItem key={entry.key} value={entry.key} disabled={entry.disabled}>{entry.name}</MenuItem>
                 ))}
                 { !isSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}

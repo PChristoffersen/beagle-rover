@@ -1,12 +1,11 @@
+import { DefaultColors } from "../Colors";
 
-interface WheelArmProps {
-    color?: string;
-    dotColor?: string;
-    strokeColor?: string;
-}
+export default function WheelArm() {
+    const joinColor = DefaultColors.joinColor;
+    const strokeColor = DefaultColors.strokeColor;
+    const dotColor = DefaultColors.dotColor;
 
-export default function WheelArm({ color="GhostWhite", dotColor="black", strokeColor="black" }: WheelArmProps) {
-  return (
+    return (
         /*
         <svg
             width="42mm"
@@ -36,7 +35,7 @@ export default function WheelArm({ color="GhostWhite", dotColor="black", strokeC
             />
             <path
                 style={{
-                    fill: color,
+                    fill: joinColor,
                     stroke: strokeColor,
                     strokeWidth: 0.5,
                 }}
@@ -46,5 +45,5 @@ export default function WheelArm({ color="GhostWhite", dotColor="black", strokeC
         /*
         </svg>
         */
-  )
+    )
 }

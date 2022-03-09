@@ -1,31 +1,24 @@
-import { Box, Card, CardContent, CardHeader, Grid, Typography } from "@mui/material";
+import { Box, Card, CardContent, CardHeader, Grid, Typography, useTheme } from "@mui/material";
 import TopView from "../components/chassis/beaglerover/TopView";
-import FrontView from "../components/chassis/beaglerover/FrontView";
-import SideView from "../components/chassis/beaglerover/SideView";
 import Page from "../components/Page";
+import { useGetOutputQuery } from "../services/leds";
 
 
 export default function Test() {
+    const { data: output, isSuccess } = useGetOutputQuery();
+
+
+    const wheelAngles = [ 0,0,0,0 ];
+
     return (
         <Page>
             <Box
                 sx={{
                     height: "100%",
+                    backgroundColor: "blue",
                 }}
             >
-                <Typography variant="h1" >
-                    Hello world
-                </Typography>
-
-                <Grid container>
-                    <Grid item >
-                        <SideView />
-                    </Grid>
-                    <Grid item>
-                        <FrontView />
-                    </Grid>
-                </Grid>
-
+                <TopView wheelAngles={wheelAngles} leds={output} />
             </Box>
         </Page>
     );

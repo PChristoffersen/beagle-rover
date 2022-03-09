@@ -1,15 +1,15 @@
+import { DefaultColors } from "../Colors";
 
-interface BodyProps {
-    color?: string;
-    armColor?: string;
-    dotColor?: string;
-    boardColor?: string;
-    servoColor?: string;
-    screwColor?: string;
-    strokeColor?: string;
-}
 
-export default function Body({ color="grey", armColor="#166483", dotColor="black", boardColor="black", servoColor="black", screwColor="black", strokeColor="black" }: BodyProps) {
+export default function Body() {
+    const bodyColor = DefaultColors.bodyColor;
+    const armColor = DefaultColors.armColor;
+    const dotColor = DefaultColors.dotColor;
+    const boardColor = DefaultColors.boardColor;
+    const servoColor = DefaultColors.servoColor;
+    const screwColor = DefaultColors.screwColor;
+    const strokeColor = DefaultColors.strokeColor;
+
     return (
         /*
         <svg
@@ -124,7 +124,7 @@ export default function Body({ color="grey", armColor="#166483", dotColor="black
 
             <path
                 style={{
-                    fill: color,
+                    fill: bodyColor,
                     stroke: strokeColor,
                     strokeWidth: 0.5,
                 }}

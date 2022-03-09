@@ -1,12 +1,6 @@
+import { RCReceiver } from './model';
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
-
-
-export interface RCReceiver {
-    enabled: boolean,
-    connected: boolean,
-    rssi: number,
-}
 
 
 const rcreceiverApi = robotApi.injectEndpoints({

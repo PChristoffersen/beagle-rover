@@ -1,9 +1,10 @@
 import { range } from 'lodash';
 import { Grid } from '@mui/material';
-import { DriveMode, useGetKinematicQuery } from '../services/kinematic';
-import { InputSource, useGetInputQuery } from '../services/input';
+import { useGetKinematicQuery } from '../services/kinematic';
+import { useGetInputQuery } from '../services/input';
 import Page from '../components/Page';
 import FullMotorCard from '../components/motor/FullMotorCard';
+import { DriveMode, InputSource } from '../services/model';
 
 
 

@@ -24,11 +24,19 @@ INPUT_PROPERTIES = frozenset([
 ])
 
 SOURCE_PROPERTIES = frozenset([
-    "steering",
+    "direction",
     "throttle",
     "aux_x",
     "aux_y"
 ])
+
+
+INPUT_SOURCES = [
+    { "key": str(InputSource.MANUAL),     "disabled": False, "name": "Server" },
+    { "key": str(InputSource.RC),         "disabled": False, "name": "Remote controller" },
+    { "key": str(InputSource.WEB),        "disabled": False, "name": "Browser" },
+    { "key": str(InputSource.CONTROLLER), "disabled": True,  "name": "Game controller" },
+]
 
 
 def input2dict(input) -> dict:
@@ -40,7 +48,7 @@ def input2dict(input) -> dict:
 
 def interface2dict(interface: InputInterface) -> dict:
     return {
-        "steering": interface.steering,
+        "direction": interface.direction,
         "throttle": interface.throttle,
         "aux_x": interface.aux_x,
         "aux_y": interface.aux_y,
@@ -76,7 +84,7 @@ async def put(request: Request) -> Response:
 
 @route.get("/sources")
 async def animations(request: Request) -> Response:
-    return json_response([ str(v) for k,v in InputSource.values.items()])
+    return json_response(INPUT_SOURCES)
 
 
 @route.get("/state")

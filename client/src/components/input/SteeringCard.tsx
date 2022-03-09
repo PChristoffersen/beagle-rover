@@ -1,8 +1,10 @@
 import React,{ useState } from "react";
-import { Card, CardContent, Tab, Tabs, Box } from "@mui/material";
+import { Card, CardContent, Tab, Tabs, Box, Typography } from "@mui/material";
 import SliderSteering from "./SliderSteering";
 import JoystickSteering from "./JoystickSteering";
 import GamepadSteering from "./GamepadSteering";
+import { useGetInputQuery } from "../../services/input";
+import { InputSource } from "../../services/model";
 
 
 interface TabPanelProps {
@@ -34,10 +36,27 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function SteeringCard() {
+    const { data: input } = useGetInputQuery();
     const [ currentTab, setCurrentTab ] = useState<number>(0);
+
+    const inControl = input?.axis_source===InputSource.WEB;
+
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setCurrentTab(newValue);
+    }
+
+
+    if (!inControl) {
+        return (
+            <Card sx={{ minWidth: 375, minHeight: 375 }}>
+                <CardContent>
+                    <Typography>
+                        Not in control
+                    </Typography>
+                </CardContent>
+            </Card>
+        )
     }
 
     return (

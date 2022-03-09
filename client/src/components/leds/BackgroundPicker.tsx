@@ -2,7 +2,8 @@ import { useEffect, useState, KeyboardEvent, useCallback } from "react";
 import { Color, ColorError, ColorPicker, ColorValue, createColor } from "@dmitrychebayewski/mui-color";
 import { Box } from "@mui/material";
 import { useGetLEDSQuery, useSetLEDSMutation } from "../../services/leds";
-import { InputSource, useGetInputQuery } from "../../services/input";
+import { useGetInputQuery } from "../../services/input";
+import { InputSource } from "../../services/model";
 
 
 interface Props {

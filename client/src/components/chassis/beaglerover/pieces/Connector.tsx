@@ -1,11 +1,11 @@
+import { DefaultColors } from "../Colors";
 
-interface ConnectorProps {
-    color?: string;
-    strokeColor?: string;
-}
 
-export default function Connector({ color = "GhostWhite", strokeColor="black" }: ConnectorProps) {
-  return (
+export default function Connector() {
+    const joinColor = DefaultColors.joinColor;
+    const strokeColor = DefaultColors.strokeColor;
+
+    return (
         /*
         <svg
             width="70mm"
@@ -17,7 +17,7 @@ export default function Connector({ color = "GhostWhite", strokeColor="black" }:
         <g transform="translate(4,-4) rotate(90)">
             <path
                 style={{
-                    fill: color,
+                    fill: joinColor,
                     stroke: strokeColor,
                     strokeWidth: 0.5,
                 }}
@@ -27,5 +27,5 @@ export default function Connector({ color = "GhostWhite", strokeColor="black" }:
         /*
         </svg>
         */
-  )
+    )
 }

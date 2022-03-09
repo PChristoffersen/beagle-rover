@@ -1,14 +1,12 @@
+import { DefaultColors } from "../Colors";
 
 
-interface ServoArmProps {
-    color?: string;
-    dotColor?: string;
-    strokeColor?: string;
-}
+export default function ServoArm() {
+    const joinColor = DefaultColors.joinColor;
+    const strokeColor = DefaultColors.strokeColor;
+    const dotColor = DefaultColors.dotColor;
 
-
-export default function ServoArm({ color = "GhostWhite", dotColor = "black", strokeColor="black" }: ServoArmProps) {
-  return (
+    return (
         /*
         <svg
             width="42mm"
@@ -38,7 +36,7 @@ export default function ServoArm({ color = "GhostWhite", dotColor = "black", str
             />
             <path
                 style={{
-                    fill: color,
+                    fill: joinColor,
                     stroke: strokeColor,
                     strokeWidth: 0.5,
                 }}
@@ -48,5 +46,5 @@ export default function ServoArm({ color = "GhostWhite", dotColor = "black", str
         /*
         </svg>
         */
-  )
+    )
 }

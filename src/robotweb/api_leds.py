@@ -18,10 +18,6 @@ route = RouteTableDef()
 
 LAYER_DEPTHS = [ 5, 15 ]
 
-ANIMATION_NAMES = {
-    LEDAnimation.NONE: "None"
-}
-
 LED_PROPERTIES = frozenset([
     "brightness",
     "background",
@@ -32,6 +28,27 @@ LED_PROPERTIES = frozenset([
 LAYER_PROPERTIES = frozenset([
     "visible",
 ])
+
+
+ANIMATION_MODES = [
+    { "key": str(LEDAnimation.NONE),         "disabled": False, "name": "None"},
+    { "key": str(LEDAnimation.HEADLIGHTS),   "disabled": False, "name": "Headlights" },
+    { "key": str(LEDAnimation.CONSTRUCTION), "disabled": False, "name": "Construction" },
+    { "key": str(LEDAnimation.POLICE),       "disabled": False, "name": "Police" },
+    { "key": str(LEDAnimation.AMBULANCE),    "disabled": False, "name": "Ambulance" },
+    { "key": str(LEDAnimation.RUNNING_LIGHT),"disabled": False, "name": "Running Light" },
+    { "key": str(LEDAnimation.KNIGHT_RIDER), "disabled": False, "name": "Knight Rider" },
+    { "key": str(LEDAnimation.RAINBOW),      "disabled": False, "name": "Rainbow" },
+    { "key": str(LEDAnimation.RAINBOW_WAVE), "disabled": False, "name": "Rainbow Wave" },
+]
+
+INDICATOR_MODES = [
+    { "key": str(LEDIndicator.NONE),   "disabled": False, "name": "None" },
+    { "key": str(LEDIndicator.LEFT),   "disabled": False, "name": "Turn Left" },
+    { "key": str(LEDIndicator.RIGHT),  "disabled": False, "name": "Turn Right" },
+    { "key": str(LEDIndicator.HAZARD), "disabled": False, "name": "Hazard" },
+]
+
 
 
 def segment2list(segment: LEDColorSegment) -> list:
@@ -163,13 +180,11 @@ async def put_layer(request: Request) -> Response:
 
 @route.get("/animations")
 async def animations(request: Request) -> Response:
-    return json_response([ str(v) for _,v in LEDAnimation.values.items() ])
+    return json_response(ANIMATION_MODES)
 
 @route.get("/indicators")
 async def indicators(request: Request) -> Response:
-    return json_response([ str(v) for _,v in LEDIndicator.values.items() ])
-
-
+    return json_response(INDICATOR_MODES)
 
 
 

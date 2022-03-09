@@ -1,43 +1,6 @@
+import { System } from './model';
 import { robotApi } from './robot';
 import { handleUpdateSubscription } from './util';
-
-
-export enum PowerSourceType {
-    UNKNOWN = "UNKNOWN",
-    BATTERY = "BATTERY"
-}
-
-export interface PowerSource {
-    type: PowerSourceType
-}
-
-export interface PowerSourceUnknown extends PowerSource {
-    type: PowerSourceType.UNKNOWN
-}
-
-export interface PowerSourceBattery extends PowerSource {
-    type: PowerSourceType.BATTERY
-    charging: boolean,
-    on_battery: boolean,
-    jack_voltage: number,
-    percent: number,
-    voltage: number,
-}
-
-export interface Power {
-    system: PowerSourceUnknown | PowerSourceBattery
-}
-
-export interface Network {
-
-}
-
-
-
-export interface System {
-    network: Network,
-    power: Power,
-}
 
 
 const systemApi = robotApi.injectEndpoints({

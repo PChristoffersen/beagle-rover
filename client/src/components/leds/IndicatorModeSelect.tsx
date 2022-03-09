@@ -1,6 +1,7 @@
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { InputSource, useGetInputQuery } from "../../services/input";
-import { IndicatorMode, indicatorModes, useGetLEDSQuery, useSetLEDSMutation } from '../../services/leds';
+import { useGetInputQuery } from "../../services/input";
+import { useGetIndicatorModesQuery, useGetLEDSQuery, useSetLEDSMutation } from '../../services/leds';
+import { IndicatorMode, IndicatorModeDescription, InputSource } from "../../services/model";
 
 
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function IndicatorModeSelect({ disabled }: Props) {
+    const { data: modes } = useGetIndicatorModesQuery();
     const { data: leds, isSuccess, isError } = useGetLEDSQuery();
     const { data: input } = useGetInputQuery();
     const [ update ] = useSetLEDSMutation();
@@ -32,7 +34,7 @@ export default function IndicatorModeSelect({ disabled }: Props) {
                 onChange={handleChange}
                 disabled={isDisabled}
             >
-                { isSuccess && indicatorModes.map(entry => (
+                { isSuccess && modes && modes.map((entry: IndicatorModeDescription) => (
                     <MenuItem key={entry.key} value={entry.key} disabled={entry.disabled}>{entry.name}</MenuItem>
                 ))}
                 { !isSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}

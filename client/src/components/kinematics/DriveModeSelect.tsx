@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { DriveMode, driveModes, useGetKinematicQuery, useSetKinematicMutation } from '../../services/kinematic';
+import { useGetDriveModesQuery, useGetKinematicQuery, useSetKinematicMutation } from '../../services/kinematic';
+import { DriveMode, DriveModeDescription } from '../../services/model';
 
 
 
 export default function DriveModeSelect() {
-    const { data: kinematic, isError, isSuccess } = useGetKinematicQuery()
+    const { data: driveModes } = useGetDriveModesQuery();
+    const { data: kinematic, isError, isSuccess } = useGetKinematicQuery();
     const [ update ] = useSetKinematicMutation();
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -26,7 +28,7 @@ export default function DriveModeSelect() {
                 onChange={handleChange}
                 disabled={!isSuccess}
             >
-                { isSuccess && driveModes.map(entry => (
+                { isSuccess && driveModes && driveModes.map((entry: DriveModeDescription) => (
                     <MenuItem key={entry.key} value={entry.key} disabled={entry.disabled}>{entry.name}</MenuItem>
                 ))}
                 { !isSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}

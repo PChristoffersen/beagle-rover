@@ -6,7 +6,7 @@ info:
   description: API for controlling robot cars
 
 servers:
-  - url: http://localhost:5000/api
+  - url: http://localhost:3002/api
 
 tags:
   - name: Input
@@ -19,6 +19,8 @@ tags:
     description: Remote control receiver
   - name: LEDS
     description: Control lights
+  - name: System
+    description: System information
 
 paths:
 
@@ -56,7 +58,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/InputControl"
 
-
   /input/state:
     get:
       summary: Get axis state
@@ -89,6 +90,22 @@ paths:
             application/json:    
               schema:
                 $ref: "#/components/schemas/InputState"
+
+  /input/sources:
+    get:
+      summary: List input sources
+      description: List available input source
+      operationId: input_list_input_sources
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Available input source
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InputSourceDescriptionList"
+
 
   /kinematic:
     get:
@@ -136,9 +153,7 @@ paths:
           content:
             application/json:    
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/KinematicDriveMode"
+                $ref: "#/components/schemas/DriveModeDescriptionList"
 
   /kinematic/orientations:
     get:
@@ -153,28 +168,41 @@ paths:
           content:
             application/json:    
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/KinematicOrientation"
+                $ref: "#/components/schemas/OrientationDescriptionList"
 
 
   /motors:
     get:
-      summary: List motors
-      description: List all motors
-      operationId: motors_list
+      summary: Control properties
+      description: Get global control motor properties
+      operationId: motors_properties
       tags:
         - Motors
       responses:
         '200':
-          description: List of motors
+          description: Control properties
           content:
             application/json:    
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Motor"
+                $ref: "#/components/schemas/MotorControl"
       
+  /motors/actions:
+    post:
+      summary: Perform control action
+      description: Motor action
+      operationId: motors_action
+      tags:
+        - Motors
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/ResetOdometerAction"
+      responses:
+        '200':
+          description: Success
+
 
   /motors/{id}:
     get:
@@ -222,6 +250,20 @@ paths:
               schema:
                 $ref: "#/components/schemas/Motor"
 
+  /telemetry/imu:
+    get:
+      summary: Get IMU Telemetry
+      description: Current IMU telemetry values
+      operationId: telemetry_get_imu
+      tags:
+        - Telemetry
+      responses:
+        '200':
+          description: IMU telemetry
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/IMUData"
 
 
   /rcreceiver:
@@ -304,9 +346,7 @@ paths:
           content:
             application/json:    
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/LEDAnimation"
+                $ref: "#/components/schemas/AnimationModeDescriptionList"
 
   /leds/indicators:
     get:
@@ -321,9 +361,7 @@ paths:
           content:
             application/json:    
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/LEDIndicators"
+                $ref: "#/components/schemas/IndicatorModeDescriptionList"
 
   /leds/output:
     get:
@@ -344,7 +382,7 @@ paths:
     get:
       summary: Get Strip output
       description: The colors currently being displayed on the robot LEDS
-      operationId: leds_get_output
+      operationId: leds_get_strip_output
       tags:
         - LEDS
       responses:
@@ -355,17 +393,39 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/LEDColor"
+                  $ref: "#/components/schemas/Color"
                 example:
                 - "FF0000"
                 - "00FF00"
                 - "0000FF"
                 - "000000"
 
+  /system:
+    get:
+      summary: Get system information
+      description: System information
+      operationId: system_get
+      tags:
+        - System
+      responses:
+        '200':
+          description: Current system information
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/System"
 
 
 components:
   schemas:
+    Action:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+
 
     InputControl:
       type: object
@@ -386,6 +446,25 @@ components:
         - CONTROLLER
       default: MANUAL
 
+    InputSourceDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/InputSource"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    InputSourceDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/InputSourceDescription"
+
     InputAxis:
       type: number
       format: float
@@ -396,10 +475,7 @@ components:
     InputState:
       type: object
       properties:
-        controller:
-          type: string
-          readOnly: true
-        steering:
+        directions:
           $ref: "#/components/schemas/InputAxis"
         throttle:
           $ref: "#/components/schemas/InputAxis"
@@ -407,9 +483,14 @@ components:
           $ref: "#/components/schemas/InputAxis"
         aux_y:
           $ref: "#/components/schemas/InputAxis"
+      required:
+        - steering
+        - throttle
+        - aux_x
+        - aux_y
 
 
-    KinematicDriveMode:
+    DriveMode:
       type: string
       description: Mode used to translate input into robot movement
       enum:
@@ -423,7 +504,26 @@ components:
         - PASSTHROUGH
       default: IDLE
 
-    KinematicOrientation:
+    DriveModeDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/DriveMode"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    DriveModeDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/DriveModeDescription"
+
+    Orientation:
       type: string
       enum:
         - NORTH
@@ -431,15 +531,37 @@ components:
         - EAST
         - WEST
       default: NORTH
-      
+
+    OrientationDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/Orientation"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    OrientationDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/OrientationDescription"
+
 
     KinematicControl:
       type: object
       properties:
         drive_mode:
-          $ref: "#/components/schemas/KinematicDriveMode"
+          $ref: "#/components/schemas/DriveMode"
         orientation:
-          $ref: "#/components/schemas/KinematicOrientation"
+          $ref: "#/components/schemas/Orientation"
+      required:
+        - drive_mode
+        - orientation
 
 
     RCReceiver:
@@ -459,7 +581,37 @@ components:
           minimum: 0
           maximum: 100
           readOnly: true
+      required:
+        - enabled
+        - connected
+        - rssi
 
+
+    MotorControl:
+      description: Global motor control
+      type: object
+      properties:
+        odometer:
+          type: integer
+          description: Average motor odometer value in mm
+          readOnly: true
+        motor_count: 
+          type: integer
+          description: Number of motors
+          readOnly: true
+      required:
+        - odometer
+        - motor_count
+
+    ResetOdometerAction:
+      allOf:
+        - $ref: "#/components/schemas/Action"
+        - type: object
+          properties:
+            id: 
+              type: string
+              enum:
+                - resetOdometer
 
     Motor:
       description: Motor properties
@@ -500,7 +652,15 @@ components:
           readOnly: true
         servo:
           $ref: "#/components/schemas/Servo"
-          
+      required:
+        - id
+        - enabled
+        - duty
+        - target_rpm
+        - rpm
+        - encoder
+        - odometer
+
     Servo:
       description: Servo properties
       type: object
@@ -514,7 +674,7 @@ components:
         angle:
           type: number
           format: float
-          description: Angle of the servo in radians
+          description: Angle of the servo
         limit_min:
           type: number
           format: float
@@ -525,52 +685,54 @@ components:
           format: float
           readOnly: true
           description: The maximum angle of the servo
+      required:
+        - enabled
+        - pulse_us
+        - angle
+        - limit_min
+        - limit_max
 
-
-    LEDControl:
+    IMUData:
       type: object
       properties:
-        brightness:
+        pitch:
+          description: Pitch in radians
           type: number
-          format: float
-          minimum: 0.0
-          maximum: 1.0
-          default: 1.0
-        background:
-          $ref: "#/components/schemas/LEDColor"
-        animation:
-          $ref: "#/components/schemas/LEDAnimation"
-        indicators:
-          $ref: "#/components/schemas/LEDIndicators"
+          readOnly: true
+        yaw:
+          description: Yaw in radians
+          type: number
+          readOnly: true
+        roll:
+          description: Roll in radians
+          type: number
+          readOnly: true
+      required:
+        - pitch
+        - yaw
+        - roll
 
-    LEDColor:
+
+    Color:
       type: string
       pattern: "^([a-fA-F0-9]{6}|[a-fA-F0-9]{8})$"
       example: "aa33cc"
       default: "00000000"
 
-    LEDColorArray:
+    ColorArray:
       type: array
       items:
-        $ref: "#/components/schemas/LEDColor"
+        $ref: "#/components/schemas/Color"
       example:
         - "FF0000"
         - "00FF00"
         - "0000FF"
-        
-    LEDOutput:
-      type: object
-      additionalProperties:
-        $ref: "#/components/schemas/LEDColorArray"
-      example:
-        front:
-          - "FFFFFF"
-          - "000000"
-        back:
-          - "FF0000"
-          - "000000"
 
-    LEDAnimation:
+    ColorSegment:
+      $ref: "#/components/schemas/ColorArray"
+
+
+    AnimationMode:
       type: string
       enum:
         - NONE
@@ -584,7 +746,26 @@ components:
         - RAINBOW_WAVE
       default: NONE
 
-    LEDIndicators:
+    AnimationModeDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/AnimationMode"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    AnimationModeDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/AnimationModeDescription"
+
+    IndicatorMode:
       type: string
       enum:
         - NONE
@@ -593,3 +774,138 @@ components:
         - HAZARD
       default: NONE
 
+    IndicatorModeDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/IndicatorMode"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    IndicatorModeDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/IndicatorModeDescription"
+
+
+    LEDOutput:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/ColorSegment"
+      example:
+        front:
+          - "FFFFFF"
+          - "000000"
+        back:
+          - "FF0000"
+          - "000000"
+
+    LEDControl:
+      type: object
+      properties:
+        brightness:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 1.0
+        background:
+          $ref: "#/components/schemas/Color"
+        animation:
+          $ref: "#/components/schemas/AnimationMode"
+        indicators:
+          $ref: "#/components/schemas/IndicatorMode"
+      required:
+        - brightness
+        - background
+        - animation
+        - indicators
+        
+
+    PowerSourceType:
+      type: string
+      enum:
+        - UNKNOWN
+        - BATTERY
+      default: NONE
+
+    PowerSource:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/PowerSourceType"
+      required:
+        - type
+
+    PowerSourceUnknown:
+      allOf:
+        - $ref: "#/components/schemas/PowerSource"
+        - type: object
+
+    PowerSourceBattery:
+      allOf:
+        - $ref: "#/components/schemas/PowerSource"
+        - type: object
+          properties:
+            charging:
+              type: boolean
+              readOnly: true
+            on_battery:
+              type: boolean
+              readOnly: true
+            jack_voltage:
+              type: number
+              readOnly: true
+            percent:
+              type: number
+              readOnly: true
+            voltage:
+              type: number
+              readOnly: true
+          required:
+            - charging
+            - on_battery
+            - jack_voltage
+            - percent
+            - voltage
+
+    Power:
+      type: object
+      properties:
+        system:
+          description: System power source
+          oneOf:
+            - $ref: "#/components/schemas/PowerSourceUnknown"
+            - $ref: "#/components/schemas/PowerSourceBattery"
+          disctiminator:
+            propertyName: type
+            mapping:
+              UNKNOWN: "#/components/schemas/PowerSourceUnknown"
+              BATTERY: "#/components/schemas/PowerSourceBattery"
+      required:
+        - system
+
+
+    Network:
+      type: object
+
+
+
+    System:
+      type: object
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        power:
+          $ref: "#/components/schemas/Power"
+      required:
+        - network
+        - power
+
+    

@@ -12,15 +12,22 @@ interface Props {
 const theme = createTheme({
     palette: {
         mode: 'dark',
+        /*
         primary: {
             main: '#2196f3',
         },
+        */
         secondary: {
               main: '#ffea00',
         },
         error: {
               main: red.A400,
         },
+        /*
+        background: {
+            default: '#505050',
+        }
+        */
     },
     typography: {
         fontFamily: `"Varela Round", "Helvetica", "Arial", "sans-serif"`,
@@ -31,7 +38,7 @@ const theme = createTheme({
             fontSize: 14,
             fontWeight: 400,
         }
-    }
+    },
 });
   
 export default function ThemeConfig({ children }: Props) {

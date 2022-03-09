@@ -1,23 +1,26 @@
-export default function SideView() {
-    const angle = 45;
+import { DefaultColors } from "./Colors";
 
-    const strokeColor = "black";
-    const wheelColor = "grey";
-    const armColor = "#166483";
-    const joinColor = "GhostWhite";
-    const motorColor = "silver";
-    const motorCaseColor = "#101010";
-    const bodyColor = "GhostWhite";
+
+interface Props extends React.SVGProps<SVGSVGElement> {
+    angle: number;
+    fullHeight?: boolean;
+}
+
+export default function SideView({ angle, fullHeight=true, ...props }: Props) {
+    const strokeColor = DefaultColors.strokeColor;
+    const wheelColor = DefaultColors.wheelColor;
+    const armColor = DefaultColors.armColor;
+    const joinColor = DefaultColors.joinColor;
+    const motorCaseColor = DefaultColors.motorCaseColor;
+    const bodyColor = DefaultColors.bodyColor;
 
     return (
         <svg
-            width="100%"
-            height="100%"
-            viewBox="0 0 270 270"
-            //viewBox="0 0 270 92"
+            viewBox={fullHeight?"0 0 270 270":"0 0 270 92"}
             xmlns="http://www.w3.org/2000/svg"
+            {...props}
         >
-            <g transform={"rotate("+angle+", 135, 135) translate(0, 92)"}>
+            <g transform={fullHeight?("rotate("+angle+", 135, 135) translate(0, 92)"):undefined}>
                 <path
                     style={{
                         fill: bodyColor,

@@ -1,12 +1,11 @@
+import { DefaultColors } from "../Colors";
 
 
-interface MotorProps {
-    color?: string;
-    dotColor?: string;
-    strokeColor?: string;
-}
+export default function Motor() {
+    const color = DefaultColors.motorCaseColor;
+    const dotColor = DefaultColors.dotColor;
+    const strokeColor = DefaultColors.motorStrokeColor;
 
-export default function Motor({ color = "black", dotColor = "red", strokeColor="#404040" }: MotorProps) {
     return (
         /*
         <svg
