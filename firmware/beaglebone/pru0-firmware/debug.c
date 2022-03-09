@@ -24,6 +24,7 @@ void debug_begin() {
 
 
 void debug_print(const char *fmt, ...) {
+#if 0
     va_list args;
     va_start(args, fmt);
 #if 0
@@ -39,5 +40,6 @@ void debug_print(const char *fmt, ...) {
     next_chunk = (next_chunk+1) & DEBUG_CHUNK_MASK;
 #endif
     va_end(args);
+#endif
 }
 

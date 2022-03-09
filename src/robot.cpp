@@ -71,11 +71,11 @@ void Robot::init()
     m_context->init();
     m_telemetry->init();
     m_motor_control->init(m_telemetry);
-    m_led_control->init();
     if (m_rc_receiver) {
         m_rc_receiver->init(m_telemetry);
     }
     m_input->init(m_rc_receiver);
+    m_led_control->init(m_input);
     m_kinematic->init(m_motor_control, m_led_control, m_telemetry, m_input);
     m_network->init();
     m_power->init(m_telemetry);

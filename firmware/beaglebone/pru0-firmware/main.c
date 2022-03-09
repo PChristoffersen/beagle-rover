@@ -102,6 +102,9 @@ static void message_update() {
 				case MSG_TYPE_FBUS_TELEMERTY:
 					fbus_telemetry_message(msg, len);
 					break;
+				case MSG_TYPE_FBUS_RESET:
+					fbus_reset_message(msg, len);
+					break;
 				case MSG_TYPE_NEOPIXEL_SET:
 					neopixel_set_message(msg, len);
 					break;

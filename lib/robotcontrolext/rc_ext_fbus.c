@@ -14,6 +14,7 @@
 #define MSG_TYPE_FBUS_CONFIG    0x10
 #define MSG_TYPE_FBUS_SERVO     0x11
 #define MSG_TYPE_FBUS_TELEMERTY 0x12
+#define MSG_TYPE_FBUS_RESET     0x13
 #define MSG_TYPE_SERVO_LIMIT    0x40
 
 #define FBUS_DEFAULT_DEVICE_ID 0x67
@@ -119,3 +120,9 @@ void rc_ext_fbus_send_telemetry(uint16_t app_id, uint32_t data) {
     rc_ext_pru_send_message(&msg, sizeof(msg));
 }
 
+
+void rc_ext_fbus_send_reset() {
+    message_t msg;
+    msg.type = MSG_TYPE_FBUS_RESET;
+    rc_ext_pru_send_message(&msg, sizeof(msg));
+}

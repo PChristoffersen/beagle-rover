@@ -35,8 +35,8 @@ namespace Robot::Telemetry {
                 telemetry->process(event);
             }
 
-            #if ROBOT_HAVE_MPU
-            static void sendData(const std::shared_ptr<Telemetry> &telemetry, const MPUData &data)
+            #if ROBOT_HAVE_IMU
+            static void sendData(const std::shared_ptr<Telemetry> &telemetry, const IMUData &data)
             {
                 telemetry->process(data);
             }

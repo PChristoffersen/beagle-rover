@@ -23,8 +23,8 @@ namespace Robot::Kinematic {
         protected:
             AbstractWheelSteering(std::shared_ptr<Kinematic> kinematic, float wheel_base_factor);
 
-            void resetMotors(float throttle);
-            virtual void setMotors(float left, float right) = 0;
+            void resetMotors(float throttle, float skew);
+            virtual void setMotors(float left, float right, float skew) = 0;
             virtual void setMotorDuty(float steering, float throttle, float outer_dist, float inner_dist, float inner_angle) = 0;
 
         private:

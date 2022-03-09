@@ -15,7 +15,7 @@
 
 namespace Robot::Kinematic {
 
-    class Kinematic : public std::enable_shared_from_this<Kinematic>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
+    class Kinematic : public std::enable_shared_from_this<Kinematic>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
         public:
             Kinematic(const std::shared_ptr<::Robot::Context> &context);
             Kinematic(const Kinematic&) = delete; // No copy constructor
@@ -50,6 +50,8 @@ namespace Robot::Kinematic {
             std::shared_ptr<class ControlScheme> m_control_scheme;
 
             boost::signals2::connection m_axis_connection;
+            boost::signals2::connection m_drive_mode_connection;
+            boost::signals2::connection m_orientation_connection;
 
             DriveMode    m_drive_mode;
             Orientation  m_orientation;

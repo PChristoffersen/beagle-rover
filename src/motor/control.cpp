@@ -25,7 +25,8 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_initialized { false },
     m_enabled { false },
     m_motor_timer { context->io() },
-    m_servo_timer { context->io() }
+    m_servo_timer { context->io() },
+    m_odometer { 0 }
 {
     for (uint i=0; i<MOTOR_COUNT; i++) {
         m_motors[i] = std::make_unique<Motor>(i, m_mutex, context);
@@ -44,6 +45,8 @@ void Control::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemet
     const guard lock(m_mutex);
     BOOST_ASSERT_MSG(!m_initialized, "Already initialized");
     m_initialized = true;
+
+    m_odometer = 0;
 
     for (auto &motor : m_motors) {
        motor->init(telemetry);
@@ -72,7 +75,11 @@ void Control::cleanup()
     m_motor_timer.cancel();
     m_servo_timer.cancel();
 
-    setEnabled(false);
+    for (auto &motor : m_motors) {
+        motor->setEnabled(false);
+        motor->servo()->setEnabled(false);
+    }
+
 
     for (auto &motor : m_motors) {
        motor->cleanup();
@@ -82,39 +89,6 @@ void Control::cleanup()
 
 
 
-
-
-void Control::brake() 
-{
-    const guard lock(m_mutex);
-    for (auto &motor : m_motors) {
-       motor->brake();
-    }
-}
-
-void Control::freeSpin() 
-{
-    const guard lock(m_mutex);
-    for (auto &motor : m_motors) {
-       motor->freeSpin();
-    }
-}
-
-
-
-void Control::setEnabled(bool enabled) 
-{
-    const guard lock(m_mutex);
-
-    m_enabled = enabled;
-
-    for (auto &motor : m_motors) {
-        motor->setEnabled(m_enabled);
-        motor->servo()->setEnabled(false);
-    }
-}
-
-
 void Control::resetOdometer() 
 {
     const guard lock(m_mutex);
@@ -122,19 +96,9 @@ void Control::resetOdometer()
     for (auto &motor : m_motors) {
         motor->resetOdometer();
     }
+    m_odometer = 0;
+    notify(NOTIFY_DEFAULT);
 }
-
-
-double Control::getOdometer() const
-{
-    const guard lock(m_mutex);
-    Motor::odometer_type sum { 0 };
-    for (auto &motor : m_motors) {
-        sum += motor->getOdometer();
-    }
-    return sum/m_motors.size();
-}
-
 
 
 void Control::onMotorPower(bool enabled) 
@@ -197,9 +161,18 @@ void Control::motorTimer()
 
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 
+    odometer_type odometer = 0;
+
     // Update motors
     for (auto &motor : m_motors) {
         motor->update();
+        odometer += motor->getOdometer();
+    }
+    odometer = odometer/m_motors.size();
+
+    if (m_odometer!=odometer) {
+        m_odometer = odometer;
+        notify(NOTIFY_DEFAULT);
     }
 
     static clock_type::time_point last_print;

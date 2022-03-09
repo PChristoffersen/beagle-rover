@@ -26,7 +26,7 @@ void AbstractWheelSteering::init()
 {
     const guard lock(m_mutex);
 
-    resetMotors(0.0f);
+    resetMotors(0.0f, 0.0f);
 
     const auto &motors = m_motor_control->getMotors();
     for (auto &motor : motors) {
@@ -57,12 +57,12 @@ void AbstractWheelSteering::cleanup()
 
 
 
-void AbstractWheelSteering::resetMotors(float throttle)
+void AbstractWheelSteering::resetMotors(float throttle, float skew)
 {
-    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
-    motorSet(FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
-    motorSet(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
-    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), throttle);
+    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), throttle);
+    motorSet(FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), throttle);
+    motorSet(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), throttle);
+    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), throttle);
 }
 
 
@@ -73,16 +73,24 @@ void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, f
     const guard lock(m_mutex);
     setLastSteering(steering, throttle, aux_x, aux_y);
 
-    const auto asteering = abs(steering);
+    const auto asteering = std::abs(steering);
     
+    auto skew = aux_x * WHEEL_MAX_TURN_ANGLE * std::max(0.0f, 1.0f-4.0f*asteering);
+    if (m_orientation_reverse) {
+        skew = -skew;        
+    }
+
     // Just go straight (to avoid infinite numbers for turning radius)
     if (asteering < 0.01) {
-        resetMotors(throttle);
+        resetMotors(throttle, skew);
         return;
+    }
+    else if (asteering> 0.25f) {
+        skew = 0.0f;
     }
 
     // Inner angle is just the fraction of steering times max turn angle
-    auto inner_angle = asteering * WHEEL_MAX_TURN_ANGLE;
+    auto inner_angle = asteering * (WHEEL_MAX_TURN_ANGLE-std::abs(skew));
 
     // Inner wheel turning circle center from inner wheels centerpoint.
     auto inner_circle_dist = tan(M_PI_2-inner_angle) * m_wheel_base_factor;
@@ -94,11 +102,11 @@ void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, f
 
 
     if (steering > 0.0) {
-        setMotors(-outer_angle, inner_angle);
+        setMotors(-outer_angle, inner_angle, skew);
         setMotorDuty(steering, throttle, outer_circle_dist, inner_circle_dist, inner_angle);
     }
     else {
-        setMotors(inner_angle, -outer_angle);
+        setMotors(inner_angle, -outer_angle, skew);
         setMotorDuty(steering, throttle, outer_circle_dist, inner_circle_dist, inner_angle);
     }
 

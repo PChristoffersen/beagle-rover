@@ -15,7 +15,7 @@ namespace Robot::Kinematic {
             virtual ~ControlSchemeAllWheel();
 
         protected:
-            virtual void setMotors(float left, float right) override;
+            virtual void setMotors(float left, float right, float skew) override;
             virtual void setMotorDuty(float steering, float throttle, float outer_dist, float inner_dist, float inner_angle) override;
     };
 

@@ -35,7 +35,7 @@ void export_kinematic()
         .value("WEST", Orientation::WEST)
         ;
 
-    py::class_<Kinematic, std::shared_ptr<Kinematic>, py::bases<WithNotifyDefault>, boost::noncopyable>("Kinematic", py::no_init)
+    py::class_<Kinematic, std::shared_ptr<Kinematic>, py::bases<WithNotifyInt>, boost::noncopyable>("Kinematic", py::no_init)
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
         .def("__enter__", +[](Kinematic &self) {

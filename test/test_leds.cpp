@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(Background)
     auto control { std::make_shared<Robot::LED::Control>(context) };
 
     context->init();
-    control->init();
+    control->init(nullptr);
     context->start();
 
     {
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(Brightness)
     auto control { std::make_shared<Robot::LED::Control>(context) };
 
     context->init();
-    control->init();
+    control->init(nullptr);
     context->start();
 
     {
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(Animation)
     auto control { std::make_shared<Robot::LED::Control>(context) };
 
     context->init();
-    control->init();
+    control->init(nullptr);
     context->start();
 
     {
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(Indicators)
     auto control { std::make_shared<Robot::LED::Control>(context) };
 
     context->init();
-    control->init();
+    control->init(nullptr);
     context->start();
 
     {
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(Rapid)
     auto control { std::make_shared<Robot::LED::Control>(context) };
 
     context->init();
-    control->init();
+    control->init(nullptr);
     context->start();
 
     {
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE(Layers)
     auto control { std::make_shared<Robot::LED::Control>(context) };
 
     context->init();
-    control->init();
+    control->init(nullptr);
     context->start();
 
     {
@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE(LayerDepths)
     auto control { std::make_shared<Robot::LED::Control>(context) };
 
     context->init();
-    control->init();
+    control->init(nullptr);
     context->start();
 
     {

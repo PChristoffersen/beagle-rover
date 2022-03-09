@@ -557,3 +557,10 @@ void fbus_servo_message(message_t *msg, uint16_t len) {
     }
 }
 
+
+void fbus_reset_message(message_t *msg, uint16_t len)
+{
+    shm_fbus->counter = 0;
+    shm_fbus->flags = FBUS_INIT_FLAGS;
+    shm_fbus->rssi = 0x00;
+}

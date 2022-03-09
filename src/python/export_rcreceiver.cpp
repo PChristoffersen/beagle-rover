@@ -27,7 +27,7 @@ void export_rcreceiver()
         .add_property("failsafe", &Flags::failsafe)
         ;
 
-    py::class_<Receiver, std::shared_ptr<Receiver>, py::bases<WithNotifyDefault>, boost::noncopyable>("RCReceiver", py::no_init)
+    py::class_<Receiver, std::shared_ptr<Receiver>, py::bases<WithNotifyInt>, boost::noncopyable>("RCReceiver", py::no_init)
         .add_property("enabled", &Receiver::getEnabled, &Receiver::setEnabled)
         .add_property("connected", &Receiver::isConnected)
         .add_property("flags", &Receiver::getFlags)

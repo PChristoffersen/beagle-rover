@@ -19,7 +19,7 @@
 
 namespace Robot::Motor {
 
-    class Motor : private Robot::Telemetry::Source, public WithNotifyDefault {
+    class Motor : private Robot::Telemetry::Source, public WithNotifyInt {
         public:
             static constexpr notify_type NOTIFY_TELEMETRY { 1 };
 

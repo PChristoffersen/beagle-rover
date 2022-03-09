@@ -40,14 +40,13 @@ namespace Robot::Telemetry {
             // Interrupt data
             std::uint32_t m_data_count;
             rc_mpu_data_t m_data;
-            clock_type::time_point m_last_temp_read;
 
             // Context thread data
             std::mutex m_data_mutex;
             rc_mpu_data_t m_saved_data;
             std::uint32_t m_saved_data_count;
 
-            EventMPU m_event;
+            EventIMU m_event;
 
 
 

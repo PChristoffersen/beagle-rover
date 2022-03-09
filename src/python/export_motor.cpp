@@ -30,7 +30,7 @@ void export_motor()
         .value("BRAKE", Motor::Mode::BRAKE)
         ;
 
-    py::class_<Motor, py::bases<WithNotifyDefault>, boost::noncopyable>("Motor", py::no_init)
+    py::class_<Motor, py::bases<WithNotifyInt>, boost::noncopyable>("Motor", py::no_init)
         .add_static_property("NOTIFY_TELEMETRY", py::make_getter(Motor::NOTIFY_TELEMETRY))
         .add_property("index", &Motor::getIndex)
         .add_property("enabled", &Motor::getEnabled, &Motor::setEnabled)
@@ -47,14 +47,14 @@ void export_motor()
         .def("__str__", +[](const Motor &m) { return (boost::format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
 
-    py::class_<Servo, py::bases<WithNotifyDefault>, boost::noncopyable>("Servo", py::no_init)
+    py::class_<Servo, py::bases<WithNotifyInt>, boost::noncopyable>("Servo", py::no_init)
         .add_property("index", &Servo::getIndex)
         .add_property("enabled", &Servo::getEnabled, &Servo::setEnabled)
         .add_property("pulse_us", +[](const Servo &self) { return self.getValue().asServoPulse(); }, +[](Servo &self, uint32_t value) { self.setValue(Value::fromMicroSeconds(value)); })
-        .add_property("angle", +[](const Servo &self) { return self.getValue().asAngle(); }, +[](Servo &self, float value) { self.setValue(Value::fromAngle(value)); })
-        .add_property("angle_degrees", +[](const Servo &self) { return self.getValue().asAngleDegrees(); }, +[](Servo &self, float value) { self.setValue(Value::fromAngleDegrees(value)); })
-        .add_property("limit_min", +[](const Servo &self) { return self.getLimitMin().asAngle(); }, +[](Servo &self, float value) { self.setLimitMin(Value::fromAngle(value)); })
-        .add_property("limit_max", +[](const Servo &self) { return self.getLimitMax().asAngle(); }, +[](Servo &self, float value) { self.setLimitMax(Value::fromAngle(value)); })
+        .add_property("angle_radians", +[](const Servo &self) { return self.getValue().asAngle(); }, +[](Servo &self, float value) { self.setValue(Value::fromAngle(value)); })
+        .add_property("angle", +[](const Servo &self) { return self.getValue().asAngleDegrees(); }, +[](Servo &self, float value) { self.setValue(Value::fromAngleDegrees(value)); })
+        .add_property("limit_min", +[](const Servo &self) { return self.getLimitMin().asAngleDegrees(); }, +[](Servo &self, float value) { self.setLimitMin(Value::fromAngleDegrees(value)); })
+        .add_property("limit_max", +[](const Servo &self) { return self.getLimitMax().asAngleDegrees(); }, +[](Servo &self, float value) { self.setLimitMax(Value::fromAngleDegrees(value)); })
         .def("set_limits", +[](Servo &self, float min, float max) { self.setLimits(Value::fromAngle(min), Value::fromAngle(max)); })
         .def("__str__", +[](const Servo &m) { return (boost::format("<Servo (%d)>") % m.getIndex()).str(); })
         ;
@@ -69,11 +69,9 @@ void export_motor()
         .def("__len__", &MotorList::size)
         ;
 
-    py::class_<Control, std::shared_ptr<Control>, boost::noncopyable>("MotorControl", py::no_init)
+    py::class_<Control, py::bases<WithNotifyInt>, std::shared_ptr<Control>, boost::noncopyable>("MotorControl", py::no_init)
         .add_property("motors", py::make_function(&Control::getMotors, py::return_internal_reference<>() ))
         .add_property("odometer", &Control::getOdometer)
-        .def("brake", &Control::brake)
-        .def("free_spin", &Control::freeSpin)
         .def("reset_odometer", &Control::resetOdometer)
         .def("__enter__", +[](Control &self) {
             self.mutex_lock();

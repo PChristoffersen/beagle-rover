@@ -14,8 +14,7 @@
 namespace Robot::Telemetry {
 
 Telemetry::Telemetry(const std::shared_ptr<Robot::Context> &context) :
-    m_initialized { false },
-    m_values_version { 0 }
+    m_initialized { false }
 {
 
     #if ROBOT_HAVE_ROBOTCONTROL_BATTERY
@@ -35,15 +34,23 @@ Telemetry::~Telemetry()
 
 void Telemetry::init() 
 {
+    const guard lock(m_mutex);
+
     for (auto &source : m_sources) {
         source->init(shared_from_this());
     }
     m_initialized = true;
+
+    // Init IMU map
+    EventIMU ev("imu");
+    ev.update(m_imu_values);
 }
 
 
 void Telemetry::cleanup() 
 {
+    const guard lock(m_mutex);
+
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -57,16 +64,26 @@ void Telemetry::cleanup()
 void Telemetry::process(const Event &event) 
 {
     const guard lock(m_mutex);
-    event.update(m_values);
-    m_values_version++;
+
+    if (const auto ev = dynamic_cast<const Robot::Telemetry::EventIMU*>(&event)) {
+        event.update(m_imu_values);
+        notify(NOTIFY_IMU);
+    }
+    else if (const auto ev = dynamic_cast<const Robot::Telemetry::EventMotor*>(&event)) {
+        // TODO Add to timeseries data
+    }
+    else if (const auto ev = dynamic_cast<const Robot::Telemetry::EventServo*>(&event)) {
+        // TODO Add to timeseries data
+    }
+
     sig_event(event);
 }
 
-#if ROBOT_HAVE_MPU
-void Telemetry::process(const MPUData &data)
+#if ROBOT_HAVE_IMU
+void Telemetry::process(const IMUData &data)
 {
     const guard lock(m_mutex);
-    sig_mpu(data);
+    sig_imu(data);
 
 }
 #endif

@@ -106,7 +106,7 @@ void ControlSchemeSkid::steer(float steering, float throttle, float aux_x, float
     left  = (1.0f-pivot_scale)*left  + pivot_scale*( steering);
     right = (1.0f-pivot_scale)*right + pivot_scale*(-steering);
 
-    BOOST_LOG_TRIVIAL(info) << " steer " << boost::format("| %+.2f | %+.2f  ||  %+.2f | %+.2f |") % steering % throttle % left % right;
+    //BOOST_LOG_TRIVIAL(info) << " steer " << boost::format("| %+.2f | %+.2f  ||  %+.2f | %+.2f |") % steering % throttle % left % right;
 
     motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), left);
     motorSet(FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), right);

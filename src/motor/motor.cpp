@@ -21,7 +21,7 @@ static constexpr auto PID_P { 0.0012f };
 static constexpr auto PID_I { 0.0004f };
 static constexpr auto PID_D { 0.0001f };
 static constexpr auto PID_EMA_ALPHA { 0.9f };
-static constexpr auto PID_INTERVAL { std::chrono::duration_cast<std::chrono::duration<float>>(MOTOR_TIMER_INTERVAL).count() };
+static constexpr Robot::Math::PID::sample_time_type PID_INTERVAL { MOTOR_TIMER_INTERVAL };
 
 static constexpr auto MINUTE { std::chrono::duration_cast<std::chrono::microseconds>(1min) };
 
@@ -49,7 +49,7 @@ Motor::Motor(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context
     m_pid.setLimits(-1.0f, 1.0f);
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_rc_pid = RC_FILTER_INITIALIZER;
-    rc_filter_pid(&m_rc_pid, PID_P, PID_I, PID_D, 8*PID_INTERVAL, PID_INTERVAL);
+    rc_filter_pid(&m_rc_pid, PID_P, PID_I, PID_D, 8*PID_INTERVAL.count(), PID_INTERVAL.count());
     rc_filter_enable_saturation(&m_rc_pid, -1.0, 1.0);
     #endif
 

@@ -35,6 +35,7 @@ volatile shm_fbus_t *rc_ext_fbus_get_shm(void);
 void rc_ext_fbus_set_servo_map(const uint8_t map[FBUS_CHANNELS]);
 void rc_ext_fbus_set_servo_limit(const fbus_servo_limit_t limits[RC_SERVO_CH_MAX]);
 void rc_ext_fbus_send_telemetry(uint16_t app_id, uint32_t data);
+void rc_ext_fbus_send_reset();
 
 #ifdef __cplusplus
 }

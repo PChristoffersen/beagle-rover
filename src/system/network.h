@@ -12,7 +12,7 @@
 
 namespace Robot::System {
 
-    class Network : public std::enable_shared_from_this<Network>, public WithMutex<std::mutex>, public WithNotifyDefault {
+    class Network : public std::enable_shared_from_this<Network>, public WithMutex<std::mutex>, public WithNotifyInt {
         public:
             explicit Network(const std::shared_ptr<::Robot::Context> &context);
             Network(const Network&) = delete; // No copy constructor

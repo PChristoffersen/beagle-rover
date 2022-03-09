@@ -60,7 +60,6 @@ void RobotControlMPU::init(const std::shared_ptr<Telemetry> &telemetry)
     const guard lock(m_mutex);
     AbstractSource::init(telemetry);
 
-    m_last_temp_read = clock_type::now() - MPU_TEMP_INTERVAL;
     instance = this;
 
 	rc_mpu_config_t conf = rc_mpu_default_config();
@@ -139,7 +138,6 @@ void RobotControlMPU::timer(boost::system::error_code error)
             m_event.pitch = m_saved_data.fused_TaitBryan[TB_PITCH_X];
             m_event.roll  = m_saved_data.fused_TaitBryan[TB_ROLL_Y];
             m_event.yaw   = m_saved_data.fused_TaitBryan[TB_YAW_Z];
-            m_event.temp  = m_saved_data.temp;
             m_saved_data_count = m_data_count;
 
             #if 0
@@ -215,18 +213,11 @@ void RobotControlMPU::timer(boost::system::error_code error)
 
 void RobotControlMPU::data_callback()
 {
-    const auto now = clock_type::now();
-    if (now-m_last_temp_read > MPU_TEMP_INTERVAL) {
-        rc_mpu_read_temp(&m_data);
-        m_last_temp_read = now;
-    }
-
     {
         const guard lock(m_data_mutex);
         m_data_count++;
         m_saved_data = m_data;
     }
-
 
     if (auto telemetry = m_telemetry.lock()) {
         sendData(telemetry, m_data);

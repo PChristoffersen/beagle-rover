@@ -22,6 +22,26 @@ find_package(Boost 1.67.0 COMPONENTS system log python${Python3_VERSION_MAJOR}${
 find_library(ROBOTCONTROL robotcontrol)
 add_definitions(-DBOOST_LOG_DYN_LINK)
 
+
+# -----------------------------------------------
+# Determine git hash
+# -----------------------------------------------
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+add_custom_target(AlwaysCheckGit COMMAND ${CMAKE_COMMAND}
+    DRUN_CHECK_GIT_VERSION=1
+    -Dpre_configure_dir=${pre_configure_dir}
+    -Dpost_configure_file=${post_configure_dir}
+    -DGIT_HASH_CACHE=${GIT_HASH_CACHE}
+    -P ${CURRENT_LIST_DIR}/CheckGit.cmake
+    BYPRODUCTS ${post_configure_file}
+)
+
 # -----------------------------------------------
 # Helper libraries
 # -----------------------------------------------
@@ -52,7 +72,6 @@ set(SRC
     src/robotdebug.cpp
     src/rc/receiver.cpp
     src/rc/inputsource.cpp
-    src/rc/mappings/taranis_x9d.cpp
     src/common/asyncsignal.cpp
     src/motor/motor.cpp
     src/motor/servo.cpp
@@ -112,11 +131,16 @@ target_link_libraries(robotsystem PRIVATE robotcontrolext)
 endif()
 
 
-
 # -----------------------------------------------
 # Python module
 # -----------------------------------------------
 # Without this, any build libraries automatically have names "lib{x}.so"
+if (Python3_SOABI)
+set(PYTHON_MODULE_POSTFIX ${Python3_SOABI})
+else()
+set(PYTHON_MODULE_POSTFIX "cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}${_Python3_ABI}-${CMAKE_LIBRARY_ARCHITECTURE}")
+endif()
+
 set(CMAKE_SHARED_MODULE_PREFIX "")
 add_library(robotsystem_python MODULE 
     ${SRC}
@@ -133,7 +157,7 @@ add_library(robotsystem_python MODULE
     src/python/export_misc.cpp
 )
 set_property(TARGET robotsystem_python PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_target_properties(robotsystem_python PROPERTIES OUTPUT_NAME "robotsystem")
+set_target_properties(robotsystem_python PROPERTIES OUTPUT_NAME "robotsystem.${PYTHON_MODULE_POSTFIX}")
 target_include_directories(robotsystem_python PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(robotsystem_python PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 if(ROBOTCONTROL)
@@ -189,3 +213,13 @@ add_test(NAME Subscription COMMAND test_subscription)
 add_test(NAME PythonSubscription COMMAND test_subscription.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 add_test(NAME PythonColors COMMAND test_color.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 add_test(NAME PythonLEDS COMMAND test_leds.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+add_test(NAME PythonTelemetry COMMAND test_telemetry.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+
+
+# Print cmake variables
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()

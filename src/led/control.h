@@ -19,7 +19,7 @@
 
 namespace Robot::LED {
 
-    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
+    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
         public:
             static constexpr notify_type NOTIFY_UPDATE { 1 };
 
@@ -32,7 +32,7 @@ namespace Robot::LED {
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();
 
-            void init();
+            void init(const std::shared_ptr<::Robot::Input::Control> &input_control);
             void cleanup();
 
             #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
@@ -67,6 +67,10 @@ namespace Robot::LED {
             bool m_initialized;
             std::shared_ptr<::Robot::ASyncSignal> m_update_signal;
             boost::signals2::connection m_update_connection;
+
+            boost::signals2::connection m_animation_mode_connection;
+            boost::signals2::connection m_indicator_mode_connection;
+            boost::signals2::connection m_brightness_connection;
 
             Color::brightness_type m_brightness;
             Color::Correction m_color_correction;

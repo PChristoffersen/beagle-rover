@@ -13,6 +13,7 @@
 #include "errors.h"
 #include <common/notifysubscription.h>
 #include <robotdebug.h>
+#include <config.h>
 
 namespace py = boost::python;
 
@@ -28,27 +29,31 @@ void export_misc()
 {
     py::register_exception_translator<attribute_error>(&translate);
 
-    py::class_<WithNotifyDefault, boost::noncopyable>("Subscribable", py::no_init)
-        .add_static_property("NOTIFY_DEFAULT", py::make_getter(WithNotifyDefault::NOTIFY_DEFAULT))
-        .def("subscribe", +[](WithNotifyDefault &self) { return notify_subscribe(self); })
-        .def("subscribe", +[](WithNotifyDefault &self, const py::tuple &events) { return notify_subscribe(self, tuple_to_container<NotifySubscription<WithNotifyDefault::notify_type>::result_type>(events)); })
-        .def("subscribe", +[](WithNotifyDefault &self, std::shared_ptr<NotifySubscription<WithNotifyDefault::notify_type>> sub, int offset) { notify_attach(sub, self, offset); return sub; })
-        .def("subscribe", +[](WithNotifyDefault &self, std::shared_ptr<NotifySubscription<WithNotifyDefault::notify_type>> sub, int offset, const py::tuple &events) { notify_attach(sub, self, offset, tuple_to_container<NotifySubscription<WithNotifyDefault::notify_type>::result_type>(events)); return sub; })
+    py::def("robot_version", +[]() { return Robot::Config::VERSION; });
+    py::def("robot_version_full", +[]() { return Robot::Config::VERSION_FULL; });
+
+
+    py::class_<WithNotifyInt, boost::noncopyable>("Subscribable", py::no_init)
+        .add_static_property("NOTIFY_DEFAULT", py::make_getter(WithNotifyInt::NOTIFY_DEFAULT))
+        .def("subscribe", +[](WithNotifyInt &self) { return notify_subscribe(self); })
+        .def("subscribe", +[](WithNotifyInt &self, const py::tuple &events) { return notify_subscribe(self, tuple_to_container<NotifySubscription<WithNotifyInt::notify_type>::result_type>(events)); })
+        .def("subscribe", +[](WithNotifyInt &self, std::shared_ptr<NotifySubscription<WithNotifyInt::notify_type>> sub, int offset) { notify_attach(sub, self, offset); return sub; })
+        .def("subscribe", +[](WithNotifyInt &self, std::shared_ptr<NotifySubscription<WithNotifyInt::notify_type>> sub, int offset, const py::tuple &events) { notify_attach(sub, self, offset, tuple_to_container<NotifySubscription<WithNotifyInt::notify_type>::result_type>(events)); return sub; })
         ;
 
-    py::class_<NotifySubscriptionDefault, std::shared_ptr<NotifySubscriptionDefault>, boost::noncopyable>("Subscription", py::no_init)
-        .add_property("fd", &NotifySubscriptionDefault::get_fd)
-        .def("unsubscribe", &NotifySubscriptionDefault::unsubscribe)
-        .def("clear", &NotifySubscriptionDefault::clear)
-        .def("read", +[](NotifySubscriptionDefault &sub) { return container_to_tuple(sub.read()); })
-        .def("read", +[](NotifySubscriptionDefault &sub, float timeout) { return container_to_tuple(sub.read(std::chrono::milliseconds((uint)(1000.0f*timeout)))); })
+    py::class_<NotifySubscriptionInt, std::shared_ptr<NotifySubscriptionInt>, boost::noncopyable>("Subscription", py::no_init)
+        .add_property("fd", &NotifySubscriptionInt::get_fd)
+        .def("unsubscribe", &NotifySubscriptionInt::unsubscribe)
+        .def("clear", &NotifySubscriptionInt::clear)
+        .def("read", +[](NotifySubscriptionInt &sub) { return container_to_tuple(sub.read()); })
+        .def("read", +[](NotifySubscriptionInt &sub, float timeout) { return container_to_tuple(sub.read(std::chrono::milliseconds((uint)(1000.0f*timeout)))); })
         ;
 
     #ifdef ROBOT_DEBUG
     using Robot::Debug::TestComponent;
-    py::class_<TestComponent, std::shared_ptr<TestComponent>, py::bases<WithNotifyDefault>, boost::noncopyable>("TestComponent")
+    py::class_<TestComponent, std::shared_ptr<TestComponent>, py::bases<WithNotifyInt>, boost::noncopyable>("TestComponent")
         .def("ping", &TestComponent::ping)
-        .def("__str__", +[](const NotifySubscriptionDefault &sub) { return "<TestComponent>"; })
+        .def("__str__", +[](const NotifySubscriptionInt &sub) { return "<TestComponent>"; })
         .def("__enter__", +[](TestComponent &self) {
             self.mutex_lock();
             return self.shared_from_this();

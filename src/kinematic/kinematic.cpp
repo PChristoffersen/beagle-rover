@@ -72,7 +72,9 @@ void Kinematic::init(const std::shared_ptr<Robot::Motor::Control> &motor_control
     m_control_scheme = std::make_shared<ControlSchemeIdle>(shared_from_this());
     m_drive_mode = DriveMode::NONE;
 
-    m_axis_connection = input_control->signals.steer.connect(::Robot::Input::steer_signal_type::slot_type(&Kinematic::onSteer, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4).track_foreign(shared_from_this()));
+    m_axis_connection        = input_control->signals.steer.connect([&](auto d, auto f, auto ax, auto ay){ onSteer(d, f, ax, ay); });
+    m_drive_mode_connection  = input_control->signals.drive_mode.connect([&](DriveMode drive_mode) { setDriveMode(drive_mode); });
+    m_orientation_connection = input_control->signals.orientation.connect([&](Orientation orientation) { setOrientation(orientation); });
 }
 
 
@@ -84,6 +86,8 @@ void Kinematic::cleanup()
     m_initialized = false;
 
     m_axis_connection.disconnect();
+    m_drive_mode_connection.disconnect();
+    m_orientation_connection.disconnect();
 
     if (m_control_scheme) {
         m_control_scheme->cleanup();

@@ -172,7 +172,7 @@ void export_led()
     // -----------------------------------------------------
     // Control
     // -----------------------------------------------------
-    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyDefault>, boost::noncopyable>("LEDControl", py::no_init)
+    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyInt>, boost::noncopyable>("LEDControl", py::no_init)
         .add_static_property("NOTIFY_UPDATE", py::make_getter(Control::NOTIFY_UPDATE))
         .add_property("brightness", &Control::getBrightness, &Control::setBrightness)
         .add_property("color_correction", &Control::getColorCorrection, &Control::setColorCorrection)

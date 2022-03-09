@@ -170,7 +170,7 @@ namespace Robot {
 
     };
 
-    using NotifySubscriptionDefault = NotifySubscription<WithNotifyDefault::notify_type>;
+    using NotifySubscriptionInt = NotifySubscription<WithNotifyInt::notify_type>;
 
 
     /**

@@ -11,15 +11,17 @@
 
 #include <robotconfig.h>
 #include <robottypes.h>
+#include <common/withnotify.h>
 #include <common/withmutex.h>
 #include <telemetry/types.h>
 #include "types.h"
 
 namespace Robot::Motor {
 
-    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex> {
+    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
         public:
             using timer_type = boost::asio::high_resolution_timer;
+            using odometer_type = std::int32_t;
 
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
@@ -32,14 +34,8 @@ namespace Robot::Motor {
             void start();
             void stop();
 
-            void brake();
-            void freeSpin();
-
-            void setEnabled(bool enabled);
-            bool getEnabled() const { return m_enabled; }
-
             void resetOdometer();
-            double getOdometer() const;
+            odometer_type getOdometer() const { return m_odometer; }
 
             const MotorList &getMotors() const { return m_motors; }
 
@@ -53,6 +49,7 @@ namespace Robot::Motor {
             boost::signals2::connection m_servo_power_con;
 
             MotorList m_motors;
+            odometer_type m_odometer;
 
             void onMotorPower(bool enabled);
             void onServoPower(bool enabled);

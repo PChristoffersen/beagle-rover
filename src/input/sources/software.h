@@ -22,12 +22,10 @@ namespace Robot::Input {
             void init();
             void cleanup();
 
-            void setEnabled(bool enabled);
+            void setAxis(float direction, float throttle, float aux_x=0.0f, float aux_y=0.0f) override;
 
-            void setAxis(float steer, float throttle, float aux_x=0.0f, float aux_y=0.0f) override;
-
-            float getSteering() const override { return m_steer; }
-            void setSteering(float value) override;
+            float getDirection() const override { return m_direction; }
+            void setDirection(float value) override;
             float getThrottle() const override { return m_throttle; }
             void setThrottle(float value) override;
             float getAuxX() const override { return m_aux_x; }
@@ -35,12 +33,17 @@ namespace Robot::Input {
             float getAuxY() const override { return m_aux_y; }
             void setAuxY(float value) override;
 
+            void setDriveMode(Kinematic::DriveMode drive_mode) { _setDriveMode(drive_mode); }
+            void setOrientation(Kinematic::Orientation orientation) { _setOrientation(orientation); }
+            void setAnimationMode(LED::AnimationMode animation_mode) { _setAnimationMode(animation_mode); }
+            void setIndicatorMode(LED::IndicatorMode indicator_mode) { _setIndicatorMode(indicator_mode); }
+            void setBrightness(float brightness) { _setBrightness(brightness); }
+
         private:
             bool m_initialized;
-            bool m_enabled;
             std::string m_name;
 
-            float m_steer;
+            float m_direction;
             float m_throttle;
             float m_aux_x;
             float m_aux_y;

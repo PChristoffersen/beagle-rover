@@ -26,7 +26,7 @@ void export_robot()
     namespace py = boost::python;
     using namespace ::Robot;
 
-    py::class_<Robot, std::shared_ptr<Robot>, py::bases<WithNotifyDefault>, boost::noncopyable>("Robot")
+    py::class_<Robot, std::shared_ptr<Robot>, py::bases<WithNotifyInt>, boost::noncopyable>("Robot")
         .add_property("heartbeat", &Robot::Robot::heartbeat)
         .add_property("rc_receiver", py::make_function(+[](const Robot &r){ return r.rcReceiver().get(); }, py::return_internal_reference<>()))
         .add_property("motor_control", py::make_function(+[](const Robot &r){ return r.motorControl().get(); }, py::return_internal_reference<>()))

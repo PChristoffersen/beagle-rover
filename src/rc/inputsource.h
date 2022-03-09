@@ -24,15 +24,29 @@ namespace Robot::RC {
             void init(const std::shared_ptr<Receiver> &receiver);
             void cleanup();
 
-            void setEnabled(bool enabled);
+            void setEnabled(bool enabled) override;
+            void setEnabledKinematic(bool enabled) override;
+            void setEnabledLED(bool enabled) override;
 
         private:
             bool m_initialized;
-            bool m_enabled;
+
+            bool m_armed;
+            bool m_can_arm;
+            Kinematic::DriveMode   m_drive_mode;
+            Kinematic::Orientation m_orientation;
+            LED::AnimationMode m_animation_mode;
+            LED::IndicatorMode m_inidicator_mode;
+            float m_brightness;
 
             std::weak_ptr<Receiver> m_receiver;
             boost::signals2::connection m_connection;
             void onRCData(Flags flags, RSSI rssi, const ChannelList &channels);
+
+            inline Kinematic::DriveMode calculateDriveMode(uint8_t sa, uint8_t se);
+            inline Kinematic::Orientation calculateOrientation(uint8_t sb);
+            inline LED::AnimationMode calculateAnimationMode(uint8_t sc, uint8_t sd);
+            inline LED::IndicatorMode calculateIndicatorMode(uint8_t sg, bool si);
     };
 
 }

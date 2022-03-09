@@ -17,7 +17,7 @@ namespace Robot::Debug {
      * @brief Test class for running Python tests
      * 
      */
-    class TestComponent : public std::enable_shared_from_this<TestComponent>, public WithMutex<std::mutex>, public WithNotifyDefault {
+    class TestComponent : public std::enable_shared_from_this<TestComponent>, public WithMutex<std::mutex>, public WithNotifyInt {
         public:
             TestComponent();
             virtual ~TestComponent();

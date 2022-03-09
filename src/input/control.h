@@ -20,8 +20,9 @@ namespace Robot::Input {
         WEB,
         CONTROLLER
     };
+    std::ostream &operator<<(std::ostream &os, const InputSource &input_source);
 
-    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
+    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
         public:
             Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor

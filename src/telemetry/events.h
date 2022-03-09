@@ -77,13 +77,22 @@ namespace Robot::Telemetry {
             virtual void update(ValueMap &map) const;
     };
 
-    class EventMPU : public Event {
+    class EventIMU : public Event {
         public:
-            EventMPU(const std::string &name) : Event { name } {}
+            EventIMU(const std::string &name, float pitch, float roll, float yaw) : 
+                Event { name },
+                pitch { pitch },
+                roll { roll },
+                yaw { yaw }
+            {
+            }
+            EventIMU(const std::string &name) : 
+                EventIMU { name, 0.0f, 0.0f, 0.0f } 
+            {
+            }
             float pitch;
             float roll;
             float yaw;
-            float temp;
             virtual void update(ValueMap &map) const;
     };
 

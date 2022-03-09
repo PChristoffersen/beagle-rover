@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <map>
 #include <boost/signals2.hpp>
@@ -15,13 +16,13 @@ namespace Robot::Telemetry {
 
     using Signal = boost::signals2::signal<void(const class Event &)>;
 
-    #if ROBOT_HAVE_MPU
+    #if ROBOT_HAVE_IMU
     #if ROBOT_HAVE_ROBOTCONTROL_MPU
-    using MPUData = rc_mpu_data_t;
+    using IMUData = rc_mpu_data_t;
     #else
-    using MPUData = char; // Dummy data
+    using IMUData = char; // Dummy data
     #endif
-    using MPUSignal = boost::signals2::signal<void(const MPUData &)>;
+    using IMUSignal = boost::signals2::signal<void(const IMUData &)>;
     #endif
 
     using Value = std::variant<std::string, bool, double, float, std::uint32_t>;

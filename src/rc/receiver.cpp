@@ -9,8 +9,6 @@
 #include <robotconfig.h>
 #include <robotcontext.h>
 #include <telemetry/telemetry.h>
-#include "mappings/mapping.h"
-#include "mappings/taranis_x9d.h"
 
 using namespace std::literals;
 
@@ -70,8 +68,6 @@ void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetr
 {    
     const guard lock(m_mutex);
 
-    m_mapping = std::make_unique<Mappings::TaranisX9D>();
-
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus = rc_ext_fbus_get_shm();
     m_rssi = m_fbus->rssi;
@@ -103,8 +99,6 @@ void Receiver::cleanup()
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus = nullptr;
     #endif
-
-    m_mapping = nullptr;
 }
 
 
@@ -117,6 +111,9 @@ void Receiver::setEnabled(bool enabled)
         m_enabled = enabled;
 
         if (m_enabled) {
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+            rc_ext_fbus_send_reset();
+            #endif
             m_timer.expires_after(TIMER_INTERVAL);
             timerSetup();
             m_context->rcPower(true);
@@ -124,6 +121,10 @@ void Receiver::setEnabled(bool enabled)
         else {
             m_timer.cancel();
             m_context->rcPower(false);
+            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
+            rc_ext_fbus_send_reset();
+            #endif
+            m_flags = Flags();
         }
 
         notify(NOTIFY_DEFAULT);
@@ -151,7 +152,7 @@ void Receiver::timer()
 {
     const guard lock(m_mutex);
 
-    if (!m_initialized || !m_fbus) {
+    if (!m_initialized || !m_fbus || !m_enabled) {
         return;
     }
 

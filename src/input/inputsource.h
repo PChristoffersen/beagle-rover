@@ -16,6 +16,8 @@ namespace Robot::Input {
             virtual void cleanup() = 0;
 
             virtual void setEnabled(bool enabled) = 0;
+            virtual void setEnabledKinematic(bool enabled) = 0;
+            virtual void setEnabledLED(bool enabled) = 0;
         
         protected:
             const Signals &m_signals;

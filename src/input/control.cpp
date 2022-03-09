@@ -8,6 +8,28 @@
 
 namespace Robot::Input {
 
+
+std::ostream &operator<<(std::ostream &os, const InputSource &input_source)
+{
+    switch (input_source) {
+        case InputSource::MANUAL:
+            os << "MANUAL";
+            break;
+        case InputSource::RC:
+            os << "RC";
+            break;
+        case InputSource::WEB:
+            os << "WEB";
+            break;
+        case InputSource::CONTROLLER:
+            os << "CONTROLLER";
+            break;
+    }
+    return os;
+}
+
+
+
 Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_axis_source { InputSource::MANUAL },
     m_kinematic_source { InputSource::MANUAL },
@@ -82,7 +104,7 @@ void Control::setAxisSource(InputSource input)
 {
     const guard lock(m_mutex);
     if (input!=m_axis_source) {
-        BOOST_LOG_TRIVIAL(info) << "Input source: " << (int)input;
+        BOOST_LOG_TRIVIAL(info) << "Input source: " << input;
 
         auto oldSource = findSource(m_axis_source);
         auto newSource = findSource(input);
@@ -104,22 +126,18 @@ void Control::setKinematicSource(InputSource input)
 {
     const guard lock(m_mutex);
     if (input!=m_kinematic_source) {
-        BOOST_LOG_TRIVIAL(info) << "Kinematic source: " << (int)input;
+        BOOST_LOG_TRIVIAL(info) << "Kinematic source: " << input;
 
-        #if 0
         auto oldSource = findSource(m_kinematic_source);
         auto newSource = findSource(input);
         if (oldSource!=newSource) {
-            oldSource->setEnabled(false);
+            oldSource->setEnabledKinematic(false);
             m_kinematic_source = input;
-            newSource->setEnabled(true);
+            newSource->setEnabledKinematic(true);
         }
         else if (newSource!=nullptr) {
             m_kinematic_source = input;
         }
-        #else
-        m_kinematic_source = input;
-        #endif
 
         notify(NOTIFY_DEFAULT);
     }
@@ -130,22 +148,18 @@ void Control::setLedSource(InputSource input)
 {
     const guard lock(m_mutex);
     if (input!=m_led_source) {
-        BOOST_LOG_TRIVIAL(info) << "LED source: " << (int)input;
+        BOOST_LOG_TRIVIAL(info) << "LED source: " << input;
 
-        #if 0
         auto oldSource = findSource(m_led_source);
         auto newSource = findSource(input);
         if (oldSource!=newSource) {
-            oldSource->setEnabled(false);
+            oldSource->setEnabledLED(false);
             m_led_source = input;
-            newSource->setEnabled(true);
+            newSource->setEnabledLED(true);
         }
         else if (newSource!=nullptr) {
             m_led_source = input;
         }
-        #else
-        m_led_source = input;
-        #endif
 
         notify(NOTIFY_DEFAULT);
     }

@@ -2,12 +2,15 @@
 #define _PID__H_
 
 #include <cinttypes>
+#include <chrono>
 
 namespace Robot::Math {
 
 class PID {
   public:
     static constexpr auto DEFAULT_EMA_ALPHA { 1.0f };
+
+    using sample_time_type = std::chrono::duration<float>;
 
     PID();
     /**
@@ -20,18 +23,18 @@ class PID {
      * @param ema_alpha Weight factor of derivative EMA filter (0,1]
      * @param maxOutput Maximum control output magnitude
      */
-    PID(float kp, float ki, float kd, float Ts, float ema_alpha = DEFAULT_EMA_ALPHA);
+    PID(float kp, float ki, float kd, sample_time_type Ts, float ema_alpha = DEFAULT_EMA_ALPHA);
 
     float update(float input);
 
     void set(float kp, float ki, float kd);
     constexpr void setKp(float kp) { m_kp = kp; }
-    constexpr void setKi(float ki) { m_ki_Ts = ki * m_Ts; }
-    constexpr void setKd(float kd) { m_kd_Ts = kd / m_Ts; }
+    constexpr void setKi(float ki) { m_ki_Ts = ki * m_Ts.count(); }
+    constexpr void setKd(float kd) { m_kd_Ts = kd / m_Ts.count(); }
 
     float getKp() const { return m_kp; }         ///< Proportional gain
-    float getKi() const { return m_ki_Ts / m_Ts; } ///< Integral gain
-    float getKd() const { return m_kd_Ts * m_Ts; } ///< Derivative gain
+    float getKi() const { return m_ki_Ts / m_Ts.count(); } ///< Integral gain
+    float getKd() const { return m_kd_Ts * m_Ts.count(); } ///< Derivative gain
 
     void setSetpoint(float setpoint) { m_setpoint = setpoint; }
     float getSetpoint() const { return m_setpoint; }
@@ -47,7 +50,7 @@ class PID {
     void reset();
 
   private:
-    float m_Ts;         // Sampling time (seconds)
+    sample_time_type m_Ts;         // Sampling time (seconds)
     float m_min_output; // Minimum control output magnitude
     float m_max_output; // Maximum control output magnitude
     float m_kp;         // Proportional gain

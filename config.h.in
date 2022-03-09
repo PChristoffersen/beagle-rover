@@ -1,7 +1,17 @@
+#ifndef _BUILD_CONFIG_H_
+#define _BUILD_CONFIG_H_
 
 
-#define robot_VERSION_MAJOR @robotsystem_VERSION_MAJOR@
-#define robot_VERSION_MINOR @robotsystem_VERSION_MINOR@
+namespace Robot::Config {
+    constexpr inline auto VERSION_MAJOR { @robotsystem_VERSION_MAJOR@ };
+    constexpr inline auto VERSION_MINOR { @robotsystem_VERSION_MINOR@ };
+    constexpr inline auto GIT_HASH { "@GIT_HASH@" };
+    constexpr inline auto VERSION { "@robotsystem_VERSION@" };
+    constexpr inline auto VERSION_FULL { "@robotsystem_VERSION@-@GIT_HASH@" };
+}
+ 
 
 #cmakedefine HAVE_ROBOTCONTROL
 
+
+#endif

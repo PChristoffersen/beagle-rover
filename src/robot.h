@@ -15,7 +15,7 @@
 namespace Robot {
 
 
-    class Robot : public std::enable_shared_from_this<Robot>, public WithMutex<std::mutex>, public WithNotifyDefault {
+    class Robot : public std::enable_shared_from_this<Robot>, public WithMutex<std::mutex>, public WithNotifyInt {
         public:
             Robot();
             Robot(const Robot&) = delete; // No copy constructor

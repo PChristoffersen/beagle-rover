@@ -6,7 +6,7 @@
 
 #define ROBOT_HAVE_RC 1
 /* #define ROBOT_HAVE_BALANCE */
-/* #define ROBOT_HAVE_MPU */
+/* #define ROBOT_HAVE_IMU */
 /* #define ROBOT_HAVE_ROBOTCONTROL_MPU */
 /* #define ROBOT_HAVE_WIFI */
 #define ROBOT_NEOPIXEL_COUNT RC_EXT_NEOPIXEL_COUNT

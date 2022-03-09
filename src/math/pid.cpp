@@ -5,7 +5,7 @@
 
 namespace Robot::Math {
 
-PID::PID(float kp, float ki, float kd, float Ts, float ema_alpha) : 
+PID::PID(float kp, float ki, float kd, sample_time_type Ts, float ema_alpha) : 
     m_Ts(Ts), 
     m_min_output { std::numeric_limits<float>::min() },
     m_max_output { std::numeric_limits<float>::max() },

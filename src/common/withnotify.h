@@ -5,6 +5,11 @@
 
 namespace Robot {
 
+    /**
+     * @brief Addon class for components that adds notification signals to signal property changes
+     * 
+     * @tparam T The type signaled. Must be a simple type since it is added to a nonlocking queue in notifysubscription.
+     */
     template<typename T>
     class WithNotify {
         public:
@@ -18,7 +23,7 @@ namespace Robot {
 
         protected:
 
-            void notify(notify_type arg) const
+            void notify(const notify_type &arg) const
             {
                 m_sig(arg);
             }
@@ -28,7 +33,7 @@ namespace Robot {
     };
     
 
-    class WithNotifyDefault : public WithNotify<int> {
+    class WithNotifyInt : public WithNotify<int> {
         public:
             static constexpr notify_type NOTIFY_DEFAULT { 0 };
     };

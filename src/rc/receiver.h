@@ -18,7 +18,7 @@
 
 namespace Robot::RC {
 
-    class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex>, public WithNotifyDefault {
+    class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
         public:
             using timer_type = boost::asio::steady_timer;
 
@@ -59,8 +59,6 @@ namespace Robot::RC {
             #endif
             RSSI m_rssi;
             Flags m_flags;
-
-            std::unique_ptr<class Mappings::Mapping> m_mapping;
 
             boost::signals2::connection m_telemetry_connection;
 

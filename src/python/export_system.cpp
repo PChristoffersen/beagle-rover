@@ -19,7 +19,7 @@ void export_system()
     using Robot::System::Network;
     using Robot::System::Power, Robot::System::PowerSource, Robot::System::PowerSourceUnknown, Robot::System::PowerSourceBattery;
 
-    py::class_<Network, std::shared_ptr<Network>, py::bases<WithNotifyDefault>, boost::noncopyable>("Network", py::no_init)
+    py::class_<Network, std::shared_ptr<Network>, py::bases<WithNotifyInt>, boost::noncopyable>("Network", py::no_init)
         ;
 
 
@@ -52,7 +52,7 @@ void export_system()
         .add_property("voltage", &PowerSourceBattery::voltage)
         ;
 
-    py::class_<Power, std::shared_ptr<Power>, py::bases<WithNotifyDefault>, boost::noncopyable>("Power", py::no_init)
+    py::class_<Power, std::shared_ptr<Power>, py::bases<WithNotifyInt>, boost::noncopyable>("Power", py::no_init)
         .add_property("system", py::make_function(+[](const Power &self){ return self.system().get(); }, py::return_internal_reference<>()))
         ;
 

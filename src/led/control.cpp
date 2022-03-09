@@ -7,6 +7,7 @@
 #include <boost/format.hpp>
 
 #include <robotcontext.h>
+#include <input/control.h>
 #include "animation/headlights.h"
 #include "animation/indicator.h"
 #include "animation/construction.h"
@@ -44,7 +45,7 @@ Control::~Control()
 }
 
 
-void Control::init() 
+void Control::init(const std::shared_ptr<::Robot::Input::Control> &input_control) 
 {
     const guard lock(m_mutex);
 
@@ -62,6 +63,10 @@ void Control::init()
     m_indicator = std::make_shared<Indicator>(m_context);
     m_indicator->init(shared_from_this());
 
+    m_animation_mode_connection = input_control->signals.animation_mode.connect([&](auto mode){ setAnimation(mode); });
+    m_indicator_mode_connection = input_control->signals.indicator_mode.connect([&](auto mode){ setIndicators(mode); });
+    m_brightness_connection = input_control->signals.brightness.connect([&](auto b){ setBrightness(b); });
+
 }
 
 
@@ -71,6 +76,10 @@ void Control::cleanup()
     if (!m_initialized) 
         return;
     m_initialized = false;
+
+    m_animation_mode_connection.disconnect();
+    m_indicator_mode_connection.disconnect();
+    m_brightness_connection.disconnect();
 
     m_update_connection.disconnect();
     m_update_signal->cancel();
@@ -118,6 +127,7 @@ void Control::showPixels()
 {
     // Apply color correction and brightness
     color_array_type pixels { m_pixels };
+    pixels *= (m_brightness*m_brightness); // Use brightness ^2 to make the perceived brightness seem more linear
     pixels *= m_color_correction;
 
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
@@ -295,7 +305,6 @@ void Control::updatePixels()
         for (const auto &layer : m_layers) {
             m_pixels << *layer;
         }
-        m_pixels *= m_brightness;
     }
 
     showPixels();

@@ -8,7 +8,9 @@
 #include <robotconfig.h>
 #include <telemetry/telemetry.h>
 #include <led/control.h>
+#include <math/pid.h>
 #include "abstractcontrolscheme.h"
+
 
 #if ROBOT_HAVE_BALANCE
 
@@ -32,48 +34,18 @@ namespace Robot::Kinematic {
 
             boost::asio::steady_timer m_init_timer;
 
-            boost::signals2::connection m_mpu_connection;
-
-            rc_filter_t m_D1;
-            rc_filter_t m_D2;
-            rc_filter_t m_D3;
+            boost::signals2::connection m_imu_connection;
 
             bool m_armed;
 
-            int m_inner_saturation_counter;
-
-            struct {
-                //arm_state_t arm_state;	///< see arm_state_t declaration
-                //drive_mode_t drive_mode;///< NOVICE or ADVANCED
-                double theta;		///< body lean angle (rad)
-                double phi;		///< wheel position (rad)
-                double phi_dot;		///< rate at which phi reference updates (rad/s)
-                double gamma;		///< body turn angle (rad)
-                double gamma_dot;	///< rate at which gamma setpoint updates (rad/s)
-            } m_setpoint;
-
-            struct {
-                double wheelAngleR;	///< wheel rotation relative to body
-                double wheelAngleL;
-                double theta;		///< body angle radians
-                double phi;		///< average wheel angle in global frame
-                double gamma;		///< body turn (yaw) angle radians
-                double vBatt;		///< battery voltage
-                double d1_u;		///< output of balance controller D1 to motors
-                double d2_u;		///< output of position controller D2 (theta_ref)
-                double d3_u;		///< output of steering controller D3 to motors
-                double mot_drive;	///< u compensated for battery voltage
-            } m_cstate;
-
-
+            Robot::Math::PID m_pid;
 
             void initMotors();
-            void initFilters();
 
             void disarm();
             void arm();
 
-            void onMPUData(const Robot::Telemetry::MPUData &data);
+            void onIMUData(const Robot::Telemetry::IMUData &data);
     };
 
 }

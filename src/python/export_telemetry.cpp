@@ -15,58 +15,9 @@ namespace py = boost::python;
 
 namespace Robot::Python {
 
-#if 0
-class TelemetryListener {
-    public:
-        virtual ~TelemetryListener() {
-            disconnect();
-        }
-
-        void connect(std::shared_ptr<Telemetry> telemetry) {
-            BOOST_LOG_TRIVIAL(trace) << "Connect";
-            m_connection.disconnect();
-            m_connection = telemetry->sig_event.connect([&](const auto &e){ event(e); });
-        }
-
-        void disconnect() {
-            BOOST_LOG_TRIVIAL(trace) << "Disconnect";
-            m_connection.disconnect();
-        }
-
-        virtual void on_event(const Event &event) = 0;
-
-        void event(const Event &event) {
-            PyGILState_STATE gstate = PyGILState_Ensure();
-            try {
-                on_event(event);
-            }
-            catch (const py::error_already_set &err) {
-                BOOST_LOG_TRIVIAL(warning) << "Event error: " << parse_python_exception();
-            }
-            PyGILState_Release(gstate);
-        }
-
-    protected:
-        boost::signals2::connection m_connection;
-};
-
-class TelemetryListenerWrap : public TelemetryListener, public boost::python::wrapper<TelemetryListener> {
-    public:
-        virtual void on_event(const Event &event) override {
-            if (auto f = this->get_override("on_event")) {
-                if (const auto ev = dynamic_cast<const EventBattery*>(&event)) {
-                    f(*ev);
-                }
-                else {
-                    BOOST_LOG_TRIVIAL(warning) << "Unknown telemetry event type " << typeid(event).name();
-                }
-            }
-        }
-};
-#endif
 
 
-static void set_dict_value(py::dict &out, const std::string &key, const Robot::Telemetry::Value &value) 
+static void set_dict_value(py::dict &out, const std::string key, const Robot::Telemetry::Value &value) 
 {
     if (std::holds_alternative<std::string>(value)) {
         out[key] = std::get<std::string>(value);
@@ -99,15 +50,14 @@ void export_telemetry()
     using Robot::Telemetry::Telemetry;
 
   
-    py::class_<Telemetry, std::shared_ptr<Telemetry>, py::bases<WithNotifyDefault>, boost::noncopyable>("Telemetry", py::no_init)
-        .add_property("values", +[](Telemetry &self){ 
+    py::class_<Telemetry, std::shared_ptr<Telemetry>, py::bases<WithNotifyInt>, boost::noncopyable>("Telemetry", py::no_init)
+        .add_static_property("NOTIFY_IMU", py::make_getter(Telemetry::NOTIFY_IMU))
+        .add_property("imu", +[](Telemetry &self){ 
             Telemetry::guard(self.mutex());
             py::dict vals;
-            map2dict(vals, self.valuesUnlocked());
-            vals["version"] = self.valuesVersion();
+            map2dict(vals, self.imuValues());
             return vals; 
         })
-        .add_property("values_version", &Telemetry::valuesVersion)
         ;
 
 }

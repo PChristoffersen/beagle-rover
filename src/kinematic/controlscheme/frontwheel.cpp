@@ -26,12 +26,12 @@ ControlSchemeFrontWheel::~ControlSchemeFrontWheel()
 }
 
 
-void ControlSchemeFrontWheel::setMotors(float left, float right) 
+void ControlSchemeFrontWheel::setMotors(float left, float right, float skew) 
 {
-    motorServo(FRONT_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left));
-    motorServo(FRONT_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right));
-    motorServo(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE));
-    motorServo(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE));
+    motorServo(FRONT_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left-skew));
+    motorServo(FRONT_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right+skew));
+    motorServo(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+skew));
+    motorServo(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE-skew));
 }
 
 

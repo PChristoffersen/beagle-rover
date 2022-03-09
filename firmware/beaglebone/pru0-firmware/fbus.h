@@ -11,5 +11,6 @@ void fbus_end();
 void fbus_telemetry_message(message_t *msg, uint16_t len);
 void fbus_config_message(message_t *msg, uint16_t len);
 void fbus_servo_message(message_t *msg, uint16_t len);
+void fbus_reset_message(message_t *msg, uint16_t len);
 
 #endif

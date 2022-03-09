@@ -86,7 +86,7 @@ printEnd:
 install_PRU0:
 	@echo ''
 	@echo 'Stopping current PRU0 application ($(PRU0))'
-	@echo stop | sudo tee $(PRU0)/state || echo Cannot stop $(PRU1)
+	@echo stop | sudo tee $(PRU0)/state || echo Cannot stop $(PRU0)
 	@echo 'Installing firmware'
 	@sudo cp $(TARGET) /lib/firmware/am335x-pru0-$(FW_POSTFIX)
 	@echo 'Deploying firmware'

@@ -58,7 +58,7 @@ namespace Robot::System {
             float m_voltage; // Total battery voltage
     };
 
-    class Power : public std::enable_shared_from_this<Power>, public WithMutex<std::mutex>, public WithNotifyDefault {
+    class Power : public std::enable_shared_from_this<Power>, public WithMutex<std::mutex>, public WithNotifyInt {
         public:
             explicit Power(const std::shared_ptr<::Robot::Context> &context);
             Power(const Power&) = delete; // No copy constructor

@@ -14,7 +14,7 @@
 
 namespace Robot::Motor {
 
-    class Servo : private Robot::Telemetry::Source, public WithNotifyDefault {
+    class Servo : private Robot::Telemetry::Source, public WithNotifyInt {
         public:
             using mutex_type = std::recursive_mutex;
             using guard = std::lock_guard<mutex_type>;
