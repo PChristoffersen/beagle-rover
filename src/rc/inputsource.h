@@ -30,6 +30,7 @@ namespace Robot::RC {
 
         private:
             bool m_initialized;
+            uint m_enable_cnt;
 
             bool m_armed;
             bool m_can_arm;
@@ -42,6 +43,8 @@ namespace Robot::RC {
             std::weak_ptr<Receiver> m_receiver;
             boost::signals2::connection m_connection;
             void onRCData(Flags flags, RSSI rssi, const ChannelList &channels);
+
+            void checkReceiverEnable();
 
             inline Kinematic::DriveMode calculateDriveMode(uint8_t sa, uint8_t se);
             inline Kinematic::Orientation calculateOrientation(uint8_t sb);

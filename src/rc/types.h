@@ -17,6 +17,7 @@ namespace Robot::RC {
     class InputSource;
 
     static constexpr auto MAX_CHANNELS { 24u };
+    static constexpr auto DEFAULT_CHANNELS { 16u };
 
     class Flags {
         public:

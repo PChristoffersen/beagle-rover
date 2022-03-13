@@ -34,7 +34,7 @@ void EventTemperature::update(ValueMap &map) const
 
 void EventIMU::update(ValueMap &map) const 
 {
-    map["pitch"] = pitch;
+    map["pitch"] = -pitch;
     map["roll"] = roll;
     map["yaw"] = yaw;
 }

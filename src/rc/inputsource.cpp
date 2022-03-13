@@ -15,6 +15,7 @@ namespace Robot::RC {
 InputSource::InputSource(const Robot::Input::Signals &signals) :
     AbstractSource { signals },
     m_initialized { false },
+    m_enable_cnt { 0u },
     m_armed { false },
     m_can_arm { false },
     m_drive_mode { Kinematic::DriveMode::NONE },
@@ -38,6 +39,7 @@ void InputSource::init(const std::shared_ptr<Receiver> &receiver)
 {
     const guard lock(m_mutex);
     m_initialized = true;
+    m_enable_cnt = 0;
     m_receiver = receiver;
 }
 
@@ -64,16 +66,12 @@ void InputSource::setEnabled(bool enabled)
     m_can_arm = false;
     if (m_enabled) {
         m_drive_mode = Kinematic::DriveMode::NONE;
-        if (auto receiver = m_receiver.lock()) {
-            receiver->setEnabled(true);
-            m_connection = receiver->sigData.connect(SignalData::slot_type(&InputSource::onRCData, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
-        }
+        m_enable_cnt++;
+        checkReceiverEnable();
     }
     else {
-        if (auto receiver = m_receiver.lock()) {
-            receiver->setEnabled(false);
-            m_connection.disconnect();
-        }
+        m_enable_cnt--;
+        checkReceiverEnable();
     }
 }
 
@@ -86,8 +84,14 @@ void InputSource::setEnabledKinematic(bool enabled)
     m_enabled_kinematic = enabled;
 
     if (enabled) {
+        m_enable_cnt++;
+        checkReceiverEnable();
         _setDriveMode(m_drive_mode);
         _setOrientation(m_orientation);
+    }
+    else {
+        m_enable_cnt--;
+        checkReceiverEnable();
     }
 }
 
@@ -100,12 +104,34 @@ void InputSource::setEnabledLED(bool enabled)
     m_enabled_led = enabled;
 
     if (enabled) {
+        m_enable_cnt++;
+        checkReceiverEnable();
         _setAnimationMode(m_animation_mode);
         _setIndicatorMode(m_inidicator_mode);
         _setBrightness(m_brightness);
     }
+    else {
+        m_enable_cnt--;
+        checkReceiverEnable();
+    }
 }
 
+
+void InputSource::checkReceiverEnable()
+{
+    if (auto receiver = m_receiver.lock()) {
+        if (m_enable_cnt>0) {
+            receiver->setEnabled(true);
+            if (!m_connection.connected()) {
+                m_connection = receiver->sigData.connect(SignalData::slot_type(&InputSource::onRCData, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
+            }
+        }
+        else {
+            receiver->setEnabled(false);
+            m_connection.disconnect();
+        }
+    }
+}
 
 
 
@@ -227,16 +253,16 @@ void InputSource::onRCData(Flags flags, RSSI rssi, const ChannelList &channels)
     // Convert channels to values
 
     // Sticks
-    auto stickL_y { channels[0] };
-    auto stickR_x { channels[1] };
-    auto stickR_y { channels[2] };
-    auto stickL_x { channels[3] };
+    auto stickL_x { channels[0] };
+    auto stickL_y { channels[1] };
+    auto stickR_x { channels[2] };
+    auto stickR_y { channels[3] };
 
     // Analogue dials
-    auto s1 { channels[4] };
-    auto s2 { channels[5] };
-    auto sliderL { channels[6] };
-    auto sliderR { channels[7] };
+    //auto s1 { channels[4].asPercent() };
+    auto s2 { channels[5].asPercent() };
+    //auto sliderL { channels[6].asFloat() };
+    //auto sliderR { channels[7].asFloat() };
 
     // Buttons
     auto sa { channels[8].asButton(3) };
@@ -265,8 +291,8 @@ void InputSource::onRCData(Flags flags, RSSI rssi, const ChannelList &channels)
     if ((time-last_update) > 200ms) {
         BOOST_LOG_TRIVIAL(info) << "RC "
             << std::fixed << std::setprecision(2) 
-            << "lstick=(" << stickL_x.asFloat() << "," << stickL_y.asFloat() << ") "
-            << "rstick=(" << stickR_x.asFloat() << "," << stickR_y.asFloat() << ") "
+            << "lstick=(" << boost::format("%+04d") % stickL_x.asServoPulse() << "," << boost::format("%+04d") % stickL_y.asServoPulse() << ") "
+            << "rstick=(" << boost::format("%+04d") % stickR_x.asServoPulse() << "," << boost::format("%+04d") % stickR_y.asServoPulse() << ") "
             << "s1=" << s1.asFloat() << " "
             << "s2=" << s2.asFloat() << " "
             << "sL=" << sliderL.asFloat() << " "
@@ -328,7 +354,7 @@ void InputSource::onRCData(Flags flags, RSSI rssi, const ChannelList &channels)
             m_inidicator_mode = indicator_mode;
             _setIndicatorMode(m_inidicator_mode);
         }
-        m_brightness = std::round(255.0f * s2.asPercent())/255.0f;
+        m_brightness = std::round(255.0f * s2)/255.0f;
         _setBrightness(m_brightness);
     }
 

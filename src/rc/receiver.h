@@ -22,6 +22,8 @@ namespace Robot::RC {
         public:
             using timer_type = boost::asio::steady_timer;
 
+            static constexpr notify_type NOTIFY_CHANNELS { 1 };
+
             SignalFlags sigFlags;
             SignalRSSI sigRSSI;
             SignalData sigData;

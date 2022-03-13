@@ -16,8 +16,16 @@ log = logging.getLogger("test")
 def main():
     robot = Robot()
     robot.init()
-
     rc_receiver = robot.rc_receiver
+
+    rc_receiver.enabled = True
+
+    sleep(1)
+
+    log.info(f"{rc_receiver.channels}")
+    return
+
+
     rc_receiver.enabled = True
 
     sleep(6)

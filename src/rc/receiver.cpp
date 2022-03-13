@@ -32,7 +32,7 @@ bit0 = n/a
 
 
 #if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
-static constexpr auto TIMER_INTERVAL { 500ms };
+static constexpr auto TIMER_INTERVAL { 1s };
 #else
 static constexpr auto TIMER_INTERVAL { 10ms };
 #endif
@@ -68,6 +68,7 @@ void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetr
 {    
     const guard lock(m_mutex);
 
+    m_channels.setCount(DEFAULT_CHANNELS);
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus = rc_ext_fbus_get_shm();
     m_rssi = m_fbus->rssi;
@@ -198,6 +199,8 @@ void Receiver::timer()
         if (sig_rssi || sig_flags)
             notify(NOTIFY_DEFAULT);
 
+        notify(NOTIFY_CHANNELS);
+
         // Print data
 #if 0
         static std::chrono::high_resolution_clock::time_point last_update;
@@ -252,6 +255,32 @@ void Receiver::timer()
         }
     }
 
+    m_channels.setCount(16u);
+    if (m_channels[15].asServoPulse() < Value::PULSE_CENTER) {
+        m_channels[15] = Value::PULSE_MAX;
+    }
+    else {
+        m_channels[15] = Value::PULSE_MIN;
+    }
+    if (m_channels[14].asServoPulse() < Value::PULSE_CENTER) {
+        m_channels[14] = 2000;
+    }
+    else {
+        m_channels[14] = 1000;
+    }
+    if (m_channels[13].asServoPulse() < Value::PULSE_CENTER) {
+        m_channels[13] = 2200;
+    }
+    else {
+        m_channels[13] = 1500-200;
+    }
+    if (m_channels[12].asServoPulse() < 2200) {
+        m_channels[12] = 2500;
+    }
+    else {
+        m_channels[12] = 2100;
+    }
+    notify(NOTIFY_CHANNELS);
 
     if (sig_flags) {
         sigFlags(m_flags);

@@ -1,6 +1,7 @@
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/python.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS
+#include <boost/python/numpy.hpp>
 
 #include "util.h"
 
@@ -22,6 +23,8 @@ namespace Robot::Python {
 BOOST_PYTHON_MODULE(robotsystem) 
 {
     using namespace Robot::Python;
+
+    boost::python::numpy::initialize();
 
     export_misc();
     export_motor();
