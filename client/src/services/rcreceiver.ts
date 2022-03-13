@@ -1,4 +1,4 @@
-import { RCReceiver } from './model';
+import { RCChannels, RCReceiver } from './model';
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 
@@ -28,7 +28,19 @@ const rcreceiverApi = robotApi.injectEndpoints({
             async onQueryStarted({ ...patch }, { dispatch, queryFulfilled }) {
                 await handleUpdateQuery(undefined, patch, 'getRCReceiver', ['RCReceiver'], dispatch, queryFulfilled, rcreceiverApi.util.updateQueryData, rcreceiverApi.util.invalidateTags);
             },
-        })
+        }),
+
+        getRCChannels: builder.query<RCChannels, void>({
+            query: () => `rcreceiver/channels`,
+
+            // @ts-expect-error
+            providesTags: (result, error, id) => [ 'RCChannels' ],
+
+            async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
+                await handleUpdateSubscription("/rcreceiver", "update_channels", updateCachedData, cacheDataLoaded, cacheEntryRemoved);
+            }
+        }),
+
     }),
 
     overrideExisting: false,
@@ -40,4 +52,5 @@ const rcreceiverApi = robotApi.injectEndpoints({
 export const { 
     useGetRCReceiverQuery,
     useSetRCReceiverMutation,
+    useGetRCChannelsQuery,
 } = rcreceiverApi;

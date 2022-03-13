@@ -5,6 +5,7 @@ export default function RestUIStock() {
         <rapi-doc
             spec-url = "/api/openapi.yaml"
             server-url = "/api"
+            default-api-server = "/api"
             render-style = "focused"
             
             allow-authentication = {false}

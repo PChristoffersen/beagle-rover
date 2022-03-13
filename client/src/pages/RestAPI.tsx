@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { Button, Paper, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import Page from "../components/Page";
@@ -8,12 +8,6 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 
 const Root = styled('div')(({ theme }) => ({
     position: "relative",
-}));
-
-const Body = styled('div')(({ theme }) => ({
-    position: "absolute",
-    width: '100%',
-    top: 0,
 }));
 
 
@@ -27,11 +21,11 @@ const Controls = styled('div')(({ theme }) => ({
 
 export default function RestAPI() {
     return (
-        <Page sx={{ padding: { xs: 1, sm: 2 }}}>
-            <Root>
-                <Body>
+        <Page sx={{ padding: { xs: 1, sm: 2, height: "100%" } }}>
+            <Root sx={{ backgroundColor: "blue" }}>
+                <Paper sx={{ padding: 1, position: "absolute", top: 0, width: "100%", height: "auto" }}>
                     <RestUI />
-                </Body>
+                </Paper>
                 <Controls>
                     <Button
                         component={RouterLink}

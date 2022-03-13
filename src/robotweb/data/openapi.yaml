@@ -6,7 +6,7 @@ info:
   description: API for controlling robot cars
 
 servers:
-  - url: http://localhost:3002/api
+  - url: http://localhost:5000/api
 
 tags:
   - name: Input
@@ -299,6 +299,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/RCReceiver"
 
+  /rcreceiver/channels:
+    get:
+      summary: Get channels
+      description: The current state of the receiver channels
+      operationId: rc_get_channels
+      tags:
+        - RC Receiver
+      responses:
+        '200':
+          description: Receiver chanels
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCChannels"
+
 
   /leds:
     get:
@@ -475,7 +490,7 @@ components:
     InputState:
       type: object
       properties:
-        directions:
+        direction:
           $ref: "#/components/schemas/InputAxis"
         throttle:
           $ref: "#/components/schemas/InputAxis"
@@ -484,7 +499,7 @@ components:
         aux_y:
           $ref: "#/components/schemas/InputAxis"
       required:
-        - steering
+        - direction
         - throttle
         - aux_x
         - aux_y
@@ -585,6 +600,19 @@ components:
         - enabled
         - connected
         - rssi
+    RCValue:
+      type: integer
+      description: RC Channel value
+    RCChannels:
+      type: array
+      description: Array of RC channel values
+      items:
+        $ref: "#/components/schemas/RCValue"
+      example:
+        - 1500
+        - 1500
+        - 1500
+        - 1500
 
 
     MotorControl:

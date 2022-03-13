@@ -25,7 +25,7 @@ export default function JoystickSteering() {
         y = y/50.0;
         const sock = sockRef.current;
         if (sock) {
-            steer(sock, { steering: x, throttle: y });
+            steer(sock, { direction: x, throttle: y });
         }
 
     };

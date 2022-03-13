@@ -6,7 +6,7 @@ import { DriveMode, DriveModeDescription } from '../../services/model';
 
 
 export default function DriveModeSelect() {
-    const { data: driveModes } = useGetDriveModesQuery();
+    const { data: driveModes, isSuccess: isDriveModesSuccess } = useGetDriveModesQuery();
     const { data: kinematic, isError, isSuccess } = useGetKinematicQuery();
     const [ update ] = useSetKinematicMutation();
 
@@ -15,7 +15,8 @@ export default function DriveModeSelect() {
         update({ drive_mode: value });
     };
 
-    const value = kinematic?.drive_mode || "unk";
+    const isAllSuccess = isSuccess && isDriveModesSuccess;
+    const value = (isAllSuccess && kinematic?.drive_mode) || "unk";
 
     return (
         <FormControl fullWidth variant="standard" error={isError} >
@@ -26,12 +27,12 @@ export default function DriveModeSelect() {
                 value={value}
                 label="Drive mode"
                 onChange={handleChange}
-                disabled={!isSuccess}
+                disabled={!isAllSuccess}
             >
-                { isSuccess && driveModes && driveModes.map((entry: DriveModeDescription) => (
+                { isAllSuccess && driveModes && driveModes.map((entry: DriveModeDescription) => (
                     <MenuItem key={entry.key} value={entry.key} disabled={entry.disabled}>{entry.name}</MenuItem>
                 ))}
-                { !isSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}
+                { !isAllSuccess && <MenuItem key="unk" value="unk" >Unknown</MenuItem>}
             </Select>
         </FormControl>
     )

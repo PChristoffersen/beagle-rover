@@ -46,7 +46,6 @@ def set_rc_from_dict(rc: RCReceiver, json: dict):
 @route.get("")
 async def index(request: Request) -> Response:
     robot = request.config_dict["robot"]
-
     return json_response(rc2dict(robot.rc_receiver))
 
 
@@ -59,6 +58,12 @@ async def put(request: Request) -> Response:
     return json_response(rc2dict(rc))
 
 
+@route.get("/channels")
+async def channels(request: Request) -> Response:
+    robot = request.config_dict["robot"]
+    return json_response(robot.rc_receiver.channels)
+
+
 
 
 class RCWatch(SubscriptionWatch):
@@ -66,6 +71,25 @@ class RCWatch(SubscriptionWatch):
 
     def data(self):
         return rc2dict(self.target)
+
+    def _target_subscribe(self):
+        if not self.sub:
+            self.sub = self.target.subscribe( (self.target.NOTIFY_DEFAULT,) )
+
+    async def emit(self, res: tuple):
+        await super().emit(res)
+        await asyncio.sleep(self.UPDATE_GRACE_PERIOD)
+
+
+class RCChannelWatch(SubscriptionWatch):
+    UPDATE_GRACE_PERIOD = 0.1
+
+    def data(self):
+        return self.target.channels
+
+    def _target_subscribe(self):
+        if not self.sub:
+            self.sub = self.target.subscribe( (self.target.NOTIFY_CHANNELS,) )
 
     async def emit(self, res: tuple):
         await super().emit(res)
@@ -82,7 +106,8 @@ class RCNamespace(WatchableNamespace):
     async def app_started(self):
         robot = self.app["root"]["robot"]
         await self._init_watches([
-            RCWatch(self, robot.rc_receiver)
+            RCWatch(owner=self, target=robot.rc_receiver),
+            RCChannelWatch(owner=self, target=robot.rc_receiver, name="update_channels")
         ])
 
     async def app_cleanup(self):

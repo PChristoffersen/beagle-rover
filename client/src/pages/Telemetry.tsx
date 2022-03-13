@@ -2,7 +2,7 @@ import { Grid } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import RobotFront from '../components/chassis/RobotFront';
 import RobotSide from '../components/chassis/RobotSide';
-import RobotTop from '../components/chassis/RobotTop';
+import RobotTopFull from '../components/chassis/RobotTopFull';
 
 import Page from '../components/Page';
 import { useGetIMUQuery } from '../services/telemetry';
@@ -34,7 +34,7 @@ export default function Telemetry() {
                     {roll}
                 </Grid>
                 <Grid item xs={4}>
-                    <RobotTop/>
+                    <RobotTopFull/>
                     {yaw}
                 </Grid>
             </Grid>

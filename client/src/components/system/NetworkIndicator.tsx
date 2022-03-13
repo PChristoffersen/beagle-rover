@@ -26,7 +26,8 @@ export default function NetworkIndicator() {
     var tooltip = "";
     var text = null;
 
-    icon = <SignalWifiBadIcon fontSize='large' />;
+    //icon = <SignalWifiBadIcon fontSize='large' />;
+    icon = <WifiTetheringIcon fontSize='large' />;
 
     return (
         <Tooltip arrow title={tooltip}>

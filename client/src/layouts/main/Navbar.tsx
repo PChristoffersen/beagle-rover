@@ -25,8 +25,6 @@ export default function Navbar() {
 
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   
-    console.log(palette);
-
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
       setAnchorElNav(event.currentTarget);
     };
@@ -110,7 +108,7 @@ export default function Navbar() {
                                 key={page.name}
                                 component={RouterLink}
                                 to={page.to}
-                                color={page.id===currentPage?.id ?'inherit': undefined}
+                                color={page.id===currentPage?.id ?'inherit': "secondary"}
                             >
                                 {page.name}
                             </Button>

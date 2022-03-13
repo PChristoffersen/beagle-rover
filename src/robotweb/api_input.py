@@ -81,7 +81,6 @@ async def put(request: Request) -> Response:
     set_input_from_dict(input, json)
     return json_response(input2dict(input))
 
-
 @route.get("/sources")
 async def animations(request: Request) -> Response:
     return json_response(INPUT_SOURCES)

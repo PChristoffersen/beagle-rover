@@ -11,6 +11,7 @@ import FullscreenLayout from './layouts/fullscreen';
 import Test from './pages/Test';
 import RestAPI from './pages/RestAPI';
 import FullscreenRestAPI from './pages/FullscreenRestAPI';
+import Receiver from './pages/Receiver';
 
 
 interface PageDefinition {
@@ -25,6 +26,7 @@ export const pages = [
     { id: "telemetry",  name: 'Telemetry',  to: '/telemetry' },
     { id: "leds",       name: 'LEDS',       to: '/leds' },
     { id: "motors",     name: 'Motors',     to: '/motors' },
+    { id: "receiver",   name: 'Receiver',     to: '/receiver' },
     { id: "rest",       name: 'API',     to: '/rest' },
 ] as PageDefinition[];
 
@@ -41,6 +43,7 @@ export default function Router() {
                     { path: 'leds', element: <LEDS /> },
                     { path: 'telemetry', element: <Telemetry /> },
                     { path: 'motors', element: <Motors /> },
+                    { path: 'receiver', element: <Receiver /> },
                     { path: 'rest', element: <RestAPI /> },
                     { path: 'test', element: <Test /> },
                     { element: <Home />, index: true },

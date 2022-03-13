@@ -31,7 +31,7 @@ class IMUWatch(SubscriptionWatch):
 
     def _target_subscribe(self):
         if not self.sub:
-            self.sub = self.target.subscribe(self.sub, (self.target.NOTIFY_IMU))
+            self.sub = self.target.subscribe( (self.target.NOTIFY_IMU,) )
 
     async def emit(self, res: tuple):
         await super().emit(res)
@@ -47,6 +47,7 @@ class TelemetryNamespace(WatchableNamespace):
 
     async def app_started(self):
         robot = self.app["root"]["robot"]
+        logger.info(f"Robot: {robot} {robot.telemetry}")
         await self._init_watches([
             IMUWatch(self, robot.telemetry, f"update_imu")
         ])
@@ -56,9 +57,26 @@ class TelemetryNamespace(WatchableNamespace):
         await self._destroy_watches()
 
 
+
+
+async def app_on_startup(app: Application):
+    logger.info("Startup")
+    ns = app["ns"]
+    await ns.app_started()
+
+async def app_on_cleanup(app: Application):
+    logger.info("Cleanup")
+    ns = app["ns"]
+    await ns.app_cleanup()
+
 def create_app(root: Application, sio: AsyncServer) -> Application:
     app = Application()
     app.add_routes(route)
+    app.on_startup.append(app_on_startup)
+    app.on_cleanup.append(app_on_cleanup)
+
+    app["root"] = root
+    app["sio"] = sio
 
     ns = TelemetryNamespace(app)
     sio.register_namespace(ns)

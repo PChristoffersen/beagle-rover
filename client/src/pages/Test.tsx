@@ -1,14 +1,11 @@
 import { Box, Card, CardContent, CardHeader, Grid, Typography, useTheme } from "@mui/material";
+import TopViewFull from "../components/chassis/beaglerover/TopViewFull";
 import TopView from "../components/chassis/beaglerover/TopView";
 import Page from "../components/Page";
 import { useGetOutputQuery } from "../services/leds";
 
 
 export default function Test() {
-    const { data: output, isSuccess } = useGetOutputQuery();
-
-
-    const wheelAngles = [ 0,0,0,0 ];
 
     return (
         <Page>
@@ -18,7 +15,7 @@ export default function Test() {
                     backgroundColor: "blue",
                 }}
             >
-                <TopView wheelAngles={wheelAngles} leds={output} />
+                <TopView angle={45}/>
             </Box>
         </Page>
     );

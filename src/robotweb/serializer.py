@@ -13,7 +13,7 @@ try:
         # Orjson does not support the separators argument
         if "separators" in kwargs:
             kwargs.pop("separators")
-        return str(orjson.dumps(*args, **kwargs), "utf-8")
+        return str(orjson.dumps(*args, **kwargs, option=orjson.OPT_SERIALIZE_NUMPY), "utf-8")
 
 except:
     logger.warn("orjson not found falling back to default json serializer")

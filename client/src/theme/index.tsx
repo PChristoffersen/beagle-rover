@@ -11,23 +11,20 @@ interface Props {
 
 const theme = createTheme({
     palette: {
-        mode: 'dark',
-        /*
+        //mode: 'dark',
         primary: {
-            main: '#2196f3',
+            main: "#0277bd",
+            light: "#58a5f0",
+            dark: "#004c8c",
         },
-        */
         secondary: {
-              main: '#ffea00',
+            main: "#424242",
+            light: "#6d6d6d",
+            dark: "#1b1b1b",
         },
-        error: {
-              main: red.A400,
-        },
-        /*
         background: {
-            default: '#505050',
+            default: "#e1f5fe",
         }
-        */
     },
     typography: {
         fontFamily: `"Varela Round", "Helvetica", "Arial", "sans-serif"`,

@@ -11,14 +11,14 @@ export default function SliderSteering() {
         <Grid container rowSpacing={3}>
             <Grid item xs="auto">
                 <Tooltip title="Stop all">
-                    <IconButton disabled={status.isLoading} onClick={() => update({ steering: 0.0, throttle: 0.0, aux_x: 0.0, aux_y: 0.0 }) }>
+                    <IconButton disabled={status.isLoading} onClick={() => update({ direction: 0.0, throttle: 0.0, aux_x: 0.0, aux_y: 0.0 }) }>
                         <GiCancel size={iconSize} />
                     </IconButton>
                 </Tooltip>
             </Grid>
             <Grid item xs="auto">
                 <Tooltip title="Center steering">
-                    <IconButton disabled={status.isLoading} onClick={() => update({ steering: 0.0 }) }>
+                    <IconButton disabled={status.isLoading} onClick={() => update({ direction: 0.0 }) }>
                         <GiSteeringWheel size={iconSize} />
                     </IconButton>
                 </Tooltip>
@@ -39,7 +39,7 @@ export default function SliderSteering() {
             </Grid>
             <Grid item xs={12}>
                 <Stack>
-                    <AxisSlider title="Steering" axis="steering" />
+                    <AxisSlider title="Direction" axis="direction" />
                     <AxisSlider title="Throttle" axis="throttle" />
                     <AxisSlider title="Aux X" axis="aux_x" />
                     <AxisSlider title="Aux Y" axis="aux_y" />

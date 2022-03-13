@@ -5,7 +5,7 @@
 import type { InputAxis } from './InputAxis';
 
 export type InputState = {
-    directions?: InputAxis;
+    direction: InputAxis;
     throttle: InputAxis;
     aux_x: InputAxis;
     aux_y: InputAxis;

@@ -2,7 +2,7 @@
   "name": "robot-fe",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5000",
+  "proxy": "http://beaglebone-blue:5000",
   "dependencies": {
     "@dmitrychebayewski/mui-color": "^2.0.0-beta.2",
     "@emotion/react": "^11.7.1",
