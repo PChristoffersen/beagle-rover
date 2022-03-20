@@ -1,7 +1,7 @@
 from ast import Or
 import logging
 import asyncio
-from aiohttp.web import Application, RouteTableDef, Request, Response
+from aiohttp.web import Application, RouteTableDef, Request, Response, HTTPBadRequest
 from socketio import AsyncServer
 from dataclasses import dataclass
 
@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 route = RouteTableDef()
 
 
+RESET_ODOMETER_ACTION = "resetOdometer"
+
 KINEMATIC_PROPERTIES = frozenset([
     "drive_mode",
     "orientation",
@@ -31,7 +33,6 @@ DRIVE_MODES = [
     { "key": str(DriveMode.SKID),        "disabled": False,  "name": "Skid steer" },
     { "key": str(DriveMode.SPINNING),    "disabled": False,  "name": "Spinning" },
     { "key": str(DriveMode.BALANCING),   "disabled": False,  "name": "Balancing" },
-    { "key": str(DriveMode.PASSTHROUGH), "disabled": True,   "name": "RC Passthrough" },
 ]
 
 ORIENTATIONS = [
@@ -46,7 +47,14 @@ def kinematic2dict(kinematic: Kinematic) -> dict:
     return {
         "drive_mode": str(kinematic.drive_mode),
         "orientation": str(kinematic.orientation),
+        "odometer": kinematic.odometer,
     }
+
+def kinematic2dict_telemetry(kinematic: Kinematic) -> dict:
+    return {
+        "odometer": kinematic.odometer,
+    }
+
 
 def set_kinematic_from_dict(kinematic: Kinematic, json: dict):
     for key, value in json.items():
@@ -73,6 +81,18 @@ async def put(request: Request) -> Response:
     return json_response(kinematic2dict(kinematic))
 
 
+@route.post("/actions")
+async def actions(request: Request) -> Response:
+    robot = request.config_dict["robot"]
+    action = await json_request(request)
+    if "id" in action:
+        id = action["id"]
+        if id == RESET_ODOMETER_ACTION:
+            robot.kinematic.reset_odometer()
+            return Response()
+    raise HTTPBadRequest()
+
+
 @route.get("/drive-modes")
 async def indicators(request: Request) -> Response:
     return json_response(DRIVE_MODES)
@@ -82,9 +102,26 @@ async def indicators(request: Request) -> Response:
     return json_response(ORIENTATIONS)
 
 
+
+
+
 class KinematicWatch(SubscriptionWatch):
+    UPDATE_GRACE_PERIOD = 0.2
+
     def data(self):
         return kinematic2dict(self.target)
+
+    async def emit(self, res: tuple):
+        data = dict()
+        if Kinematic.NOTIFY_DEFAULT in res:
+            data.update(kinematic2dict(self.target))
+        elif Kinematic.NOTIFY_TELEMETRY in res:
+            data.update_telemetry(kinematic2dict(self.target))
+        else:
+            return
+
+        await self.owner.emit(self.name, data=data, room=self.name)
+        await asyncio.sleep(self.UPDATE_GRACE_PERIOD)
 
 
 class KinematicNamespace(WatchableNamespace):

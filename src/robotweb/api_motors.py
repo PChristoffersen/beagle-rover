@@ -41,13 +41,7 @@ def control2dict(control) -> Dict:
 
 def control2dict(control) -> Dict:
     return {
-        "odometer": control.odometer,
         "motor_count": len(control.motors),
-    }
-
-def control2dict_update(control) -> Dict:
-    return {
-        "odometer": control.odometer,
     }
 
 
@@ -110,17 +104,6 @@ async def index(request: Request) -> Response:
     return json_response(control2dict(robot.motor_control))
 
 
-@route.post("/actions")
-async def actions(request: Request) -> Response:
-    robot = request.config_dict["robot"]
-    action = await json_request(request)
-    if "id" in action:
-        id = action["id"]
-        if id == RESET_ODOMETER_ACTION:
-            robot.motor_control.reset_odometer()
-            return Response()
-    raise HTTPBadRequest()
-
 
 @route.get("/{index:\d+}")
 async def get_motor(request: Request) -> Response:
@@ -147,17 +130,6 @@ async def put_motor(request: Request) -> Response:
     return json_response(json)
 
 
-
-
-class ControlWatch(SubscriptionWatch):
-    UPDATE_GRACE_PERIOD = 0.25
-
-    def data(self):
-        return control2dict_update(self.target)
-    
-    async def emit(self, res: tuple):
-        await super().emit(res)
-        await asyncio.sleep(self.UPDATE_GRACE_PERIOD)
 
 
 class MotorWatch(SubscriptionWatch):
@@ -201,9 +173,7 @@ class MotorNamespace(WatchableNamespace):
 
     async def app_started(self):
         robot = self.app["root"]["robot"]
-        watches = [ControlWatch(self, robot.motor_control)]
-        watches.extend([MotorWatch(self, motor, f"update_motor_{motor.index}") for motor in robot.motor_control.motors])
-        await self._init_watches(watches)
+        await self._init_watches([MotorWatch(self, motor, f"update_motor_{motor.index}") for motor in robot.motor_control.motors])
 
 
     async def app_cleanup(self):

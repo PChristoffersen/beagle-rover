@@ -31,6 +31,25 @@ async def index(request: Request) -> Response:
     robot = request.config_dict["robot"]
     return json_response(robot2dict(robot))
 
+
+@route.get("/properties")
+async def properties(request: Request) -> Response:
+    robot = request.config_dict["robot"]
+    properties = robot.properties
+    res = dict()
+    for group in properties.groups():
+        res[group] = properties[group]
+    return json_response(res)
+
+@route.put("/properties")
+async def properties_update(request: Request) -> Response:
+    robot = request.config_dict["robot"]
+    properties = robot.properties
+    json = await request.json()
+    for k,v in json.items():
+        properties.update(k, v)
+    return Response()
+
 @route.get("/versions")
 async def versions(request: Request) -> Response:
     return json_response({

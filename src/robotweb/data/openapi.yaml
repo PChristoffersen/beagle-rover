@@ -170,6 +170,23 @@ paths:
               schema:
                 $ref: "#/components/schemas/OrientationDescriptionList"
 
+  /kinematic/actions:
+    post:
+      summary: Perform control action
+      description: Kinematic action
+      operationId: kinematic_action
+      tags:
+        - Kinematic
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/ResetOdometerAction"
+      responses:
+        '200':
+          description: Success
+
 
   /motors:
     get:
@@ -186,22 +203,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/MotorControl"
       
-  /motors/actions:
-    post:
-      summary: Perform control action
-      description: Motor action
-      operationId: motors_action
-      tags:
-        - Motors
-      requestBody:
-          content:
-            application/json:    
-              schema:
-                anyOf:
-                  - $ref: "#/components/schemas/ResetOdometerAction"
-      responses:
-        '200':
-          description: Success
 
 
   /motors/{id}:
@@ -415,20 +416,36 @@ paths:
                 - "0000FF"
                 - "000000"
 
-  /system:
+
+  /system/network:
     get:
-      summary: Get system information
-      description: System information
-      operationId: system_get
+      summary: Network interfaces
+      description: Get information about network interfaces
+      operationId: system_network_get
       tags:
         - System
       responses:
         '200':
-          description: Current system information
+          description: Network interface state
           content:
             application/json:    
               schema:
-                $ref: "#/components/schemas/System"
+                $ref: "#/components/schemas/Network"
+
+  /system/power:
+    get:
+      summary: Power supply
+      description: Get information about network interfaces
+      operationId: system_power_get
+      tags:
+        - System
+      responses:
+        '200':
+          description: Current power supply information
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Power"
 
 
 components:
@@ -920,20 +937,120 @@ components:
         - system
 
 
-    Network:
-      type: object
+    NetworkInterfaceType:
+      type: string
+      enum:
+        - ETHERNET
+        - WIRELESS
+        - WIRELESS_AP
+        - USB_GADGET
 
-
-
-    System:
+    NetworkInterfaceBase:
       type: object
       properties:
-        network:
-          $ref: "#/components/schemas/Network"
-        power:
-          $ref: "#/components/schemas/Power"
-      required:
-        - network
-        - power
+        name:
+          description: Interface name
+          type: string
+          readOnly: true
+        type:
+          readOnly: true
+          $ref: "#/components/schemas/NetworkInterfaceType"
+        active:
+          description: Whether the interface is currently active
+          type: boolean
+          readOnly: true
+        mac:
+          description: MAC Address of the interface
+          type: string
+          readOnly: true
+        addresses:
+          description: List of IpV4 addresses of the interface
+          type: array
+          items:
+            type: string
 
+      required:
+        - name
+        - type
+        - active
+        - mac
+        - addresses
+      
+    NetworkInterfaceEthernet:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceBase"
+
+    NetworkInterfaceWifiBase:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceBase"
+        - type: object
+          properties:
+            ssid:
+              description: Wifi SSID
+              type: string
+              readOnly: true
+            frequency:
+              description: Wifi Frequency
+              type: integer
+              readOnly: true
+            channel:
+              description: Wifi Channel
+              type: integer
+              readOnly: true
+            channel_width:
+              description: Wifi Channel width
+              type: string
+              readOnly: true
+          required:
+            - ssid
+            - frequency
+            - channel
+            - channel_width
+
+    NetworkInterfaceWifi:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceWifiBase"
+        - type: object
+          properties:
+            signal_dbm:
+              description: Wireless signal strength in dBm
+              type: integer
+              readOnly: true
+            signal_rssi:
+              description: Wireless signal strength in percent
+              type: integer
+              minimum: 0
+              maximum: 100
+              readOnly: true
+          required:
+            - signal_dbm
+            - signal_rssi
     
+    NetworkInterfaceWifiAP:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceWifiBase"
+
+    NetworkInterfaceUSB:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceBase"
+
+
+
+    Network:
+      type: object
+      additionalProperties:
+        oneOf:
+          - $ref: "#/components/schemas/NetworkInterfaceEthernet"
+          - $ref: "#/components/schemas/NetworkInterfaceWifi"
+          - $ref: "#/components/schemas/NetworkInterfaceWifiAP"
+          - $ref: "#/components/schemas/NetworkInterfaceUSB"
+        disctiminator:
+          propertyName: type
+          mapping:
+            ETHERNET: "#/components/schemas/NetworkInterfaceEthernet"
+            WIRELESS: "#/components/schemas/NetworkInterfaceWifi"
+            WIRELESS_AP: "#/components/schemas/NetworkInterfaceWifiAP"
+            USB_GADGET: "#/components/schemas/NetworkInterfaceUSB"
+
+
+

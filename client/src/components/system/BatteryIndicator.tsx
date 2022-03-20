@@ -15,19 +15,19 @@ import BatteryCharging90Icon from '@mui/icons-material/BatteryCharging90';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import PowerIcon from '@mui/icons-material/Power';
 
-import { useGetSystemQuery } from "../../services/system";
+import { useGetPowerQuery } from "../../services/system";
 import { PowerSourceBattery, PowerSourceType } from "../../services/model";
 
 
 export default function BatteryIndicator() {
     const { palette } = useTheme();
-    const { data: system, isSuccess } = useGetSystemQuery()
+    const { data: power, isSuccess } = useGetPowerQuery()
 
     if (!isSuccess) {
         return null;
     }
 
-    const system_power = system?.power.system
+    const system_power = power.system
 
     var icon = null;
     var tooltip = "";

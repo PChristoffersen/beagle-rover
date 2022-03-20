@@ -1,10 +1,11 @@
 import logging
 import asyncio
+from re import I
 from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from dataclasses import dataclass
 
-from robotsystem import Robot, Network, Power, PowerSource, PowerSourceBattery
+from robotsystem import Robot, Network, NetworkInterface, Power, PowerSource, PowerSourceBattery
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch
@@ -27,10 +28,44 @@ def system2dict(robot: Robot) -> dict:
     }
 
 
-def network2dict(network: Network) -> dict:
-    return {
+def interface2dict(interface: NetworkInterface, signal_only) -> dict:
+    with interface:
+        wifi = interface.wifi
+        if signal_only:
+            res = {
+                "name": interface.name,
+                "type": str(interface.type),
+            }
+            if wifi:
+                res.update({
+                    "signal_dbm": wifi.signal_dbm,
+                    "signal_rssi": wifi.signal_rssi,
+                })
+        else:
+            res = {
+                "name": interface.name,
+                "type": str(interface.type),
+                "mac": interface.mac,
+                "addresses": interface.addresses,
+                "active": interface.active,
+            }
+            if wifi:
+                res.update({
+                    "ssid": wifi.ssid,
+                    "frequency": wifi.frequency,
+                    "channel": wifi.channel,
+                    "channel_width": wifi.channel_width,
+                    "signal_dbm": wifi.signal_dbm,
+                    "signal_rssi": wifi.signal_rssi,
+                })
+        return res
 
-    }
+def network2dict(network: Network, signal_only=False) -> dict:
+    res = dict()
+    for interface in network.interfaces():
+        res[interface.name] = interface2dict(interface, signal_only)
+    return res
+
 
 
 def power2dict(power: Power) -> dict:
@@ -55,37 +90,39 @@ def powersource2dict(power_source: PowerSource) -> dict:
 
 @route.get("")
 async def index(request: Request) -> Response:
+    return json_response({})
+
+
+@route.get("/power")
+async def power(request: Request) -> Response:
     robot = request.config_dict["robot"]
-    return json_response(system2dict(robot))
+    return json_response(power2dict(robot.power))
+
+@route.get("/network")
+async def power(request: Request) -> Response:
+    robot = request.config_dict["robot"]
+    return json_response(network2dict(robot.network))
 
 
 
 
-class SystemWatch(SubscriptionWatch):
-    POWER_OFFSET = 1000
-    GRACE_PERIOD = 2.0
-    
+
+class PowerWatch(SubscriptionWatch):
     def data(self):
-        data = system2dict(self.target)
-        return data
+        return power2dict(self.target)
 
-    def _target_subscribe(self):
-        if not self.sub:
-            self.sub = self.target.network.subscribe()
-            self.sub = self.target.power.subscribe(self.sub, self.POWER_OFFSET)
-
+class NetworkWatch(SubscriptionWatch):
+    def data(self):
+        return network2dict(self.target)
 
     async def emit(self, res: tuple):
-        data = dict()
-        for id in res:
-            if id == Network.NOTIFY_DEFAULT:
-                data["network"] = data.update(network2dict(self.target.network))
-            if id == self.POWER_OFFSET+Power.NOTIFY_DEFAULT:
-                data["power"] = power2dict(self.target.power)
-        
-        #logger.info(f"{data}")
+        if Network.NOTIFY_DEFAULT in res:
+            data = network2dict(self.target)
+            pass
+        elif Network.NOTIFY_SIGNAL in res:
+            data = network2dict(self.target, True)
+            pass
         await self.owner.emit(self.name, data=data, room=self.name)
-        await asyncio.sleep(self.GRACE_PERIOD)
 
 
 
@@ -99,18 +136,12 @@ class SystemNamespace(WatchableNamespace):
     async def app_started(self):
         robot = self.app["root"]["robot"]
         await self._init_watches([
-            SystemWatch(self, robot)
+            PowerWatch(self, robot.power, "power_update"),
+            NetworkWatch(self, robot.network, "network_update")
         ])
 
     async def app_cleanup(self):
         await self._destroy_watches()
-
-    # 
-    # Event handlers
-    #
-
-
-
 
 
 async def app_on_startup(app: Application):
