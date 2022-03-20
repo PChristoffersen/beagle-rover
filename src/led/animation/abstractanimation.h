@@ -4,6 +4,8 @@
 #include <memory>
 #include <chrono>
 #include <boost/asio.hpp>
+
+#include <common/withstrand.h>
 #include <robotcontext.h>
 #include "../colorlayer.h"
 #include "../animation.h"
@@ -12,7 +14,7 @@
 namespace Robot::LED {
 
     template<typename T>
-    class AbstractAnimation : public Animation, public std::enable_shared_from_this<T> {
+    class AbstractAnimation : public Animation, public std::enable_shared_from_this<T>, public WithStrand {
         public:
             virtual ~AbstractAnimation() {
                 m_timer.cancel();
@@ -47,12 +49,14 @@ namespace Robot::LED {
             std::weak_ptr<Control> m_control;
             std::shared_ptr<ColorLayer> m_layer;
 
-            AbstractAnimation(const std::shared_ptr<Robot::Context> &context) :
-                m_timer { context->io() }
+            AbstractAnimation(const strand_type &strand) :
+                WithStrand { strand },
+                m_timer { strand.context() }
             {
             }
-            AbstractAnimation(const std::shared_ptr<Robot::Context> &context, timer_type::duration timer_interval) :
-                m_timer { context->io() },
+            AbstractAnimation(const strand_type &strand, timer_type::duration timer_interval) :
+                WithStrand { strand },
+                m_timer { strand.context() },
                 m_timer_interval { timer_interval }
             {
             }
@@ -61,16 +65,14 @@ namespace Robot::LED {
             void timerSetup() 
             {
                 m_timer.expires_at(m_timer.expiry() + m_timer_interval);
-                m_timer.async_wait(
-                    [self_ptr=this->weak_from_this()] (boost::system::error_code error) {
+                m_timer.async_wait(boost::asio::bind_executor(m_strand, 
+                    [this] (boost::system::error_code error) {
                         if (error!=boost::system::errc::success) {
                             return;
                         }
-                        if (auto self = self_ptr.lock()) { 
-                            self->timer(); 
-                        }
+                        timer(); 
                     }
-                );
+                ));
             }
 
 

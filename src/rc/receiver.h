@@ -11,6 +11,7 @@
 
 #include <robotconfig.h>
 #include <robottypes.h>
+#include <common/withstrand.h>
 #include <common/withmutex.h>
 #include <common/withnotify.h>
 #include <telemetry/types.h>
@@ -18,7 +19,7 @@
 
 namespace Robot::RC {
 
-    class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
+    class Receiver : public std::enable_shared_from_this<Receiver>, public WithMutexStd, public WithNotifyInt, public WithStrand {
         public:
             using timer_type = boost::asio::steady_timer;
 
@@ -65,9 +66,9 @@ namespace Robot::RC {
             boost::signals2::connection m_telemetry_connection;
 
             void timerSetup();
-            void timer();
+            inline void timer();
 
-            void telemetryEvent(const ::Robot::Telemetry::Event &event);
+            void onTelemetryEvent(const ::Robot::Telemetry::Event &event);
             void sendTelemetry(std::uint16_t appId, std::uint32_t data);
 
             friend std::ostream &operator<<(std::ostream &os, const Receiver &self)

@@ -11,21 +11,18 @@
 #include <robotconfig.h>
 #include <robottypes.h>
 #include <math/pid.h>
+#include <common/withstrand.h>
+#include <common/withmutex.h>
 #include <common/withnotify.h>
-#include <telemetry/types.h>
-#include <telemetry/events.h>
-#include <telemetry/telemetrysource.h>
 #include "types.h"
 
 namespace Robot::Motor {
 
-    class Motor : private Robot::Telemetry::Source, public WithNotifyInt {
+    class Motor : public WithMutexStd, public WithNotifyInt, public WithStrand {
         public:
             static constexpr notify_type NOTIFY_TELEMETRY { 1 };
 
             using clock_type = std::chrono::high_resolution_clock;
-            using mutex_type = std::recursive_mutex;
-            using guard = std::lock_guard<mutex_type>;
 
             using odometer_type = std::int32_t;
             using encoder_type = std::int32_t;
@@ -37,7 +34,7 @@ namespace Robot::Motor {
                 BRAKE
             };
 
-            Motor(uint index, mutex_type &mutex, const std::shared_ptr<::Robot::Context> &context);
+            Motor(uint index, const std::shared_ptr<::Robot::Context> &context, const strand_type &strand, class Servo *servo);
             Motor(const Motor&) = delete; // No copy constructor
             Motor(Motor&&) = delete; // No move constructor
             virtual ~Motor();
@@ -63,10 +60,10 @@ namespace Robot::Motor {
             odometer_type getOdometer() const;
             encoder_type getEncoderValue() const { return m_last_enc_value-m_odometer_base; }
 
-            class Servo *servo() const { return m_servo.get(); }
+            class Servo *servo() const { return m_servo; }
 
         protected:
-            void init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry);
+            void init();
             void cleanup();
 
             void update();
@@ -76,8 +73,7 @@ namespace Robot::Motor {
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
             const uint m_index;
-            mutex_type &m_mutex;
-            std::unique_ptr<class Servo> m_servo;
+            class Servo *m_servo;
 
             bool m_enabled;
             Mode m_mode;
@@ -92,12 +88,7 @@ namespace Robot::Motor {
             float m_target_rpm;
             float m_rpm;
 
-            #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
-            rc_filter_t m_rc_pid;
-            #endif
             Robot::Math::PID m_pid;
-
-            Robot::Telemetry::EventMotor m_event;
 
             inline uint encoderChannel() const;
             inline uint motorChannel() const;

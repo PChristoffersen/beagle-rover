@@ -19,10 +19,17 @@ namespace Robot {
 
 static constexpr auto CONTEXT_THREAD_NICE { -20 };
 
+static constexpr auto TIMER_INTERVAL { 1s };
+
+static constexpr auto THREADS_MIN { 1u };
+static constexpr auto THREADS_MAX { 8u };
+
 
 Context::Context() : 
     m_initialized { false },
     m_started { false },
+    m_timer { m_io },
+    m_heartbeat { 0u },
     m_motor_power_enabled { false },
     m_servo_power_enabled { false },
     m_led_power_enabled { false },
@@ -72,8 +79,7 @@ void Context::cleanup()
     m_io.run_for(10s);
     m_io.stop();
 
-    sig_thread.disconnect_all_slots();
-    
+
     BOOST_LOG_TRIVIAL(info) << "Cleanup context";
 }
 
@@ -157,22 +163,37 @@ void Context::cleanupPlatform()
 #endif
 
 
+void Context::registerProperties(const std::string &group, const PropertyMap &values)
+{
+    m_properties[group] = values;
+}
+
+
 void Context::start() 
 {
     const guard lock(m_mutex);
 
-    BOOST_LOG_TRIVIAL(info) << "Starting thread";
-    m_thread = std::make_shared<std::thread>([&]{ 
-        auto val = nice(CONTEXT_THREAD_NICE);
-        if (val != CONTEXT_THREAD_NICE) {
-            #if ROBOT_PLATFORM != ROBOT_PLATFORM_PC
-            BOOST_LOG_TRIVIAL(warning) << "Failed to set context thread nice value (" << val << ")";
-            #endif
-        }
-        sig_thread(true);
-        m_io.run(); 
-        sig_thread(false);
-    });
+    m_heartbeat = 0u;
+    m_timer.expires_after(0s);
+    timerSetup();
+
+    // Determine pool size
+    uint n_threads = std::max<uint>(THREADS_MIN, std::min<uint>(THREADS_MAX, std::thread::hardware_concurrency()));
+
+    BOOST_LOG_TRIVIAL(info) << "Starting thread pool (" << n_threads << ")";
+    for (auto i=0u; i<n_threads; i++) {
+        m_thread_pool.push_back(std::make_unique<std::thread>([&,i] {
+            auto val = nice(CONTEXT_THREAD_NICE);
+            if (val != CONTEXT_THREAD_NICE) {
+                #if ROBOT_PLATFORM != ROBOT_PLATFORM_PC
+                BOOST_LOG_TRIVIAL(warning) << "Failed to set context thread nice value (" << val << ")";
+                #endif
+            }
+            //BOOST_LOG_TRIVIAL(info) << "Thread " << i << " started ";
+            m_io.run();
+            //BOOST_LOG_TRIVIAL(info) << "Thread " << i << " done ";
+        }));
+    }
     m_started = true;
 }
 
@@ -184,11 +205,16 @@ void Context::stop()
     if (!m_started)
         return;
     
-    BOOST_LOG_TRIVIAL(info) << "Stopping thread";
+    m_timer.cancel();
+
+    BOOST_LOG_TRIVIAL(info) << "Stopping thread pool";
     m_io.stop();
-    m_thread->join();
-    m_thread = nullptr;
-    BOOST_LOG_TRIVIAL(info) << "Thread stopped";
+    for (auto &thread : m_thread_pool) {
+        thread->join();
+        //BOOST_LOG_TRIVIAL(info) << "Thread stopped";
+    }
+    m_thread_pool.clear();
+    BOOST_LOG_TRIVIAL(info) << "Thread pool stopped";
 
     m_started = false;
 }
@@ -249,6 +275,19 @@ void Context::rcPower(bool enable)
         return;
 
     setPowerEnabled(m_rc_power, sig_rc_power, enable, m_rc_power_enabled, "rc");
+}
+
+
+void Context::timerSetup() 
+{
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait([this](boost::system::error_code error) {
+        if (error!=boost::system::errc::success) {
+            return;
+        }
+        ++m_heartbeat;
+        timerSetup();
+    });
 }
 
 

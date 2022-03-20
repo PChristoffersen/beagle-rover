@@ -5,21 +5,21 @@
 #include <memory>
 #include <array>
 #include <mutex>
-#include <shared_mutex>
+#include <atomic>
 #include <list>
 #include <chrono>
 #include <boost/asio.hpp>
 
 #include <robotconfig.h>
+#include <common/withstrand.h>
 #include <common/withmutex.h>
 #include <common/withnotify.h>
-#include <common/asyncsignal.h>
 #include <robottypes.h>
 #include "types.h"
 
 namespace Robot::LED {
 
-    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
+    class Control : public std::enable_shared_from_this<Control>, public WithMutexStd, public WithNotifyInt, public WithStrand {
         public:
             static constexpr notify_type NOTIFY_UPDATE { 1 };
 
@@ -56,8 +56,8 @@ namespace Robot::LED {
 
             void update();
 
-            void attachLayer(const std::shared_ptr<ColorLayer> &layer);
-            void detachLayer(const std::shared_ptr<ColorLayer> &layer);
+            void attachLayer(std::shared_ptr<ColorLayer> layer);
+            void detachLayer(std::shared_ptr<ColorLayer> layer);
             LayerList layers(bool filter_internal=false) const;
 
             const color_array_type &output() const { return m_pixels; };
@@ -65,7 +65,6 @@ namespace Robot::LED {
         private:
             std::shared_ptr<::Robot::Context> m_context;
             bool m_initialized;
-            std::shared_ptr<::Robot::ASyncSignal> m_update_signal;
             boost::signals2::connection m_update_connection;
 
             boost::signals2::connection m_animation_mode_connection;
@@ -76,6 +75,7 @@ namespace Robot::LED {
             Color::Correction m_color_correction;
             Color m_background;
 
+            std::atomic_uint m_update_cnt;
             color_array_type m_pixels;
             LayerList m_layers;
 

@@ -15,8 +15,8 @@ static constexpr Color LED_COLOR1 { 0x40, 0x00, 0x00, 0xFF };
 static constexpr Color LED_COLOR2 { 0x10, 0x00, 0x00, 0x80 };
 
 
-KnightRider::KnightRider(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context, TIMER_INTERVAL },
+KnightRider::KnightRider(const strand_type &strand) :
+    AbstractAnimation { strand, TIMER_INTERVAL },
     m_pos { 0 },
     m_dir { 1 }
 {

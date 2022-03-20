@@ -32,7 +32,7 @@ static constexpr auto FILTER_RESET_THRES { 2.0 };
 static constexpr auto FILTER_SAMPLES { 6 }; // average over 6 samples
 
 RobotControlBattery::RobotControlBattery(const std::shared_ptr<Robot::Context> &context):
-    AbstractSource { context },
+    WithStrand { context->io() },
     m_initialized { false },
     m_timer { context->io() }, 
     m_pack_filter { rc_filter_empty() },
@@ -94,23 +94,8 @@ void RobotControlBattery::cleanup()
 }
 
 
-void RobotControlBattery::timer_setup() {
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(
-        [self_ptr=weak_from_this()] (boost::system::error_code error) {
-            if (auto self = self_ptr.lock()) { 
-                self->timer(error); 
-            }
-        }
-    );
-}
-
-void RobotControlBattery::timer(boost::system::error_code error) 
+inline void RobotControlBattery::timer() 
 {
-    if (error!=boost::system::errc::success || !m_initialized) {
-        return;
-    }
-
     auto v_pack = rc_adc_batt();
     auto v_jack = rc_adc_dc_jack();
 
@@ -163,6 +148,20 @@ void RobotControlBattery::timer(boost::system::error_code error)
 
     timer_setup();
 }
+
+void RobotControlBattery::timer_setup() {
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait(boost::asio::bind_executor(m_strand, 
+        [this](boost::system::error_code error) {
+            if (error!=boost::system::errc::success || !m_initialized) {
+                return;
+            }
+            timer();
+        }
+    ));
+}
+
+
 
 }
 

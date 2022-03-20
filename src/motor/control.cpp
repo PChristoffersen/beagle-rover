@@ -24,12 +24,14 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
     m_context { context },
     m_initialized { false },
     m_enabled { false },
+    m_motor_strand { context->io() },
+    m_servo_strand { context->io() },
     m_motor_timer { context->io() },
-    m_servo_timer { context->io() },
-    m_odometer { 0 }
+    m_servo_timer { context->io() }
 {
     for (uint i=0; i<MOTOR_COUNT; i++) {
-        m_motors[i] = std::make_unique<Motor>(i, m_mutex, context);
+        m_servos[i] = std::make_unique<Servo>(i, context, m_servo_strand);
+        m_motors[i] = std::make_unique<Motor>(i, context, m_motor_strand, m_servos[i].get());
     }
 }
 
@@ -37,35 +39,40 @@ Control::Control(const std::shared_ptr<Robot::Context> &context) :
 Control::~Control() 
 {
     cleanup();
+    for (auto &motor : m_motors) {
+        motor.reset();
+    }
+    for (auto &servo : m_servos) {
+        servo.reset();
+    }
 }
 
 
 void Control::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry) 
 {
-    const guard lock(m_mutex);
     BOOST_ASSERT_MSG(!m_initialized, "Already initialized");
     m_initialized = true;
 
-    m_odometer = 0;
-
+    for (auto &servo : m_servos) {
+        servo->init();
+    }
     for (auto &motor : m_motors) {
-       motor->init(telemetry);
+        motor->init();
     }
 
     if (m_context->motorPower()) {
         onMotorPower(true);
     }
-    m_motor_power_con = m_context->sig_motor_power.connect([&](bool enabled){ onMotorPower(enabled); });
+    m_motor_power_con = m_context->sig_motor_power.connect([this](bool enabled){ onMotorPower(enabled); });
     if (m_context->servoPower()) {
         onServoPower(true);
     }
-    m_servo_power_con = m_context->sig_servo_power.connect([&](bool enabled){ onServoPower(enabled); });
+    m_servo_power_con = m_context->sig_servo_power.connect([this](bool enabled){ onServoPower(enabled); });
 }
 
 
 void Control::cleanup() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -75,30 +82,15 @@ void Control::cleanup()
     m_motor_timer.cancel();
     m_servo_timer.cancel();
 
-    for (auto &motor : m_motors) {
-        motor->setEnabled(false);
-        motor->servo()->setEnabled(false);
+    for (auto &servo : m_servos) {
+        servo->cleanup();
     }
-
-
     for (auto &motor : m_motors) {
-       motor->cleanup();
+        motor->cleanup();
     }
 
 }
 
-
-
-void Control::resetOdometer() 
-{
-    const guard lock(m_mutex);
-
-    for (auto &motor : m_motors) {
-        motor->resetOdometer();
-    }
-    m_odometer = 0;
-    notify(NOTIFY_DEFAULT);
-}
 
 
 void Control::onMotorPower(bool enabled) 
@@ -108,15 +100,17 @@ void Control::onMotorPower(bool enabled)
     if (!m_initialized)
         return;
 
-    if (enabled) {
-        BOOST_LOG_TRIVIAL(info) << *this << " Starting motor timer";
-        m_motor_timer.expires_after(0s);
-        motorTimerSetup();
-    }
-    else {
-        BOOST_LOG_TRIVIAL(info) << *this << " Stopping motor timer";
-        m_motor_timer.cancel();
-    }
+    boost::asio::defer(m_servo_strand, [this, enabled]{
+        if (enabled) {
+            BOOST_LOG_TRIVIAL(info) << *this << " Starting motor timer";
+            m_motor_timer.expires_after(0s);
+            motorTimerSetup();
+        }
+        else {
+            BOOST_LOG_TRIVIAL(info) << *this << " Stopping motor timer";
+            m_motor_timer.cancel();
+        }
+    });
 }
 
 void Control::onServoPower(bool enabled)
@@ -126,115 +120,72 @@ void Control::onServoPower(bool enabled)
     if (!m_initialized)
         return;
 
-    if (enabled) {
-        BOOST_LOG_TRIVIAL(info) << *this << " Starting servo timer";
-        m_servo_timer.expires_after(0ms);
-        servoTimerSetup();
-    }
-    else {
-        BOOST_LOG_TRIVIAL(info) << *this << " Stopping servo timer";
-        m_servo_timer.cancel();
-    }
-}
-
-
-void Control::motorTimerSetup() {
-    m_motor_timer.expires_at(m_motor_timer.expiry() + MOTOR_TIMER_INTERVAL);
-    m_motor_timer.async_wait(
-        [self_ptr=weak_from_this()] (boost::system::error_code error) {
-            if (error!=boost::system::errc::success) {
-                return;
-            }
-            if (auto self = self_ptr.lock()) { 
-                self->motorTimer(); 
-            }
+    boost::asio::defer(m_servo_strand, [this, enabled] {
+        if (enabled) {
+            BOOST_LOG_TRIVIAL(info) << *this << " Starting servo timer";
+            m_servo_timer.expires_after(0ms);
+            servoTimerSetup();
         }
-    );
+        else {
+            BOOST_LOG_TRIVIAL(info) << *this << " Stopping servo timer";
+            m_servo_timer.cancel();
+        }
+    });
 }
+
 
 
 void Control::motorTimer() 
 {
-    const guard lock(m_mutex);
-    if (!m_initialized) 
-        return;
-
+    const guard lock(m_motor_mutex);
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
-
-    odometer_type odometer = 0;
 
     // Update motors
     for (auto &motor : m_motors) {
         motor->update();
-        odometer += motor->getOdometer();
     }
-    odometer = odometer/m_motors.size();
-
-    if (m_odometer!=odometer) {
-        m_odometer = odometer;
-        notify(NOTIFY_DEFAULT);
-    }
-
-    static clock_type::time_point last_print;
-    auto now = clock_type::now();
-
-    if ( true || (now-last_print) > 200ms ) {
-#if 0
-        BOOST_LOG_TRIVIAL(info) << 
-            boost::format("  Motors | %4d | %4d | %4d | %4d || %.2f | %.2f | %.2f | %.2f |")
-            % m_motors[0]->getEncoderValue()
-            % m_motors[1]->getEncoderValue()
-            % m_motors[2]->getEncoderValue()
-            % m_motors[3]->getEncoderValue()
-            % m_motors[0]->getRPM()
-            % m_motors[1]->getRPM()
-            % m_motors[2]->getRPM()
-            % m_motors[3]->getRPM()
-            ;
-#elif 0
-        BOOST_LOG_TRIVIAL(info) << 
-            boost::format("  Motor[] | %4d | %3.2f | %3.2f | %3.2f |")
-            % m_motors[0]->getEncoderValue()
-            % m_motors[0]->getRPM()
-            % m_motors[0]->getTargetRPM()
-            % m_motors[0]->getDuty()
-            ;
-        resetOdometer();
-#endif
-
-        last_print = now;
-    }
-
+    sig_motor(m_motors);
 
     motorTimerSetup();
 }
 
-
-void Control::servoTimerSetup() {
-    m_servo_timer.expires_at(m_servo_timer.expiry() + SERVO_TIMER_INTERVAL);
-    m_servo_timer.async_wait(
-        [self_ptr=weak_from_this()] (boost::system::error_code error) {
+void Control::motorTimerSetup() {
+    m_motor_timer.expires_at(m_motor_timer.expiry() + MOTOR_TIMER_INTERVAL);
+    m_motor_timer.async_wait(boost::asio::bind_executor(m_servo_strand, 
+        [this] (boost::system::error_code error) {
             if (error!=boost::system::errc::success) {
                 return;
             }
-            if (auto self = self_ptr.lock()) { 
-                self->servoTimer(); 
-            }
+            motorTimer(); 
         }
-    );
+    ));
 }
+
+
+
 
 void Control::servoTimer() 
 {
-    const guard lock(m_mutex);
-    if (!m_initialized) 
-        return;
-
-    for (auto &motor : m_motors) {
-        motor->servo()->update();
+    const guard lock(m_servo_mutex);
+    for (auto &servo : m_servos) {
+        servo->update();
     }
+    sig_servo(m_servos);
 
     servoTimerSetup();
 }
+
+void Control::servoTimerSetup() {
+    m_servo_timer.expires_at(m_servo_timer.expiry() + SERVO_TIMER_INTERVAL);
+    m_servo_timer.async_wait(boost::asio::bind_executor(m_servo_strand, 
+        [this] (boost::system::error_code error) {
+            if (error!=boost::system::errc::success) {
+                return;
+            }
+            servoTimer(); 
+        }
+    ));
+}
+
 
 }

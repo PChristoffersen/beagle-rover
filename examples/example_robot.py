@@ -3,7 +3,8 @@
 import sys
 import logging
 import asyncio
-sys.path.append('../build')
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent / '../build'))
 
 from time import sleep
 from robotsystem import Robot, InputSource, Subscription

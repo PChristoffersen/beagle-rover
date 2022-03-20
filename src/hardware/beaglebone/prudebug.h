@@ -15,7 +15,7 @@
 
 namespace Robot::Hardware::Beaglebone {
 
-    class PRUDebug : public std::enable_shared_from_this<PRUDebug>, public WithMutex<std::mutex> {
+    class PRUDebug : public std::enable_shared_from_this<PRUDebug>, public WithMutexStd {
         public:
             using timer_type = boost::asio::steady_timer;
 

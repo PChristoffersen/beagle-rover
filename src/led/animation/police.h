@@ -11,7 +11,7 @@ namespace Robot::LED {
 
     class Police : public AbstractAnimation<Police> {
         public:
-            Police(const std::shared_ptr<Robot::Context> &context);
+            Police(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

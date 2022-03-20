@@ -39,6 +39,7 @@ static constexpr auto TIMER_INTERVAL { 10ms };
 
 
 Receiver::Receiver(const std::shared_ptr<Robot::Context> &context) :
+    WithStrand { context->io() },
     m_context { context },
     m_initialized { false },
     m_enabled { false },
@@ -66,8 +67,6 @@ Receiver::~Receiver()
 
 void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
 {    
-    const guard lock(m_mutex);
-
     m_channels.setCount(DEFAULT_CHANNELS);
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
     m_fbus = rc_ext_fbus_get_shm();
@@ -82,7 +81,7 @@ void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetr
 	rc_filter_prefill_inputs(&m_rssi_filter, m_rssi);
     #endif
 
-    m_telemetry_connection = telemetry->sig_event.connect([&](const auto &e){ telemetryEvent(e); });
+    m_telemetry_connection = telemetry->sig_event.connect([this](const auto &e){ onTelemetryEvent(e); });
 
     m_initialized = true;
 }
@@ -90,7 +89,6 @@ void Receiver::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetr
 
 void Receiver::cleanup() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -132,20 +130,6 @@ void Receiver::setEnabled(bool enabled)
     }
 }
 
-
-void Receiver::timerSetup() {
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(
-        [self_ptr=weak_from_this()] (boost::system::error_code error) {
-            if (error!=boost::system::errc::success) {
-                return;
-            }
-            if (auto self = self_ptr.lock()) { 
-                self->timer(); 
-            }
-        }
-    );
-}
 
 
 #if ROBOT_PLATFORM == ROBOT_PLATFORM_BEAGLEBONE
@@ -296,8 +280,22 @@ void Receiver::timer()
 #endif
 
 
+void Receiver::timerSetup() {
+    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
+    m_timer.async_wait(boost::asio::bind_executor(m_strand, 
+        [this] (boost::system::error_code error) {
+            if (error!=boost::system::errc::success) {
+                return;
+            }
+            timer(); 
+        }
+    ));
+}
 
-void Receiver::telemetryEvent(const Robot::Telemetry::Event &event) 
+
+
+
+void Receiver::onTelemetryEvent(const Robot::Telemetry::Event &event) 
 {
     if (const auto ev = dynamic_cast<const Robot::Telemetry::EventBattery*>(&event)) {
         auto n_cells = ev->cell_voltage.size();
@@ -308,14 +306,13 @@ void Receiver::telemetryEvent(const Robot::Telemetry::Event &event)
                 cv2 = ev->cell_voltage[i]*500;
             }
             uint32_t data = ((uint32_t) cv1 & 0x0fff) << 20 | ((uint32_t) cv2 & 0x0fff) << 8 | n_cells << 4 | ev->battery_id;
-            sendTelemetry(TELEMETRY_BATTERY + i/2, data);
+            defer([this, i, data] { sendTelemetry(TELEMETRY_BATTERY + i/2, data); });
         }
     }
 }
 
 void Receiver::sendTelemetry(uint16_t appId, uint32_t data) 
 {
-    const guard lock(m_mutex);
     if (!m_enabled || m_flags.frameLost())
         return;
     

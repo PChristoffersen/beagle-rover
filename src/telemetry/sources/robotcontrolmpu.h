@@ -7,15 +7,17 @@
 #include <boost/asio.hpp>
 
 #include <robotconfig.h>
-#include "../../common/withmutex.h"
-#include "../telemetry.h"
-#include "abstracttelemetrysource.h"
 
 #if ROBOT_HAVE_ROBOTCONTROL_MPU
 
+#include <common/withstrand.h>
+#include <common/withmutex.h>
+#include "../telemetry.h"
+#include "abstracttelemetrysource.h"
+
 namespace Robot::Telemetry {
 
-    class RobotControlMPU : public AbstractSource<RobotControlMPU>, public WithMutex<std::mutex> {
+    class RobotControlMPU : public AbstractSource<RobotControlMPU>, public WithStrand {
         public:
             using clock_type = std::chrono::high_resolution_clock;
 
@@ -35,26 +37,19 @@ namespace Robot::Telemetry {
         private:
             static RobotControlMPU *instance;
             bool m_initialized;
-            boost::asio::steady_timer m_timer;
+
+            clock_type::time_point m_last_telemetry;
 
             // Interrupt data
-            std::uint32_t m_data_count;
             rc_mpu_data_t m_data;
 
             // Context thread data
-            std::mutex m_data_mutex;
             rc_mpu_data_t m_saved_data;
-            std::uint32_t m_saved_data_count;
 
             EventIMU m_event;
 
-
-
-            void timer_setup();
-            void timer(boost::system::error_code error);
-
-            void data_callback();
-
+            inline void onData(const rc_mpu_data_t &data);
+            inline void data_callback();
     };
 
         

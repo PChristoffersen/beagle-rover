@@ -15,7 +15,7 @@
 namespace Robot {
 
 
-    class Robot : public std::enable_shared_from_this<Robot>, public WithMutex<std::mutex>, public WithNotifyInt {
+    class Robot : public std::enable_shared_from_this<Robot>, public WithMutexStd, public WithNotifyInt {
         public:
             Robot();
             Robot(const Robot&) = delete; // No copy constructor
@@ -38,8 +38,6 @@ namespace Robot {
             const std::shared_ptr<class System::Network> &network() const { return m_network; }
             const std::shared_ptr<class System::Power> &power() const { return m_power; }
 
-            uint heartbeat() const { return m_heartbeat; }
-
         private:
             static class Robot *m_instance;
             ::Robot::Logging::LogInit m_log_init;
@@ -59,12 +57,6 @@ namespace Robot {
             std::shared_ptr<class Input::Control> m_input;
             std::shared_ptr<class System::Network> m_network;
             std::shared_ptr<class System::Power> m_power;
-
-            boost::asio::high_resolution_timer m_timer;
-            uint m_heartbeat;
-
-            void timerSetup();
-            void timer();
 
             friend std::ostream &operator<<(std::ostream &os, const Robot &self)
             {

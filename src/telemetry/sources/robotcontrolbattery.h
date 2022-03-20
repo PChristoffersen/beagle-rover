@@ -8,12 +8,14 @@
 #include <boost/asio.hpp>
 #include <robotcontrol.h>
 
+#include <common/withstrand.h>
+#include <common/withnotify.h>
 #include "abstracttelemetrysource.h"
 #include "../types.h"
 
 namespace Robot::Telemetry {
 
-    class RobotControlBattery : public AbstractSource<RobotControlBattery> {
+    class RobotControlBattery : public AbstractSource<RobotControlBattery>, public WithStrand {
         public:
             explicit RobotControlBattery(const std::shared_ptr<Robot::Context> &context);
             RobotControlBattery(const RobotControlBattery&) = delete; // No copy constructor
@@ -31,8 +33,8 @@ namespace Robot::Telemetry {
             double m_pack_voltage;
             double m_jack_voltage;
 
+            inline void timer();
             void timer_setup();
-            void timer(boost::system::error_code error);
     };
 
 }

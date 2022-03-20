@@ -12,7 +12,7 @@ namespace Robot::LED {
 
     class Rainbow : public AbstractAnimation<Rainbow> {
         public:
-            Rainbow(const std::shared_ptr<Robot::Context> &context);
+            Rainbow(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

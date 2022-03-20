@@ -12,8 +12,8 @@ static constexpr auto LAYER_NAME { "indicators" };
 static constexpr auto TIMER_INTERVAL { 500ms };
 static constexpr Color INDICATOR_COLOR { 0xEE, 0xBE, 0x00 };
 
-Indicator::Indicator(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context, TIMER_INTERVAL },
+Indicator::Indicator(const strand_type &strand) :
+    AbstractAnimation { strand, TIMER_INTERVAL },
     m_state { false },
     m_timer_active { false }
 {

@@ -23,7 +23,6 @@ namespace Robot::Kinematic {
         SKID,
         SPINNING,
         BALANCING,
-        PASSTHROUGH // Direct input from remote
     };
 
     enum class Orientation {

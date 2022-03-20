@@ -7,7 +7,6 @@
 #include <boost/signals2.hpp>
 
 #include <robotconfig.h>
-#include <common/asyncsignal.h>
 #include "types.h"
 #include "color.h"
 #include "colorarray.h"
@@ -28,6 +27,7 @@ namespace Robot::LED {
 
             void setVisible(bool visible);
 
+            void detach();
             void update();
 
             const std::string &name() const { return m_name; }
@@ -38,17 +38,22 @@ namespace Robot::LED {
         protected:
             friend class Control;
 
-            void setSignal(const std::shared_ptr<::Robot::ASyncSignal> &sig);
-            void clearSignal();
+            using update_signal = typename boost::signals2::signal<void()>;
+
+            void connect(const std::shared_ptr<class Control> &control, update_signal::slot_type func);
+            void disconnect();
 
         private:
             const std::string m_name;
             const uint m_depth;
             const bool m_internal;
             bool m_visible;
-            std::shared_ptr<::Robot::ASyncSignal> m_show_sig;
 
-            inline void sendSignal() const;
+            // Layer connection
+            std::weak_ptr<class Control> m_control;
+            update_signal m_update_signal;
+            boost::signals2::connection m_control_connection;
+
 
             friend array_type &operator<<(array_type &dst, ColorLayer &layer);
 

@@ -8,8 +8,8 @@ static constexpr Color FRONT_COLOR { Color::WHITE };
 static constexpr Color REAR_COLOR { Color::RED * 0.5f };
 
 
-Headlights::Headlights(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context }
+Headlights::Headlights(const strand_type &strand) :
+    AbstractAnimation { strand }
 {
     m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);
 }

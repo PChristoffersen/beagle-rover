@@ -23,7 +23,7 @@ namespace Robot::LED {
      * @tparam NCOLORS Number of colors in the array
      */
     template<std::size_t NCOLORS>
-    class ColorArray : public std::array<Color, NCOLORS>, public WithMutex<std::recursive_mutex> {
+    class ColorArray : public std::array<Color, NCOLORS>, public WithMutexStd {
         public:
             using array_type = std::array<Color, NCOLORS>;
 

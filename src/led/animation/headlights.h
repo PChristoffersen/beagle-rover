@@ -10,7 +10,7 @@ namespace Robot::LED {
 
     class Headlights : public AbstractAnimation<Headlights> {
         public:
-            Headlights(const std::shared_ptr<Robot::Context> &context);
+            Headlights(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

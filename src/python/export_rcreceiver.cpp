@@ -44,7 +44,7 @@ void export_rcreceiver()
         .add_property("failsafe", &Flags::failsafe)
         ;
 
-    py::class_<Receiver, std::shared_ptr<Receiver>, py::bases<WithNotifyInt>, boost::noncopyable>("RCReceiver", py::no_init)
+    py::class_<Receiver, std::shared_ptr<Receiver>, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("RCReceiver", py::no_init)
         .add_static_property("NOTIFY_CHANNELS", py::make_getter(Receiver::NOTIFY_CHANNELS))
         .add_property("enabled", &Receiver::getEnabled, &Receiver::setEnabled)
         .add_property("connected", &Receiver::isConnected)
@@ -54,13 +54,6 @@ void export_rcreceiver()
             const std::shared_ptr<Receiver> self = py::extract<const std::shared_ptr<Receiver>>(obj);
             const Receiver::guard _lock(self->mutex());
             return channelsToNumpy(self->channels(), obj);
-        })
-        .def("__enter__", +[](Receiver &self) {
-            self.mutex_lock();
-            return self.shared_from_this();
-        })
-        .def("__exit__", +[](Receiver &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            self.mutex_unlock();
         })
         ;
     

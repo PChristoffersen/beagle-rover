@@ -9,7 +9,7 @@
 
 namespace Robot::Input {
 
-    class AbstractSource : public Source, public WithMutex<std::recursive_mutex> {
+    class AbstractSource : public Source, public WithMutexStd {
         public:
             AbstractSource(const Signals &signals) :
                 Source(signals),

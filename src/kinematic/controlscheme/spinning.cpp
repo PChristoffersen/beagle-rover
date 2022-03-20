@@ -40,7 +40,6 @@ void ControlSchemeSpinning::init()
 
 void ControlSchemeSpinning::cleanup() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -49,8 +48,6 @@ void ControlSchemeSpinning::cleanup()
 
 void ControlSchemeSpinning::steer(float steering, float throttle, float aux_x, float aux_y)
 {
-    const guard lock(m_mutex);
-
     const auto duty = THROTTLE_SCALE * throttle;
     const auto &motors = m_motor_control->getMotors();
     for (auto &motor : motors) {

@@ -4,19 +4,21 @@
 #include <mutex>
 #include <memory>
 #include <thread>
+#include <vector>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 
 #include <robotconfig.h>
 #include <common/withmutex.h>
+#include <common/withnotify.h>
+#include <common/properties.h>
 #include <hardware/types.h>
 
 namespace Robot {
 
-    class Context : public std::enable_shared_from_this<Context>, public WithMutex<std::recursive_mutex> {
+    class Context : public std::enable_shared_from_this<Context>, public WithMutexRecursive {
         public:
             using power_signal_type = boost::signals2::signal<void(bool)>;
-            using thread_signal_type = boost::signals2::signal<void(bool)>;
 
             Context();
             Context(const Context&) = delete; // No copy constructor
@@ -39,20 +41,36 @@ namespace Robot {
             bool ledPower() const { return m_led_power_enabled; }
             bool rcPower() const { return m_rc_power_enabled; }
 
+            uint heartbeat() const { return m_heartbeat; }
+
             boost::asio::io_context &io() { return m_io; }
+
+
+            const Properties &properties() const { return m_properties; }
+            Properties &properties() { return m_properties; }
+            const PropertyMap &properties(const std::string &group) const { return m_properties.at(group); }
+            PropertyMap &properties(const std::string &group) { return m_properties.at(group); }
+
+            void registerProperties(const std::string &group, const PropertyMap &values);
 
             power_signal_type sig_motor_power;
             power_signal_type sig_servo_power;
             power_signal_type sig_led_power;
             power_signal_type sig_rc_power;
 
-            thread_signal_type sig_thread;
         private:
             bool m_initialized;
             bool m_started;
             boost::asio::io_context m_io;
-            std::shared_ptr<std::thread> m_thread;
+            std::vector<std::unique_ptr<std::thread>> m_thread_pool;
             
+            boost::asio::steady_timer m_timer;
+            uint m_heartbeat;
+
+            void timerSetup();
+
+            Properties m_properties;
+
             bool m_motor_power_enabled;
             bool m_servo_power_enabled;
             bool m_led_power_enabled;

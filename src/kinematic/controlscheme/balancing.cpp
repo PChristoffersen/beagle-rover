@@ -9,6 +9,7 @@
 
 #include <robotconfig.h>
 #include <robotcontext.h>
+#include <common/properties.h>
 #include <motor/motor.h>
 #include <motor/servo.h>
 #include <motor/control.h>
@@ -21,11 +22,18 @@ using namespace Robot::Config;
 
 namespace Robot::Kinematic {
 
+static constexpr auto PROPERTY_GROUP { "balancing" };
+static constexpr auto PROPERTY_PID_P { "pid_p" };
+static constexpr auto PROPERTY_PID_I { "pid_i" };
+static constexpr auto PROPERTY_PID_D { "pid_d" };
+static constexpr auto PROPERTY_ANGLE { "angle" };
+
 static constexpr auto INIT_DELAY { 1000ms };
 
 static constexpr auto BALANCE_P { 1.0f } ;
 static constexpr auto BALANCE_I { 10.0f } ;
 static constexpr auto BALANCE_D { 0.0f } ;
+static constexpr auto BASE_ANGLE { static_cast<float>(M_PI_2) };
 static constexpr Robot::Math::PID::sample_time_type BALANCE_INTERVAL { 20ms };
 
 ControlSchemeBalancing::ControlSchemeBalancing(std::shared_ptr<Kinematic> kinematic) :
@@ -45,9 +53,25 @@ ControlSchemeBalancing::~ControlSchemeBalancing()
 }
 
 
+void ControlSchemeBalancing::registerProperties(const std::shared_ptr<Context> &context)
+{
+    PropertyMap values;
+    values.put(PROPERTY_PID_P, BALANCE_P);
+    values.put(PROPERTY_PID_I, BALANCE_I);
+    values.put(PROPERTY_PID_D, BALANCE_D);
+    values.put(PROPERTY_ANGLE, BASE_ANGLE);
+    context->registerProperties(PROPERTY_GROUP, values);
+    BOOST_LOG_TRIVIAL(info) << "Register";
+}
+
+
 void ControlSchemeBalancing::init() 
 {
-    const guard lock(m_mutex);
+    const auto &properties = m_context->properties(PROPERTY_GROUP);
+    m_pid.set(properties.get(PROPERTY_PID_P, BALANCE_P), properties.get(PROPERTY_PID_I, BALANCE_I), properties.get(PROPERTY_PID_D, BALANCE_D));
+    m_pid.setLimits(-1.0f, 1.0f);
+    m_base_angle = properties.get(PROPERTY_ANGLE, BASE_ANGLE);
+    m_pid.setSetpoint(m_base_angle);
 
     initMotors();
 
@@ -60,7 +84,7 @@ void ControlSchemeBalancing::init()
         led_control->setLED(RC_LED_RED, false);
     }
 
-    
+    #if 0
     m_init_timer.expires_after(INIT_DELAY);
     m_init_timer.async_wait(
         [self_ptr=weak_from_this()] (boost::system::error_code error) {
@@ -68,15 +92,13 @@ void ControlSchemeBalancing::init()
                 return;
             }
             if (auto self = self_ptr.lock()) { 
-                    const guard lock(self->m_mutex);
-
                 auto &motors = self->m_motor_control->getMotors();
                 motors[MotorPosition::FRONT_LEFT]->servo()->setEnabled(false);
                 motors[MotorPosition::FRONT_RIGHT]->servo()->setEnabled(false);
             }
         }
     );
-
+    #endif
 
     m_initialized = true;
 }
@@ -124,8 +146,6 @@ void ControlSchemeBalancing::initMotors()
 void ControlSchemeBalancing::cleanup() 
 {
     m_imu_connection.disconnect();
-
-    const guard lock(m_mutex);
 
     if (!m_initialized) 
         return;
@@ -176,10 +196,15 @@ void ControlSchemeBalancing::disarm()
 
 void ControlSchemeBalancing::onIMUData(const Robot::Telemetry::IMUData &imu_data)
 {
-    const guard lock(m_mutex);
-    if (!m_initialized) 
-        return;
+    dispatch([this,imu_data]{
+        if (!m_initialized) 
+            return;
+        #if 0
+        auto angle = imu_data.dmp_TaitBryan[TB_PITCH_X];
 
+        auto duty = m_pid.update(angle);
+        #endif
+    });
 }
 
 

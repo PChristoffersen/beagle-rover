@@ -21,7 +21,6 @@ namespace Robot::Kinematic {
         private:
             boost::asio::steady_timer m_timer;
 
-            void timer_setup();
             void timer();
     };
 

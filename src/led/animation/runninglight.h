@@ -11,7 +11,7 @@ namespace Robot::LED {
 
     class RunningLight : public AbstractAnimation<RunningLight> {
         public:
-            RunningLight(const std::shared_ptr<Robot::Context> &context);
+            RunningLight(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

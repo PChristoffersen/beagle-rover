@@ -17,7 +17,6 @@ namespace Robot::Logging {
 
 static std::once_flag logging_flag;
 
-
 void initLogging(boost::log::trivial::severity_level level)
 {
     std::call_once(logging_flag, [level]() {

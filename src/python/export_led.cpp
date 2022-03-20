@@ -72,7 +72,7 @@ void export_led()
     // -----------------------------------------------------
     // Base color array and segments
     // -----------------------------------------------------
-    py::class_<color_array_type, boost::noncopyable>("LEDColorArray", py::no_init)
+    py::class_<color_array_type, py::bases<WithMutexStd>, boost::noncopyable>("LEDColorArray", py::no_init)
         .add_property("segments", py::make_function(+[](color_array_type &self){ return &self.segments(); }, py::return_internal_reference<>()))
         .def("values", +[](const color_array_type &self) { 
             color_array_type::guard lock(self.mutex());
@@ -92,12 +92,6 @@ void export_led()
             self[index] = value;
         })
         .def("__len__", &color_array_type::size)
-        .def("__enter__", +[](color_array_type &self) {
-            self.mutex_lock();
-        })
-        .def("__exit__", +[](color_array_type &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            self.mutex_unlock();
-        })
         ;
 
     py::class_<color_array_type::SegmentList, boost::noncopyable>("LEDColorSegmentList", py::no_init)
@@ -154,6 +148,7 @@ void export_led()
         .add_property("depth", &ColorLayer::depth)
         .add_property("visible", &ColorLayer::visible, &ColorLayer::setVisible)
         .add_property("segments", py::make_function(+[](ColorLayer &l){ return &l.segments(); }, py::return_internal_reference<>()))
+        .def("detach", &ColorLayer::detach)
         .def("update", &ColorLayer::update)
         ;
 
@@ -172,7 +167,7 @@ void export_led()
     // -----------------------------------------------------
     // Control
     // -----------------------------------------------------
-    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyInt>, boost::noncopyable>("LEDControl", py::no_init)
+    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("LEDControl", py::no_init)
         .add_static_property("NOTIFY_UPDATE", py::make_getter(Control::NOTIFY_UPDATE))
         .add_property("brightness", &Control::getBrightness, &Control::setBrightness)
         .add_property("color_correction", &Control::getColorCorrection, &Control::setColorCorrection)
@@ -190,13 +185,6 @@ void export_led()
         .def("attach_layer", &Control::attachLayer)
         .def("detach_layer", &Control::detachLayer)
         .def("update", &Control::update)
-        .def("__enter__", +[](Control &self) {
-            self.mutex_lock();
-            return self.shared_from_this();
-        })
-        .def("__exit__", +[](Control &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            self.mutex_unlock();
-        })
         ;
 }
 

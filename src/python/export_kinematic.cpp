@@ -26,7 +26,6 @@ void export_kinematic()
         .value("SKID", DriveMode::SKID)
         .value("SPINNING", DriveMode::SPINNING)
         .value("BALANCING", DriveMode::BALANCING)
-        .value("PASSTHROUGH", DriveMode::PASSTHROUGH)
         ;
     py::enum_<Orientation>("Orientation")
         .value("NORTH", Orientation::NORTH)
@@ -35,16 +34,12 @@ void export_kinematic()
         .value("WEST", Orientation::WEST)
         ;
 
-    py::class_<Kinematic, std::shared_ptr<Kinematic>, py::bases<WithNotifyInt>, boost::noncopyable>("Kinematic", py::no_init)
+    py::class_<Kinematic, std::shared_ptr<Kinematic>, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("Kinematic", py::no_init)
+        .add_static_property("NOTIFY_TELEMETRY", py::make_getter(Kinematic::NOTIFY_TELEMETRY))
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
-        .def("__enter__", +[](Kinematic &self) {
-            self.mutex_lock();
-            return self.shared_from_this();
-        })
-        .def("__exit__", +[](Kinematic &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            self.mutex_unlock();
-        })
+        .add_property("odometer", &Kinematic::getOdometer)
+        .def("reset_odometer", &Kinematic::resetOdometer)
         ;
 }
 

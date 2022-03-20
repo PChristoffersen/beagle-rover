@@ -75,6 +75,7 @@ BOOST_AUTO_TEST_CASE(Background)
 
     {
         auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
+        control->update();
         wait_for_show(sub, 250ms, false);
         sub->clear();
 
@@ -98,49 +99,6 @@ BOOST_AUTO_TEST_CASE(Background)
     context->cleanup();
 }
 
-
-
-BOOST_AUTO_TEST_CASE(Brightness)
-{
-    using Robot::LED::Color;
-
-    auto context { std::make_shared<Robot::Context>() };
-    auto control { std::make_shared<Robot::LED::Control>(context) };
-
-    context->init();
-    control->init(nullptr);
-    context->start();
-
-    {
-        auto sub { Robot::notify_subscribe(*control, std::initializer_list { Robot::LED::Control::NOTIFY_UPDATE }) };
-        
-        control->setBackground(Color::WHITE);
-        wait_for_show(sub, 2s);
-        sub->clear();
-
-        for (const auto &col: control->output()) {
-            BOOST_CHECK_EQUAL(col, Color::WHITE);
-        }
-
-        control->setBrightness(0.5f);
-        wait_for_show(sub, 2s);
-        for (const auto &col: control->output()) {
-            BOOST_CHECK_EQUAL(col, Color::WHITE * 0.5f);
-        }
-
-        control->setBrightness(0.0f);
-        wait_for_show(sub, 2s);
-        for (const auto &col: control->output()) {
-            BOOST_CHECK_EQUAL(col, Color::BLACK);
-        }
-
-
-    }
-
-    context->stop();
-    control->cleanup();
-    context->cleanup();
-}
 
 
 

@@ -31,8 +31,6 @@ ControlSchemeIdle::~ControlSchemeIdle()
 
 void ControlSchemeIdle::init() 
 {
-    const guard lock(m_mutex);
-
     // Set all motor angles to 0 degrees and throttle to 0
     for (auto &motor : m_motor_control->getMotors()) {
         motor->setDuty(0.0);
@@ -44,17 +42,14 @@ void ControlSchemeIdle::init()
 
     // Start timer to turn off power to the motors
     m_timer.expires_after(IDLE_DELAY);
-    m_timer.async_wait(
-        [self_ptr=weak_from_this()] (boost::system::error_code error) {
+    m_timer.async_wait(boost::asio::bind_executor(m_strand, 
+        [this] (boost::system::error_code error) {
             if (error!=boost::system::errc::success) {
                 return;
             }
-            if (auto self = self_ptr.lock()) { 
-                self->timer(); 
-            }
+            timer(); 
         }
-    );
-
+    ));
 
     m_initialized = true;
 }
@@ -62,7 +57,6 @@ void ControlSchemeIdle::init()
 
 void ControlSchemeIdle::cleanup() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -74,7 +68,6 @@ void ControlSchemeIdle::cleanup()
 
 void ControlSchemeIdle::timer() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized)
         return;
 

@@ -8,10 +8,12 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/implicit.hpp>
 #include <boost/python/exception_translator.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "util.h"
 #include "errors.h"
 #include <common/notifysubscription.h>
+#include <common/withmutex.h>
 #include <robotdebug.h>
 #include <config.h>
 
@@ -32,7 +34,6 @@ void export_misc()
     py::def("robot_version", +[]() { return Robot::Config::VERSION; });
     py::def("robot_version_full", +[]() { return Robot::Config::VERSION_FULL; });
 
-
     py::class_<WithNotifyInt, boost::noncopyable>("Subscribable", py::no_init)
         .add_static_property("NOTIFY_DEFAULT", py::make_getter(WithNotifyInt::NOTIFY_DEFAULT))
         .def("subscribe", +[](WithNotifyInt &self) { return notify_subscribe(self); })
@@ -49,18 +50,21 @@ void export_misc()
         .def("read", +[](NotifySubscriptionInt &sub, float timeout) { return container_to_tuple(sub.read(std::chrono::milliseconds((uint)(1000.0f*timeout)))); })
         ;
 
-    #ifdef ROBOT_DEBUG
-    using Robot::Debug::TestComponent;
-    py::class_<TestComponent, std::shared_ptr<TestComponent>, py::bases<WithNotifyInt>, boost::noncopyable>("TestComponent")
-        .def("ping", &TestComponent::ping)
-        .def("__str__", +[](const NotifySubscriptionInt &sub) { return "<TestComponent>"; })
-        .def("__enter__", +[](TestComponent &self) {
+
+    py::class_<WithMutexStd, boost::noncopyable>("WithMutexStd", py::no_init) 
+        .def("__enter__", +[](WithMutexStd &self) {
             self.mutex_lock();
-            return self.shared_from_this();
         })
-        .def("__exit__", +[](TestComponent &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
+        .def("__exit__", +[](WithMutexStd &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
             self.mutex_unlock();
         })
+        ;
+
+    #ifdef ROBOT_DEBUG
+    using Robot::Debug::TestComponent;
+    py::class_<TestComponent, std::shared_ptr<TestComponent>, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("TestComponent")
+        .def("ping", &TestComponent::ping)
+        .def("__str__", +[](const NotifySubscriptionInt &sub) { return "<TestComponent>"; })
         ;
     #endif
 

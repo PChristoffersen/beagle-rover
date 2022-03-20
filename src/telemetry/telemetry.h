@@ -21,7 +21,7 @@
 
 namespace Robot::Telemetry {
 
-    class Telemetry : public std::enable_shared_from_this<Telemetry>, public WithMutex<std::mutex>, public WithNotifyInt {
+    class Telemetry : public std::enable_shared_from_this<Telemetry>, public WithMutexStd, public WithNotifyInt {
         public:
             static constexpr notify_type NOTIFY_IMU { 1 };
 

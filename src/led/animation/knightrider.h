@@ -11,7 +11,7 @@ namespace Robot::LED {
 
     class KnightRider : public AbstractAnimation<KnightRider> {
         public:
-            KnightRider(const std::shared_ptr<Robot::Context> &context);
+            KnightRider(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

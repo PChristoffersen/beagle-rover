@@ -11,7 +11,7 @@ namespace Robot::LED {
 
     class Ambulance : public AbstractAnimation<Ambulance> {
         public:
-            Ambulance(const std::shared_ptr<Robot::Context> &context);
+            Ambulance(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

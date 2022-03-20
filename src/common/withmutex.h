@@ -13,14 +13,35 @@ namespace Robot {
             using mutex_type = MUTEX;
             using guard = std::lock_guard<MUTEX>;
 
+            void mutex_lock() const { m_mutex.lock(); }
+            void mutex_unlock() const { m_mutex.unlock(); }
+            void mutex_trylock() const { m_mutex.trylock(); }
+
+            MUTEX &mutex() const { return m_mutex; }
+        protected:
+            mutable MUTEX m_mutex;
+    };
+
+    using WithMutexStd = WithMutex<std::mutex>;
+    using WithMutexRecursive = WithMutex<std::recursive_mutex>;
+
+    template<typename MUTEX>
+    class WithForeignMutex {
+        public:
+            using mutex_type = MUTEX;
+            using guard = std::lock_guard<MUTEX>;
+
+            WithForeignMutex(MUTEX &mutex) : m_mutex { mutex } {}
+
             void mutex_lock() { m_mutex.lock(); }
             void mutex_unlock() { m_mutex.unlock(); }
             void mutex_trylock() { m_mutex.trylock(); }
 
             MUTEX &mutex() const { return m_mutex; }
         protected:
-            mutable MUTEX m_mutex;
+            MUTEX &m_mutex;
     };
+
 
     template<typename MUTEX>    
     class shared_guard {

@@ -21,8 +21,6 @@ using namespace std::literals;
 
 namespace Robot {
 
-static constexpr auto TIMER_INTERVAL { 1s };
-
 Robot *Robot::m_instance { nullptr };
 
 
@@ -43,9 +41,7 @@ Robot::Robot() :
     m_kinematic { std::make_shared<Kinematic::Kinematic>(m_context) },
     m_input { std::make_shared<Input::Control>(m_context) },
     m_network { std::make_shared<System::Network>(m_context) },
-    m_power { std::make_shared<System::Power>(m_context) },
-    m_timer { m_context->io() },
-    m_heartbeat { 0u }
+    m_power { std::make_shared<System::Power>(m_context) }
 {
     //BOOST_LOG_TRIVIAL(trace) << __FUNCTION__;
 }
@@ -83,10 +79,6 @@ void Robot::init()
     m_pru_debug->init();
     #endif
 
-    m_heartbeat = 0u;
-    m_timer.expires_after(0s);
-    timerSetup();
-
     m_context->start();
 
     m_initialized = true;
@@ -99,8 +91,6 @@ void Robot::cleanup()
         return;
 
     m_initialized = false;
-
-    m_timer.cancel();
 
     m_context->stop();
 
@@ -127,26 +117,6 @@ void Robot::cleanup()
 }
 
 
-void Robot::timerSetup() 
-{
-    m_timer.expires_at(m_timer.expiry() + TIMER_INTERVAL);
-    m_timer.async_wait(
-        [self_ptr=this->weak_from_this()] (boost::system::error_code error) {
-            if (error!=boost::system::errc::success) {
-                return;
-            }
-            if (auto self = self_ptr.lock()) { 
-                self->timer(); 
-            }
-        }
-    );
-}
-
-void Robot::timer()
-{
-    ++m_heartbeat;
-    timerSetup();
-}
 
 
 }

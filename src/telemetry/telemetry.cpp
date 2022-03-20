@@ -6,6 +6,7 @@
 #include <robotconfig.h>
 #include <robotcontext.h>
 #include "types.h"
+#include "telemetrysource.h"
 #include "sources/robotcontrolbattery.h"
 #include "sources/robotcontrolmpu.h"
 

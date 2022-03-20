@@ -12,7 +12,7 @@ namespace Robot::LED {
 
     class Construction : public AbstractAnimation<Construction> {
         public:
-            Construction(const std::shared_ptr<Robot::Context> &context);
+            Construction(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

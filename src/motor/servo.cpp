@@ -25,16 +25,15 @@ static constexpr int32_t SERVO_TRIM[] {
 static const std::string TELEMETRY_SOURCE_NAME { "servo" };
 
 
-Servo::Servo(uint index, mutex_type &mutex, const std::shared_ptr<Robot::Context> &context) :
+Servo::Servo(uint index, const std::shared_ptr<Robot::Context> &context, const strand_type &strand) :
+    WithStrand { strand },
     m_context { context },
     m_initialized { false },
     m_index { index },
-    m_mutex { mutex },
     m_enabled { false },
     m_limit_min { WHEEL_SERVO_LIMIT_MIN },
     m_limit_max { WHEEL_SERVO_LIMIT_MAX },
-    m_trim { SERVO_TRIM[index] }, 
-    m_event { TELEMETRY_SOURCE_NAME + "[" + std::to_string(index) + "]", index }
+    m_trim { SERVO_TRIM[index] }
 {
 }
 
@@ -45,15 +44,10 @@ Servo::~Servo()
 }
 
 
-void Servo::init(const std::shared_ptr<Robot::Telemetry::Telemetry> &telemetry) 
+void Servo::init() 
 {
-    Robot::Telemetry::Source::init(telemetry);
-
     m_value = Value::CENTER;
     m_initialized = true;
-
-    m_event.angle = m_value.asAngle();
-    sendEvent(m_event);
 }
 
 
@@ -63,8 +57,6 @@ void Servo::cleanup()
         return;
     m_initialized = false;
     setEnabled(false);
-
-    Robot::Telemetry::Source::cleanup();
 }
 
 
@@ -75,10 +67,6 @@ void Servo::setEnabled(bool enabled)
         m_enabled = enabled;
         BOOST_LOG_TRIVIAL(trace) << *this << " Enable " << enabled;
         m_context->servoPower(m_enabled);
-
-        m_event.enabled = m_enabled;
-        sendEvent(m_event);
-        notify(NOTIFY_DEFAULT);
     }
 }
 
@@ -90,9 +78,7 @@ void Servo::setValue(const Value value)
     auto v = value.clamp(m_limit_min, m_limit_max);
     if (m_value != v) {
         m_value = v;
-        m_event.angle = m_value.asAngle();
-        sendEvent(m_event);
-        notify(NOTIFY_DEFAULT);
+        notify(NOTIFY_TELEMETRY);
     }
 }
 

@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 
+#include <common/withstrand.h>
 #include <common/withmutex.h>
 #include <telemetry/telemetry.h>
 #include <motor/control.h>
@@ -15,7 +16,7 @@
 
 namespace Robot::Kinematic {
 
-    class AbstractControlScheme : public ControlScheme, public WithMutex<std::recursive_mutex> {
+    class AbstractControlScheme : public ControlScheme, public WithStrand {
         public:
             virtual ~AbstractControlScheme() { }
 

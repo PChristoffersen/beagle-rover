@@ -13,7 +13,7 @@
 
 namespace Robot::System {
 
-    class PowerSource : public WithMutex<std::mutex> {
+    class PowerSource : public WithMutexStd {
         public:
             enum class Type {
                 UNKNOWN,
@@ -58,7 +58,7 @@ namespace Robot::System {
             float m_voltage; // Total battery voltage
     };
 
-    class Power : public std::enable_shared_from_this<Power>, public WithMutex<std::mutex>, public WithNotifyInt {
+    class Power : public std::enable_shared_from_this<Power>, public WithMutexStd, public WithNotifyInt {
         public:
             explicit Power(const std::shared_ptr<::Robot::Context> &context);
             Power(const Power&) = delete; // No copy constructor
@@ -77,7 +77,7 @@ namespace Robot::System {
 
             std::unique_ptr<PowerSource> m_system_power;
 
-            void telemetryEvent(const ::Robot::Telemetry::Event &event);
+            void onTelemetryEvent(const ::Robot::Telemetry::Event &event);
 
             friend std::ostream &operator<<(std::ostream &os, const Power &self)
             {

@@ -13,8 +13,8 @@ static constexpr auto LAYER_NAME { "runninglight" };
 static constexpr auto TIMER_INTERVAL { 50ms };
 
 
-RunningLight::RunningLight(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context, TIMER_INTERVAL },
+RunningLight::RunningLight(const strand_type &strand) :
+    AbstractAnimation { strand, TIMER_INTERVAL },
     m_pos { 0 }
 {
     m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);

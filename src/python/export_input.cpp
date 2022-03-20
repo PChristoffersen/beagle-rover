@@ -42,19 +42,12 @@ void export_input()
         .def("set_brightness", &SoftwareInterface::setBrightness)
         ;
 
-    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyInt>, boost::noncopyable>("InputControl", py::no_init)
+    py::class_<Control, std::shared_ptr<Control>, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("InputControl", py::no_init)
         .add_property("axis_source", &Control::getAxisSource, &Control::setAxisSource)
         .add_property("kinematic_source", &Control::getKinematicSource, &Control::setKinematicSource)
         .add_property("led_source", &Control::getLedSource, &Control::setLedSource)
         .add_property("manual", &Control::manual)
         .add_property("web", &Control::web)
-        .def("__enter__", +[](Control &self) {
-            self.mutex_lock();
-            return self.shared_from_this();
-        })
-        .def("__exit__", +[](Control &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            self.mutex_unlock();
-        })
         ;
 
 }

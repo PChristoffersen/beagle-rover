@@ -21,6 +21,8 @@ namespace Robot::Config {
     // Wheel dimentions
     inline constexpr int32_t WHEEL_CIRC_MM { 300 };
     inline constexpr float WHEEL_DIAMETER_MM { WHEEL_CIRC_MM / M_PI };
+    inline constexpr auto WHEEL_ENCODER_CPR { 20 };
+    inline constexpr auto WHEEL_GEARING { 100 };
 
     // Wheel servo limits 
     inline constexpr auto WHEEL_SERVO_LIMIT_MIN { 650u };

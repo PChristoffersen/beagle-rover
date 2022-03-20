@@ -15,8 +15,8 @@ static constexpr Color LED_COLOR1 { 0xFF, 0x00, 0x00 };
 static constexpr Color LED_COLOR2 { 0x00, 0x00, 0xFF };
 
 
-Police::Police(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context, TIMER_INTERVAL },
+Police::Police(const strand_type &strand) :
+    AbstractAnimation { strand, TIMER_INTERVAL },
     m_state { false }
 {
     m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);

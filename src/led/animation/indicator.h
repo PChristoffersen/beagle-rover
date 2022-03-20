@@ -12,7 +12,7 @@ namespace Robot::LED {
 
     class Indicator : public AbstractAnimation<Indicator> {
         public:
-            Indicator(const std::shared_ptr<Robot::Context> &context);
+            Indicator(const strand_type &strand);
 
             void init(const std::shared_ptr<Control> &control) override;
 

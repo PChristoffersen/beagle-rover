@@ -64,18 +64,16 @@ Power::~Power()
 
 void Power::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry)
 {
-    const std::lock_guard<std::mutex> lock(m_mutex);
     m_initialized = true;
 
     #if ROBOT_HAVE_BATTERY
-    m_telemetry_connection = telemetry->sig_event.connect([&](const auto &e){ telemetryEvent(e); });
+    m_telemetry_connection = telemetry->sig_event.connect([this](const auto &e){ onTelemetryEvent(e); });
     #endif
 
 }
 
 void Power::cleanup()
 {
-    const std::lock_guard<std::mutex> lock(m_mutex);
     if (!m_initialized)
         return;
     m_initialized = false;
@@ -85,7 +83,7 @@ void Power::cleanup()
 }
 
 
-void Power::telemetryEvent(const ::Robot::Telemetry::Event &event)
+void Power::onTelemetryEvent(const ::Robot::Telemetry::Event &event)
 {
     #if ROBOT_HAVE_BATTERY
     if (const auto ev = dynamic_cast<const Robot::Telemetry::EventBattery*>(&event)) {

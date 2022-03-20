@@ -26,6 +26,7 @@ static constexpr auto LED_UPDATE_INTERVAL { 30ms };
 
 
 Control::Control(const std::shared_ptr<Robot::Context> &context) :
+    WithStrand { context->io() },
     m_context { context },
     m_initialized { false },
     m_brightness { Color::BRIGHTNESS_DEFAULT },
@@ -47,32 +48,22 @@ Control::~Control()
 
 void Control::init(const std::shared_ptr<::Robot::Input::Control> &input_control) 
 {
-    const guard lock(m_mutex);
-
     m_initialized = true;
     clear(Color::BLACK);
 
-    m_update_signal = std::make_shared<::Robot::ASyncSignal>(m_context->io(), LED_UPDATE_INTERVAL);
-    m_update_connection = m_update_signal->connect([self_ptr=this->weak_from_this()](auto cnt) {
-        if (auto self = self_ptr.lock()) { 
-            self->updatePixels(); 
-        }
-    });
-    m_update_signal->async_wait();
-
-    m_indicator = std::make_shared<Indicator>(m_context);
+    m_indicator = std::make_shared<Indicator>(m_strand);
     m_indicator->init(shared_from_this());
 
-    m_animation_mode_connection = input_control->signals.animation_mode.connect([&](auto mode){ setAnimation(mode); });
-    m_indicator_mode_connection = input_control->signals.indicator_mode.connect([&](auto mode){ setIndicators(mode); });
-    m_brightness_connection = input_control->signals.brightness.connect([&](auto b){ setBrightness(b); });
-
+    if (input_control) {
+        m_animation_mode_connection = input_control->signals.animation_mode.connect([this](auto mode){ setAnimation(mode); });
+        m_indicator_mode_connection = input_control->signals.indicator_mode.connect([this](auto mode){ setIndicators(mode); });
+        m_brightness_connection = input_control->signals.brightness.connect([this](auto b){ setBrightness(b); });
+    }
 }
 
 
 void Control::cleanup() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -82,11 +73,9 @@ void Control::cleanup()
     m_brightness_connection.disconnect();
 
     m_update_connection.disconnect();
-    m_update_signal->cancel();
-    m_update_signal = nullptr;
 
     for (auto &l : m_layers) {
-        l->clearSignal();
+        l->m_control_connection.disconnect();
     }
     m_layers.clear();
 
@@ -98,7 +87,6 @@ void Control::cleanup()
         m_indicator->cleanup();
         m_indicator = nullptr;
     }
-
 
     std::this_thread::sleep_for(50us);
     clear(Color::BLACK);
@@ -116,8 +104,6 @@ void Control::setLED(rc_led_t led, bool state)
 
 void Control::clear(const Color &color) 
 {
-    const guard lock(m_mutex);
-
     m_pixels.fill(color);
     showPixels();
 }
@@ -184,6 +170,7 @@ void Control::setBackground(Color color)
     color = color.opaque();
     if (m_background!=color) {
         m_background = color;
+        BOOST_LOG_TRIVIAL(info) << "setBackground " << m_initialized;
         if (m_initialized) {
             update();
             notify(NOTIFY_DEFAULT);
@@ -197,7 +184,12 @@ void Control::setAnimation(AnimationMode mode)
 {
     const guard lock(m_mutex);
     //BOOST_LOG_TRIVIAL(trace) << "Animation: " << (int)mode;
-    if (mode!=m_animation_mode) {
+    if (mode==m_animation_mode) 
+        return;
+
+    m_animation_mode = mode;
+
+    post([this,mode]{
         if (m_animation) {
             m_animation->cleanup();
             m_animation = nullptr;
@@ -207,39 +199,36 @@ void Control::setAnimation(AnimationMode mode)
         case AnimationMode::NONE:
             break;
         case AnimationMode::HEADLIGHTS:
-            m_animation = std::make_shared<Headlights>(m_context);
+            m_animation = std::make_shared<Headlights>(m_strand);
             break;
         case AnimationMode::CONSTRUCTION:
-            m_animation = std::make_shared<Construction>(m_context);
+            m_animation = std::make_shared<Construction>(m_strand);
             break;
         case AnimationMode::POLICE:
-            m_animation = std::make_shared<Police>(m_context);
+            m_animation = std::make_shared<Police>(m_strand);
             break;
         case AnimationMode::AMBULANCE:
-            m_animation = std::make_shared<Ambulance>(m_context);
+            m_animation = std::make_shared<Ambulance>(m_strand);
             break;
         case AnimationMode::RUNNING_LIGHT:
-            m_animation = std::make_shared<RunningLight>(m_context);
+            m_animation = std::make_shared<RunningLight>(m_strand);
             break;
         case AnimationMode::KNIGHT_RIDER:
-            m_animation = std::make_shared<KnightRider>(m_context);
+            m_animation = std::make_shared<KnightRider>(m_strand);
             break;
         case AnimationMode::RAINBOW:
-            m_animation = std::make_shared<Rainbow>(m_context);
+            m_animation = std::make_shared<Rainbow>(m_strand);
             break;
         case AnimationMode::RAINBOW_WAVE:
-            m_animation = std::make_shared<RainbowWave>(m_context);
+            m_animation = std::make_shared<RainbowWave>(m_strand);
             break;
         }
-
-
-        m_animation_mode = mode;
 
         if (m_animation) {
             m_animation->init(shared_from_this());
         }
         notify(NOTIFY_DEFAULT);
-    }
+    });
 }
 
 
@@ -247,7 +236,16 @@ void Control::setIndicators(IndicatorMode mode)
 {
     const guard lock(m_mutex);
     //BOOST_LOG_TRIVIAL(trace) << "Indicator: " << (int)mode;
-    if (mode!=m_indicator_mode) {
+    if (mode==m_indicator_mode) 
+        return;
+
+    m_indicator_mode = mode;
+
+    post([this,mode]{
+        if (!m_indicator) {
+            return;
+        }
+
         switch (mode) {
         case IndicatorMode::NONE:
             m_indicator->none();
@@ -262,20 +260,21 @@ void Control::setIndicators(IndicatorMode mode)
             m_indicator->hazard();
             break;
         }
-        m_indicator_mode = mode;
         notify(NOTIFY_DEFAULT);
-    }
+    });
 }
 
 
 void Control::update()
 {
-    const guard lock(m_mutex);
-    if (!m_initialized)
-        return;
-    if (m_update_signal) {
-        (*m_update_signal)();
-    }
+    m_update_cnt+=1;
+    post([this]{ 
+        auto val = m_update_cnt.exchange(0u);
+        //BOOST_LOG_TRIVIAL(info) << "Update dispatch " << val;
+        if (val) {
+            updatePixels(); 
+        }
+    });
 }
 
 
@@ -293,13 +292,12 @@ Control::LayerList Control::layers(bool filter_internal) const
 
 void Control::updatePixels()
 {
-    const guard lock(m_mutex);
     if (!m_initialized)
         return;
-    
     //BOOST_LOG_TRIVIAL(trace) << "Control::Show()";
 
     {
+        const guard lock(m_mutex);
         const color_array_type::guard pix_lock(m_pixels.mutex());
         m_pixels.fill(m_background);
         for (const auto &layer : m_layers) {
@@ -312,10 +310,10 @@ void Control::updatePixels()
 }
 
 
-void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
+void Control::attachLayer(std::shared_ptr<ColorLayer> layer)
 {
-    BOOST_LOG_TRIVIAL(trace) << "Attach Layer " << *layer;
     const guard lock(m_mutex);
+    BOOST_LOG_TRIVIAL(trace) << "Attach Layer " << *layer;
 
     for (auto &l : m_layers) {
         if (l==layer) {
@@ -336,7 +334,7 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
     if (!inserted) {
         m_layers.push_back(layer);
     }
-    layer->setSignal(m_update_signal);
+    layer->connect(shared_from_this(), [this]{ update(); });
     if (layer->visible()) {
         update();
     }
@@ -344,7 +342,7 @@ void Control::attachLayer(const std::shared_ptr<ColorLayer> &layer)
 }
 
 
-void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer) 
+void Control::detachLayer(std::shared_ptr<ColorLayer> layer) 
 {
     const guard lock(m_mutex);
     bool updated = false;
@@ -352,13 +350,15 @@ void Control::detachLayer(const std::shared_ptr<ColorLayer> &layer)
         if (l==layer) {
             BOOST_LOG_TRIVIAL(trace) << "Detach Layer " << *layer;
             updated |= true;
-            layer->clearSignal();
+            layer->disconnect();
             return true;
         }
         return false;
     });
     if (updated) {
-        update();
+        if (layer->visible()) {
+            update();
+        }
         notify(NOTIFY_DEFAULT);
     }
 }

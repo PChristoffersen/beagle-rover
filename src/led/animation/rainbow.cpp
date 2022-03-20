@@ -14,8 +14,8 @@ static constexpr auto TIMER_INTERVAL { 20ms };
 
 
 
-Rainbow::Rainbow(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context, TIMER_INTERVAL },
+Rainbow::Rainbow(const strand_type &strand) :
+    AbstractAnimation { strand, TIMER_INTERVAL },
     m_hue { 0 }
 {
     m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);

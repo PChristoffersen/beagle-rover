@@ -6,13 +6,13 @@
 #include <boost/asio.hpp>
 
 #include <robotconfig.h>
+
+#if ROBOT_HAVE_BALANCE
+
 #include <telemetry/telemetry.h>
 #include <led/control.h>
 #include <math/pid.h>
 #include "abstractcontrolscheme.h"
-
-
-#if ROBOT_HAVE_BALANCE
 
 namespace Robot::Kinematic {
 
@@ -28,6 +28,9 @@ namespace Robot::Kinematic {
             virtual void init() override;
             virtual void cleanup() override;
 
+
+            static void registerProperties(const std::shared_ptr<Context> &context);
+
         private:
             std::weak_ptr<Robot::Telemetry::Telemetry> m_telemetry;
             std::weak_ptr<Robot::LED::Control> m_led_control;
@@ -37,6 +40,7 @@ namespace Robot::Kinematic {
             boost::signals2::connection m_imu_connection;
 
             bool m_armed;
+            float m_base_angle;
 
             Robot::Math::PID m_pid;
 

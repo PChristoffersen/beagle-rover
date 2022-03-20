@@ -19,8 +19,48 @@ find_package(Threads REQUIRED)
 find_package(Python3 3.7 COMPONENTS Development)
 find_package(PythonLibs 3.7 REQUIRED)
 find_package(Boost 1.67.0 COMPONENTS system log numpy${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR} python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR})
-find_library(ROBOTCONTROL robotcontrol)
 add_definitions(-DBOOST_LOG_DYN_LINK)
+
+# -----------------------------------------------
+# Helper libraries
+# -----------------------------------------------
+find_library(ROBOTCONTROL robotcontrol)
+if(ROBOTCONTROL)
+    set(HAVE_ROBOTCONTROL 1)
+    add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
+    include_directories("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
+endif()
+
+
+message("Searching for Linux netlink library")
+find_path(LibNL_INCLUDE_DIR netlink/netlink.h
+	/usr/include
+	/usr/include/libnl3
+	/usr/local/include
+	/usr/local/include/libnl3
+)
+find_library(LibNL_LIBRARY NAMES nl nl-3)
+find_library(LibNL_ROUTE_LIBRARY NAMES nl-route nl-route-3)
+#find_library(LibNL_NETFILTER_LIBRARY NAMES nl-nf nl-nf-3)
+find_library(LibNL_GENL_LIBRARY NAMES nl-genl nl-genl-3)
+
+if (LibNL_INCLUDE_DIR AND LibNL_LIBRARY)
+	set(LibNL_FOUND TRUE)
+endif (LibNL_INCLUDE_DIR AND LibNL_LIBRARY)
+
+if (LibNL_FOUND)
+    #set(LibNL_LIBRARIES ${LibNL_LIBRARY} ${LibNL_ROUTE_LIBRARY} ${LibNL_NETFILTER_LIBRARY} ${LibNL_GENL_LIBRARY})
+    set(LibNL_LIBRARIES ${LibNL_LIBRARY} ${LibNL_ROUTE_LIBRARY} ${LibNL_GENL_LIBRARY})
+    message("Found netlink libraries:  ${LibNL_LIBRARIES}")
+    message("Found netlink includes: ${LibNL_INCLUDE_DIR}")
+    include_directories("${LibNL_INCLUDE_DIR}")
+ELSE (LibNL_FOUND)
+    message("Netlink version 3 development packages cannot be found.")
+    message("In Debian/Ubuntu, they may be called:")
+    message("libnl-3-dev libnl-genl-3dev libnl-nf-3-dev libnl-route-3-dev")
+    message(FATAL_ERROR "Could not find netlink library.")
+endif (LibNL_FOUND)
+
 
 
 # -----------------------------------------------
@@ -43,15 +83,6 @@ add_custom_target(AlwaysCheckGit COMMAND ${CMAKE_COMMAND}
 )
 
 # -----------------------------------------------
-# Helper libraries
-# -----------------------------------------------
-if(ROBOTCONTROL)
-    set(HAVE_ROBOTCONTROL 1)
-    add_subdirectory("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
-    include_directories("${CMAKE_SOURCE_DIR}/lib/robotcontrolext")
-endif()
-
-# -----------------------------------------------
 # Configuration
 # -----------------------------------------------
 configure_file (
@@ -72,7 +103,6 @@ set(SRC
     src/robotdebug.cpp
     src/rc/receiver.cpp
     src/rc/inputsource.cpp
-    src/common/asyncsignal.cpp
     src/motor/motor.cpp
     src/motor/servo.cpp
     src/motor/control.cpp
@@ -102,7 +132,6 @@ set(SRC
     src/kinematic/controlscheme/skid.cpp
     src/kinematic/controlscheme/spinning.cpp
     src/kinematic/controlscheme/balancing.cpp
-    src/kinematic/controlscheme/passthrough.cpp
     src/input/control.cpp
     src/input/sources/software.cpp
     src/input/sources/gamepad.cpp
@@ -124,8 +153,8 @@ add_library(robotsystem SHARED
     ${SRC}
 )
 set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(robotsystem PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS} ${NL3_INCLUDE_DIRS})
+target_link_libraries(robotsystem PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${LibNL_LIBRARIES})
 if(ROBOTCONTROL)
 target_link_libraries(robotsystem PRIVATE robotcontrolext)
 endif()
@@ -159,7 +188,7 @@ add_library(robotsystem_python MODULE
 set_property(TARGET robotsystem_python PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_target_properties(robotsystem_python PROPERTIES OUTPUT_NAME "robotsystem.${PYTHON_MODULE_POSTFIX}")
 target_include_directories(robotsystem_python PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(robotsystem_python PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_NUMPY_LIBRARY})
+target_link_libraries(robotsystem_python PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_NUMPY_LIBRARY} ${LibNL_LIBRARIES})
 if(ROBOTCONTROL)
 target_link_libraries(robotsystem_python PRIVATE robotcontrolext)
 endif()
@@ -199,21 +228,20 @@ target_include_directories(test_value PRIVATE src)
 target_link_libraries(test_value robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Value COMMAND test_value)
 
-add_executable(test_asyncsignal test/test_asyncsignal.cpp )
-target_include_directories(test_asyncsignal PRIVATE src)
-target_link_libraries(test_asyncsignal robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
-add_test(NAME ASyncSignal COMMAND test_asyncsignal)
-
 add_executable(test_subscription test/test_subscription.cpp )
 target_include_directories(test_subscription PRIVATE src)
 target_link_libraries(test_subscription robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Subscription COMMAND test_subscription)
 
+add_executable(test_network test/test_network.cpp )
+target_include_directories(test_network PRIVATE src)
+target_link_libraries(test_network robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+add_test(NAME Network COMMAND test_network)
+
 # Python tests
 add_test(NAME PythonSubscription COMMAND test_subscription.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 add_test(NAME PythonColors COMMAND test_color.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 add_test(NAME PythonLEDS COMMAND test_leds.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
-add_test(NAME PythonTelemetry COMMAND test_telemetry.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 
 

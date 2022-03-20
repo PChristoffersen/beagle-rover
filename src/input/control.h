@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <robottypes.h>
+#include <common/withstrand.h>
 #include <common/withmutex.h>
 #include <common/withnotify.h>
 #include <rc/types.h>
@@ -22,7 +23,7 @@ namespace Robot::Input {
     };
     std::ostream &operator<<(std::ostream &os, const InputSource &input_source);
 
-    class Control : public std::enable_shared_from_this<Control>, public WithMutex<std::recursive_mutex>, public WithNotifyInt {
+    class Control : public std::enable_shared_from_this<Control>, public WithMutexStd, public WithNotifyInt {
         public:
             Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor

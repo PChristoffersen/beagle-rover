@@ -31,8 +31,6 @@ ControlSchemeSkid::~ControlSchemeSkid()
 
 void ControlSchemeSkid::init() 
 {
-    const guard lock(m_mutex);
-
     resetMotors();
 
     const auto &motors = m_motor_control->getMotors();
@@ -49,7 +47,6 @@ void ControlSchemeSkid::init()
 
 void ControlSchemeSkid::cleanup() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -75,7 +72,6 @@ void ControlSchemeSkid::resetMotors()
 
 void ControlSchemeSkid::steer(float steering, float throttle, float aux_x, float aux_y) 
 {
-    const guard lock(m_mutex);
     setLastSteering(steering, throttle, aux_x, aux_y);
 
     auto skew = aux_x * WHEEL_MAX_TURN_ANGLE;

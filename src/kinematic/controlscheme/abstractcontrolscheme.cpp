@@ -12,6 +12,7 @@ namespace Robot::Kinematic {
 
 
 AbstractControlScheme::AbstractControlScheme(std::shared_ptr<Kinematic> kinematic) :
+    WithStrand { kinematic->strand() },
     m_initialized { false },
     m_orientation { Orientation::NORTH },
     m_orientation_reverse { false },
@@ -29,7 +30,6 @@ AbstractControlScheme::AbstractControlScheme(std::shared_ptr<Kinematic> kinemati
 void AbstractControlScheme::updateOrientation(Orientation orientation) 
 {
     BOOST_LOG_TRIVIAL(info) << "UpdateOrientation: " << orientation;
-    const guard lock(m_mutex);
     if (m_orientation!=orientation) {
         m_orientation = orientation;
         switch (orientation) {

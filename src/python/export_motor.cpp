@@ -30,7 +30,7 @@ void export_motor()
         .value("BRAKE", Motor::Mode::BRAKE)
         ;
 
-    py::class_<Motor, py::bases<WithNotifyInt>, boost::noncopyable>("Motor", py::no_init)
+    py::class_<Motor, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("Motor", py::no_init)
         .add_static_property("NOTIFY_TELEMETRY", py::make_getter(Motor::NOTIFY_TELEMETRY))
         .add_property("index", &Motor::getIndex)
         .add_property("enabled", &Motor::getEnabled, &Motor::setEnabled)
@@ -47,7 +47,7 @@ void export_motor()
         .def("__str__", +[](const Motor &m) { return (boost::format("<Motor (%d)>") % m.getIndex()).str(); })
         ;
 
-    py::class_<Servo, py::bases<WithNotifyInt>, boost::noncopyable>("Servo", py::no_init)
+    py::class_<Servo, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("Servo", py::no_init)
         .add_property("index", &Servo::getIndex)
         .add_property("enabled", &Servo::getEnabled, &Servo::setEnabled)
         .add_property("pulse_us", +[](const Servo &self) { return self.getValue().asServoPulse(); }, +[](Servo &self, uint32_t value) { self.setValue(Value::fromMicroSeconds(value)); })
@@ -69,17 +69,8 @@ void export_motor()
         .def("__len__", &MotorList::size)
         ;
 
-    py::class_<Control, py::bases<WithNotifyInt>, std::shared_ptr<Control>, boost::noncopyable>("MotorControl", py::no_init)
+    py::class_<Control, py::bases<WithNotifyInt, WithMutexStd>, std::shared_ptr<Control>, boost::noncopyable>("MotorControl", py::no_init)
         .add_property("motors", py::make_function(&Control::getMotors, py::return_internal_reference<>() ))
-        .add_property("odometer", &Control::getOdometer)
-        .def("reset_odometer", &Control::resetOdometer)
-        .def("__enter__", +[](Control &self) {
-            self.mutex_lock();
-            return self.shared_from_this();
-        })
-        .def("__exit__", +[](Control &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
-            self.mutex_unlock();
-        })
         .def("__str__", +[](const Control &self) { return "<MotorControl>"; })
         ;
 

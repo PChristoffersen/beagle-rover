@@ -127,30 +127,6 @@ class LedTestCase(unittest.TestCase):
         self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
 
 
-
-    def test_brightness(self):
-        led_control = self.led_control
-
-        led_control.background = "FFFFFF"
-        wait_for_show(self.sub, 1.0)
-        leds = led_control.output.values()
-        expect = "FFFFFF"
-        self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
-
-        led_control.brightness = 0.5
-        wait_for_show(self.sub, 1.0)
-        leds = led_control.output.values()
-        expect = "808080"
-        self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
-
-        led_control.brightness = 0.0
-        wait_for_show(self.sub, 1.0)
-        leds = led_control.output.values()
-        expect = "000000"
-        self.assertEqual(leds[0], expect, f"Unexpected pixel color {leds[0]} != {expect}")
-
-
-
     def test_animations(self):
         for _, anim in LEDAnimation.values.items():
             if anim == LEDAnimation.NONE:

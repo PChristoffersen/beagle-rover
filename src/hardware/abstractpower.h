@@ -8,7 +8,7 @@
 
 namespace Robot::Hardware {
 
-    class AbstractPower : public WithMutex<std::mutex>, public std::enable_shared_from_this<AbstractPower> {
+    class AbstractPower : public WithMutexStd, public std::enable_shared_from_this<AbstractPower> {
         public:
             AbstractPower();
             virtual ~AbstractPower() = default;

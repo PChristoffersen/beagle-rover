@@ -24,8 +24,6 @@ AbstractWheelSteering::AbstractWheelSteering(std::shared_ptr<Kinematic> kinemati
 
 void AbstractWheelSteering::init() 
 {
-    const guard lock(m_mutex);
-
     resetMotors(0.0f, 0.0f);
 
     const auto &motors = m_motor_control->getMotors();
@@ -42,7 +40,6 @@ void AbstractWheelSteering::init()
 
 void AbstractWheelSteering::cleanup() 
 {
-    const guard lock(m_mutex);
     if (!m_initialized) 
         return;
     m_initialized = false;
@@ -70,7 +67,6 @@ void AbstractWheelSteering::resetMotors(float throttle, float skew)
 
 void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, float aux_y) 
 {
-    const guard lock(m_mutex);
     setLastSteering(steering, throttle, aux_x, aux_y);
 
     const auto asteering = std::abs(steering);

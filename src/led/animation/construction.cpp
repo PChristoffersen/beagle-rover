@@ -12,8 +12,8 @@ static constexpr auto LAYER_NAME { "construction" };
 static constexpr auto TIMER_INTERVAL { 250ms };
 static constexpr Color LED_COLOR { 0xEE, 0xBE, 0x00 };
 
-Construction::Construction(const std::shared_ptr<Robot::Context> &context) :
-    AbstractAnimation { context, TIMER_INTERVAL },
+Construction::Construction(const strand_type &strand) :
+    AbstractAnimation { strand, TIMER_INTERVAL },
     m_state { false }
 {
     m_layer = std::make_shared<ColorLayer>(LAYER_NAME, LAYER_DEPTH_ANIMATION, true);
