@@ -122,17 +122,22 @@ void Control::showPixels()
     }
     #endif
     #if ROBOT_PLATFORM == ROBOT_PLATFORM_PC
-    std::stringstream sstream;
-    #if 0
-    for (auto &color : pixels) {
-        sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
-    }
-    #else
-    for (auto &color : m_pixels) {
-        sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
-    }
-    #endif
-    BOOST_LOG_TRIVIAL(info) << *this << " (" << pixels.size() << ") " << sstream.str();
+        #if 0
+            std::stringstream sstream;
+            #if 0
+                for (auto &color : pixels) {
+                    sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
+                }
+            #else
+                for (auto &color : m_pixels) {
+                    sstream << boost::format("%+02x%+02x%+02x  ") % (uint32_t)color.red() % (uint32_t)color.green() % (uint32_t)color.blue();
+                }
+            #endif
+            BOOST_LOG_TRIVIAL(info) << *this << " (" << pixels.size() << ") " << sstream.str();
+        #else
+            // DUMMY
+            pixels.size();
+        #endif
     #endif
 }
 

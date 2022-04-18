@@ -3,54 +3,46 @@
 
 #include <cstdint>
 #include <vector>
-#include <string>
+#include <array>
+#include <string_view>
 #include "types.h"
+#include <motor/types.h>
 
 namespace Robot::Telemetry {
 
     class Event {
         public:
-            const std::string name;
-            Event(const std::string &name) : name { name } {}
+            std::string_view name;
+            Event(const std::string_view &name) : name { name } {}
             virtual ~Event() = default;
             virtual void update(ValueMap &map) const = 0;
     };
 
-    class EventMotor : public Event {
+    class EventMotors : public Event {
         public:
-            EventMotor(const std::string &name, uint index) : 
-                Event { name }, 
-                index { index },
-                enabled { false },
-                duty { 0.0f },
-                rpm { 0.0f },
-                rpm_target { -1.0f }
-            {}
-            uint index;
-            bool enabled;
-            float duty;
-            float rpm;
-            float rpm_target;
-            virtual void update(ValueMap &map) const;
-    };
+            using duty_type = float;
+            using rpm_type = float;
+            using duty_list = std::array<duty_type, Motor::MOTOR_COUNT>;
+            using rpm_list = std::array<rpm_type, Motor::MOTOR_COUNT>;
 
-    class EventServo : public Event {
-        public:
-            EventServo(const std::string &name, uint index) : 
-                Event { name }, 
-                index { index },
-                enabled { false },
-                angle { 0.0f }
-            {}
-            uint index;
-            bool enabled;
-            float angle;
+            duty_list duty;
+            rpm_list rpm;
+            rpm_list rpm_target;
+
+            EventMotors(const std::string_view &name) : 
+                Event { name }
+            {
+                duty.fill(0.0f);
+                rpm.fill(0.0f);
+                rpm_target.fill(0.0f);
+            }
+            EventMotors() : EventMotors { "" } {}
             virtual void update(ValueMap &map) const;
     };
 
     class EventBattery : public Event {
         public:
-            EventBattery(const std::string &name) : 
+            EventBattery(const std::string_view &name) : 
                 Event { name },
                 battery_id { 0x00 },
                 charging { false },
@@ -72,22 +64,30 @@ namespace Robot::Telemetry {
 
     class EventTemperature : public Event {
         public:
-            EventTemperature(const std::string &name) : Event { name } {}
+            EventTemperature(const std::string_view &name) : Event { name }, temperature { 0.0f } {}
             float temperature;
+            virtual void update(ValueMap &map) const;
+    };
+
+    class EventOdometer : public Event {
+        public:
+            EventOdometer(const std::string_view &name) : Event { name }, value { 0 } {}
+            EventOdometer() : EventOdometer { "" } {}
+            std::int32_t value;
             virtual void update(ValueMap &map) const;
     };
 
     class EventIMU : public Event {
         public:
-            EventIMU(const std::string &name, float pitch, float roll, float yaw) : 
+            EventIMU(const std::string_view &name, float pitch, float roll, float yaw) : 
                 Event { name },
                 pitch { pitch },
                 roll { roll },
                 yaw { yaw }
             {
             }
-            EventIMU(const std::string &name) : 
-                EventIMU { name, 0.0f, 0.0f, 0.0f } 
+            EventIMU() : 
+                EventIMU { "", 0.0f, 0.0f, 0.0f } 
             {
             }
             float pitch;

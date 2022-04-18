@@ -43,9 +43,6 @@ namespace Robot::Telemetry {
             // Interrupt data
             rc_mpu_data_t m_data;
 
-            // Context thread data
-            rc_mpu_data_t m_saved_data;
-
             EventIMU m_event;
 
             inline void onData(const rc_mpu_data_t &data);

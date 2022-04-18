@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include <array>
 #include <map>
 #include <boost/signals2.hpp>
 
@@ -25,7 +26,7 @@ namespace Robot::Telemetry {
     using IMUSignal = boost::signals2::signal<void(const IMUData &)>;
     #endif
 
-    using Value = std::variant<std::string, bool, double, float, std::uint32_t>;
+    using Value = std::variant<std::string, bool, double, float, std::uint32_t, std::int32_t>;
     using ValueMap = std::map<std::string, Value>;
 
 }

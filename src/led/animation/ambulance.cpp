@@ -38,8 +38,8 @@ void Ambulance::init(const std::shared_ptr<Control> &control)
 void Ambulance::update() 
 {
     const ColorLayer::guard lock(m_layer->mutex());
-    auto &front { m_layer->segments()[0] };
-    auto &back { m_layer->segments()[1] };
+    auto &front { m_layer->segment(FRONT_SEGMENT) };
+    auto &back { m_layer->segment(BACK_SEGMENT) };
 
     if (m_state) {
         front[0] = LED_COLOR;

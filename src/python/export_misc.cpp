@@ -59,6 +59,15 @@ void export_misc()
             self.mutex_unlock();
         })
         ;
+    py::class_<WithMutexRecursive, boost::noncopyable>("WithMutexRecursive", py::no_init) 
+        .def("__enter__", +[](WithMutexRecursive &self) {
+            self.mutex_lock();
+        })
+        .def("__exit__", +[](WithMutexRecursive &self, const py::object &exc_type, const py::object &exc_val, const py::object &exc_tb) {
+            self.mutex_unlock();
+        })
+        ;
+
 
     #ifdef ROBOT_DEBUG
     using Robot::Debug::TestComponent;

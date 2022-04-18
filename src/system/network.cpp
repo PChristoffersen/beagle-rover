@@ -550,7 +550,7 @@ void Network::nl80211_get_interface_cb(struct genlmsghdr *gnlh)
         if (wifi->ssid!=ssid) {
             wifi->ssid = ssid;
             changed |= true;
-            BOOST_LOG_TRIVIAL(info) << "     SSID: " << wifi->ssid;
+            BOOST_LOG_TRIVIAL(trace) << "     SSID: " << wifi->ssid;
         }
     }
     else {
@@ -563,8 +563,8 @@ void Network::nl80211_get_interface_cb(struct genlmsghdr *gnlh)
     if (tb_msg[NL80211_ATTR_WIPHY_FREQ]) {
         auto freq = nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_FREQ]);
         nl80211_chan_width width = static_cast<nl80211_chan_width>(nla_get_u32(tb_msg[NL80211_ATTR_CHANNEL_WIDTH]));
-        BOOST_LOG_TRIVIAL(info) << "   Freq: " << freq;
-        BOOST_LOG_TRIVIAL(info) << "  Width: " << width;
+        BOOST_LOG_TRIVIAL(trace) << "   Freq: " << freq;
+        BOOST_LOG_TRIVIAL(trace) << "  Width: " << width;
         changed |= (freq!=wifi->frequency);
         wifi->channel_width = channel_width_name(width);
         wifi->channel = ieee80211_frequency_to_channel(freq);

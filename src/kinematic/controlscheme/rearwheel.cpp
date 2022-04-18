@@ -27,10 +27,10 @@ ControlSchemeRearWheel::~ControlSchemeRearWheel()
 
 void ControlSchemeRearWheel::setMotors(float left, float right, float skew) 
 {
-    motorServo(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left-skew));
-    motorServo(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right+skew));
-    motorServo(FRONT_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+skew));
-    motorServo(FRONT_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE-skew));
+    motorServo(MotorPosition::REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+left-skew));
+    motorServo(MotorPosition::REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE+right+skew));
+    motorServo(MotorPosition::FRONT_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE+skew));
+    motorServo(MotorPosition::FRONT_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE-skew));
 }
 
 
@@ -38,16 +38,16 @@ void ControlSchemeRearWheel::setMotorDuty(float steering, float throttle, float 
 {
     auto factor = inner_dist/outer_dist;
     if (steering>=0.0f) {
-        motorDuty(FRONT_LEFT, throttle);
-        motorDuty(FRONT_RIGHT, throttle*factor);
-        motorDuty(REAR_LEFT, throttle);
-        motorDuty(REAR_RIGHT, throttle*factor);
+        motorDuty(MotorPosition::FRONT_LEFT, throttle);
+        motorDuty(MotorPosition::FRONT_RIGHT, throttle*factor);
+        motorDuty(MotorPosition::REAR_LEFT, throttle);
+        motorDuty(MotorPosition::REAR_RIGHT, throttle*factor);
     }
     else {
-        motorDuty(FRONT_LEFT, throttle*factor);
-        motorDuty(FRONT_RIGHT, throttle);
-        motorDuty(REAR_LEFT, throttle*factor);
-        motorDuty(REAR_RIGHT, throttle);
+        motorDuty(MotorPosition::FRONT_LEFT, throttle*factor);
+        motorDuty(MotorPosition::FRONT_RIGHT, throttle);
+        motorDuty(MotorPosition::REAR_LEFT, throttle*factor);
+        motorDuty(MotorPosition::REAR_RIGHT, throttle);
     }
 }
 

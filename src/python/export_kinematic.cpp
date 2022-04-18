@@ -35,7 +35,6 @@ void export_kinematic()
         ;
 
     py::class_<Kinematic, std::shared_ptr<Kinematic>, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("Kinematic", py::no_init)
-        .add_static_property("NOTIFY_TELEMETRY", py::make_getter(Kinematic::NOTIFY_TELEMETRY))
         .add_property("drive_mode", &Kinematic::getDriveMode, &Kinematic::setDriveMode)
         .add_property("orientation", &Kinematic::getOrientation, &Kinematic::setOrientation)
         .add_property("odometer", &Kinematic::getOdometer)

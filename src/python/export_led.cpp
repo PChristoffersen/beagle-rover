@@ -72,7 +72,7 @@ void export_led()
     // -----------------------------------------------------
     // Base color array and segments
     // -----------------------------------------------------
-    py::class_<color_array_type, py::bases<WithMutexStd>, boost::noncopyable>("LEDColorArray", py::no_init)
+    py::class_<color_array_type, py::bases<WithMutexRecursive>, boost::noncopyable>("LEDColorArray", py::no_init)
         .add_property("segments", py::make_function(+[](color_array_type &self){ return &self.segments(); }, py::return_internal_reference<>()))
         .def("values", +[](const color_array_type &self) { 
             color_array_type::guard lock(self.mutex());

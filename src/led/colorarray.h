@@ -23,7 +23,7 @@ namespace Robot::LED {
      * @tparam NCOLORS Number of colors in the array
      */
     template<std::size_t NCOLORS>
-    class ColorArray : public std::array<Color, NCOLORS>, public WithMutexStd {
+    class ColorArray : public std::array<Color, NCOLORS>, public WithMutexRecursive {
         public:
             using array_type = std::array<Color, NCOLORS>;
 
@@ -52,7 +52,6 @@ namespace Robot::LED {
                     {
                         std::fill_n(m_parent->begin()+m_offset, m_size, val);
                     }
-
 
 
                     value_type &operator[](size_type pos) { return (*m_parent)[m_offset+pos]; }
@@ -161,6 +160,8 @@ namespace Robot::LED {
             const SegmentList &segments() const { return m_segments; }
             Segment &segment(const std::string &name) { return m_segments.find(name); }
             const Segment &segment(const std::string &name) const { return m_segments.find(name); }
+            Segment &segment(uint index) { return m_segments[index]; };
+            const Segment &segment(uint index) const { return m_segments[index]; };
 
         private:
             SegmentList m_segments;

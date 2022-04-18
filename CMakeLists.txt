@@ -120,6 +120,8 @@ set(SRC
     src/led/animation/rainbowwave.cpp
     src/telemetry/telemetry.cpp
     src/telemetry/events.cpp
+    src/telemetry/sources/motors.cpp
+    src/telemetry/sources/odometer.cpp
     src/telemetry/sources/robotcontrolbattery.cpp
     src/telemetry/sources/robotcontrolmpu.cpp
     src/kinematic/kinematic.cpp

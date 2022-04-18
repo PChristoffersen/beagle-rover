@@ -43,8 +43,8 @@ void Indicator::none()
 void Indicator::left()
 {
     const ColorLayer::guard lock { m_layer->mutex() };
-    auto &front { m_layer->segments()[0] };
-    auto &back { m_layer->segments()[1] };
+    auto &front { m_layer->segment(FRONT_SEGMENT) };
+    auto &back { m_layer->segment(BACK_SEGMENT) };
 
     m_layer->fill(Color::TRANSPARENT);
     front[6] = INDICATOR_COLOR;
@@ -57,8 +57,8 @@ void Indicator::left()
 void Indicator::right() 
 {
     const ColorLayer::guard lock { m_layer->mutex() };
-    auto &front { m_layer->segments()[0] };
-    auto &back { m_layer->segments()[1] };
+    auto &front { m_layer->segment(FRONT_SEGMENT) };
+    auto &back { m_layer->segment(BACK_SEGMENT) };
 
     m_layer->fill(Color::TRANSPARENT);
     front[0] = INDICATOR_COLOR;
@@ -71,8 +71,8 @@ void Indicator::right()
 void Indicator::hazard()
 {
     const ColorLayer::guard lock { m_layer->mutex() };
-    auto &front { m_layer->segments()[0] };
-    auto &back { m_layer->segments()[1] };
+    auto &front { m_layer->segment(FRONT_SEGMENT) };
+    auto &back { m_layer->segment(BACK_SEGMENT) };
 
     front[0] = INDICATOR_COLOR;
     front[1] = INDICATOR_COLOR;

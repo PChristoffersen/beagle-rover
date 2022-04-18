@@ -41,7 +41,7 @@ void KnightRider::init(const std::shared_ptr<Control> &control)
 void KnightRider::update() 
 {
     const ColorLayer::guard lock(m_layer->mutex());
-    auto &front { m_layer->segments()[0] };
+    auto &front { m_layer->segment(FRONT_SEGMENT) };
     
     m_layer->fill(Color::TRANSPARENT);
 

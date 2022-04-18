@@ -13,7 +13,6 @@
 #include <robottypes.h>
 #include <common/withnotify.h>
 #include <common/withmutex.h>
-#include <telemetry/types.h>
 #include "types.h"
 
 namespace Robot::Motor {
@@ -23,22 +22,24 @@ namespace Robot::Motor {
             using timer_type = boost::asio::high_resolution_timer;
             using motor_mutex_type = std::mutex;
             using servo_mutex_type = std::mutex;
-            using motor_update_signal = typename boost::signals2::signal<void(MotorList&)>;
-            using servo_update_signal = typename boost::signals2::signal<void(ServoList&)>;
+            using motor_update_signal = typename boost::signals2::signal<void(const MotorList&)>;
+            using servo_update_signal = typename boost::signals2::signal<void(const ServoList&)>;
 
             explicit Control(const std::shared_ptr<::Robot::Context> &context);
             Control(const Control&) = delete; // No copy constructor
             Control(Control&&) = delete; // No move constructor
             virtual ~Control();
 
-            void init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry);
+            void init();
             void cleanup();
 
             void start();
             void stop();
 
             const MotorList &getMotors() const { return m_motors; }
+            const MotorList::value_type &getMotor(MotorList::size_type position) { return m_motors[position]; }
             const ServoList &getServos() const { return m_servos; }
+            const ServoList::value_type &getServo(ServoList::size_type position) { return m_servos[position]; }
 
             motor_mutex_type &motorMutex() const { return m_motor_mutex; }
             motor_mutex_type &servoMutex() const { return m_motor_mutex; }

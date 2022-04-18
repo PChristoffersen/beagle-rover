@@ -23,6 +23,21 @@ using namespace std::literals;
 namespace Robot::Kinematic {
 
 
+std::ostream &operator<<(std::ostream &os, const DriveMode &drivemode)
+{
+    /*
+    NONE,
+    ALL_WHEEL,
+    FRONT_WHEEL,
+    REAR_WHEEL,
+    SKID,
+    SPINNING,
+    BALANCING,
+    */
+   return os;
+}
+
+
 std::ostream &operator<<(std::ostream &os, const Orientation &orientation)
 {
     switch (orientation) {
@@ -116,6 +131,7 @@ void Kinematic::setDriveMode(DriveMode mode)
     dispatch([this, mode]{
         m_control_scheme->cleanup();
         m_control_scheme = nullptr;
+        BOOST_LOG_TRIVIAL(info) << "Control Scheme " << static_cast<int>(mode);
 
         switch (mode) {
         case DriveMode::ALL_WHEEL:
@@ -198,7 +214,7 @@ void Kinematic::resetOdometer()
         for (const auto &motor : m_motor_control->getMotors()) {
             motor->resetOdometer();
         }
-        notify(NOTIFY_TELEMETRY);
+        sig_odometer(m_odometer);
     });
 }
 
@@ -223,7 +239,7 @@ void Kinematic::onMotorUpdate(const ::Robot::Motor::MotorList &motors)
 
         if (odometer!=m_odometer) {
             m_odometer = odometer;
-            notify(NOTIFY_TELEMETRY);
+            sig_odometer(m_odometer);
         }
     });
 }
@@ -233,7 +249,7 @@ void Kinematic::onMotorUpdate(const ::Robot::Motor::MotorList &motors)
 void Kinematic::onSteer(float steering, float throttle, float aux_x, float aux_y) 
 {
     BOOST_LOG_TRIVIAL(trace) << "Kinematic onSteer " << steering << " " << throttle;
-    dispatch([&]{
+    dispatch([this,steering,throttle,aux_x,aux_y]{
         m_control_scheme->steer(steering, throttle, aux_x, aux_y);
     });
 }

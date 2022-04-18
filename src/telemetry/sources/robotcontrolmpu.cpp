@@ -19,7 +19,7 @@ inline static constexpr double rad2deg(double rad) {
 }
 
 
-static const std::string SOURCE_NAME { "mpu" };
+static const std::string_view SOURCE_NAME { "mpu" };
 
 // bus for Robotics Cape and BeagleboneBlue is 2, interrupt pin is on gpio3.21
 // change these for your platform
@@ -56,20 +56,17 @@ inline void RobotControlMPU::onData(const rc_mpu_data_t &data)
     if (auto telemetry = m_telemetry.lock()) {
         sendData(telemetry, data);
 
-
-        m_saved_data = m_data;
-
         auto now = clock_type::now();
         if (now-m_last_telemetry > TELEMETRY_INTERVAL) {
-            m_event.pitch = m_saved_data.fused_TaitBryan[TB_PITCH_X];
-            m_event.roll  = m_saved_data.fused_TaitBryan[TB_ROLL_Y];
-            m_event.yaw   = m_saved_data.fused_TaitBryan[TB_YAW_Z];
+            m_event.pitch = data.fused_TaitBryan[TB_PITCH_X];
+            m_event.roll  = data.fused_TaitBryan[TB_ROLL_Y];
+            m_event.yaw   = data.fused_TaitBryan[TB_YAW_Z];
 
             #if 0
             BOOST_LOG_TRIVIAL(info) 
                 << boost::format("MPU %04d  ") % m_data_count
-                << boost::format("| %6.1f | %6.1f |") % rad2deg(m_saved_data.compass_heading_raw) % rad2deg(m_saved_data.compass_heading)
-                << boost::format("| %6.1f | %6.1f | %6.1f |") % rad2deg(m_saved_data.fused_TaitBryan[TB_PITCH_X]) % rad2deg(m_saved_data.fused_TaitBryan[TB_ROLL_Y]) % rad2deg(m_saved_data.fused_TaitBryan[TB_YAW_Z])
+                << boost::format("| %6.1f | %6.1f |") % rad2deg(data.compass_heading_raw) % rad2deg(data.compass_heading)
+                << boost::format("| %6.1f | %6.1f | %6.1f |") % rad2deg(data.fused_TaitBryan[TB_PITCH_X]) % rad2deg(m_saved_data.fused_TaitBryan[TB_ROLL_Y]) % rad2deg(data.fused_TaitBryan[TB_YAW_Z])
                 ;
             #endif
 

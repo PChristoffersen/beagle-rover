@@ -62,10 +62,10 @@ void ControlSchemeSkid::cleanup()
 
 void ControlSchemeSkid::resetMotors()
 {
-    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
-    motorSet(FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
-    motorSet(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
-    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
+    motorSet(MotorPosition::FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
+    motorSet(MotorPosition::FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
+    motorSet(MotorPosition::REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
+    motorSet(MotorPosition::REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE), 0.0f);
 }
 
 
@@ -104,10 +104,10 @@ void ControlSchemeSkid::steer(float steering, float throttle, float aux_x, float
 
     //BOOST_LOG_TRIVIAL(info) << " steer " << boost::format("| %+.2f | %+.2f  ||  %+.2f | %+.2f |") % steering % throttle % left % right;
 
-    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), left);
-    motorSet(FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), right);
-    motorSet(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), left);
-    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), right);
+    motorSet(MotorPosition::FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), left);
+    motorSet(MotorPosition::FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), right);
+    motorSet(MotorPosition::REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), left);
+    motorSet(MotorPosition::REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), right);
 }
 
 

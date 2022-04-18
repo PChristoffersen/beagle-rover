@@ -15,6 +15,7 @@ namespace Robot::LED {
 
     constexpr auto LAYER_DEPTH_ANIMATION  { 10 };
     constexpr auto LAYER_DEPTH_INDICATORS { 20 };
+    constexpr auto LAYER_BALANCE_INDICATORS { 90 };
     constexpr auto LAYER_RC_INDICATORS { 100 };
 
     class ColorLayer : public ColorArray<PIXEL_COUNT>, public std::enable_shared_from_this<ColorLayer> {

@@ -12,6 +12,9 @@
 #include <motor/control.h>
 #include <led/control.h>
 #include <telemetry/telemetry.h>
+#include <telemetry/sources/motors.h>
+#include <telemetry/sources/robotcontrolbattery.h>
+#include <telemetry/sources/robotcontrolmpu.h>
 #include <kinematic/kinematic.h>
 #include <system/network.h>
 #include <system/power.h>
@@ -64,9 +67,21 @@ void Robot::init()
     }
     m_instance = this;
 
+
+    // Wire up telemetry sources
+    m_telemetry->addSource(std::make_shared<Telemetry::Motors>(m_motor_control));
+    #if ROBOT_HAVE_ROBOTCONTROL_BATTERY
+    m_telemetry->addSource(std::make_shared<RobotControlBattery>(m_context));
+    #endif
+    #if ROBOT_HAVE_ROBOTCONTROL_MPU
+    m_telemetry->addSource(std::make_shared<RobotControlMPU>(context)));
+    #endif
+
+
+    // Initialize all components
     m_context->init();
     m_telemetry->init();
-    m_motor_control->init(m_telemetry);
+    m_motor_control->init();
     if (m_rc_receiver) {
         m_rc_receiver->init(m_telemetry);
     }

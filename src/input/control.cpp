@@ -103,7 +103,7 @@ void Control::cleanup()
 void Control::setAxisSource(InputSource input)
 {
     const guard lock(m_mutex);
-    if (input==m_axis_source) {
+    if (input!=m_axis_source) {
         BOOST_LOG_TRIVIAL(info) << "Input source: " << input;
 
         auto oldSource = findSource(m_axis_source);

@@ -48,6 +48,7 @@ void export_motor()
         ;
 
     py::class_<Servo, py::bases<WithNotifyInt, WithMutexStd>, boost::noncopyable>("Servo", py::no_init)
+        .add_static_property("NOTIFY_TELEMETRY", py::make_getter(Servo::NOTIFY_TELEMETRY))
         .add_property("index", &Servo::getIndex)
         .add_property("enabled", &Servo::getEnabled, &Servo::setEnabled)
         .add_property("pulse_us", +[](const Servo &self) { return self.getValue().asServoPulse(); }, +[](Servo &self, uint32_t value) { self.setValue(Value::fromMicroSeconds(value)); })

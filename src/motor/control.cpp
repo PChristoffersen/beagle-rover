@@ -48,7 +48,7 @@ Control::~Control()
 }
 
 
-void Control::init(const std::shared_ptr<::Robot::Telemetry::Telemetry> &telemetry) 
+void Control::init() 
 {
     BOOST_ASSERT_MSG(!m_initialized, "Already initialized");
     m_initialized = true;

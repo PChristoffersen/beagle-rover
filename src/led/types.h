@@ -11,6 +11,8 @@
 namespace Robot::LED {
 
     class Control;
+    class Color;
+    class ColorLayer;
 
     /**
      * @brief Number of LED pixels in the robot pixel string
@@ -49,6 +51,8 @@ namespace Robot::LED {
         { "front", 0, PIXEL_COUNT/2 }, 
         { "back",  PIXEL_COUNT/2, PIXEL_COUNT/2 }, 
     };
+    constexpr auto FRONT_SEGMENT { 0u };
+    constexpr auto BACK_SEGMENT { 1u };
 
 }
 

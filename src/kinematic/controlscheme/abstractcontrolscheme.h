@@ -49,18 +49,18 @@ namespace Robot::Kinematic {
 
             inline auto &motor(MotorPosition position) const 
             {
-                return m_motor_control->getMotors()[m_motor_map[position].index];
+                return m_motor_control->getMotors()[m_motor_map[static_cast<uint>(position)].index];
             }
             inline void motorServo(MotorPosition position, Value value) {
-                auto &entry = m_motor_map[position];
+                auto &entry = m_motor_map[static_cast<uint>(position)];
                 m_motor_control->getMotors()[entry.index]->servo()->setValue(entry.invert ? -value : value);
             }
             inline void motorDuty(MotorPosition position, float value) {
-                auto &entry = m_motor_map[position];
+                auto &entry = m_motor_map[static_cast<uint>(position)];
                 m_motor_control->getMotors()[entry.index]->setDuty(entry.invert_duty ? -value : value);
             }
             inline void motorSet(MotorPosition position, Value servo, float throttle) {
-                auto &entry = m_motor_map[position];
+                auto &entry = m_motor_map[static_cast<uint>(position)];
                 auto &motor = m_motor_control->getMotors()[entry.index];
                 motor->servo()->setValue(entry.invert ? -servo : servo);
                 motor->setDuty(entry.invert_duty ? -throttle : throttle);

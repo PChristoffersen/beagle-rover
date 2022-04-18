@@ -18,8 +18,8 @@ namespace Robot::Kinematic {
 
     class Kinematic : public std::enable_shared_from_this<Kinematic>, public WithMutexStd, public WithNotifyInt, public WithStrand {
         public:
-            static constexpr notify_type NOTIFY_TELEMETRY { 1 };
             using odometer_type = std::int32_t;
+            using odometer_update_signal = typename boost::signals2::signal<void(odometer_type)>;
 
             Kinematic(const std::shared_ptr<::Robot::Context> &context);
             Kinematic(const Kinematic&) = delete; // No copy constructor
@@ -48,6 +48,7 @@ namespace Robot::Kinematic {
             const std::weak_ptr<::Robot::LED::Control> &ledControl() { return m_led_control; }
             const std::weak_ptr<::Robot::Telemetry::Telemetry> &telemetry() { return m_telemetry; }
 
+            odometer_update_signal sig_odometer;
         private:
             bool m_initialized;
 

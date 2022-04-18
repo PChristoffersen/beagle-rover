@@ -182,7 +182,7 @@ void Context::start()
 
     BOOST_LOG_TRIVIAL(info) << "Starting thread pool (" << n_threads << ")";
     for (auto i=0u; i<n_threads; i++) {
-        m_thread_pool.push_back(std::make_unique<std::thread>([&,i] {
+        m_thread_pool.push_back(std::make_unique<std::thread>([this,i] {
             auto val = nice(CONTEXT_THREAD_NICE);
             if (val != CONTEXT_THREAD_NICE) {
                 #if ROBOT_PLATFORM != ROBOT_PLATFORM_PC

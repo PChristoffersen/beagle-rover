@@ -24,6 +24,7 @@ namespace Robot::Kinematic {
         SPINNING,
         BALANCING,
     };
+    std::ostream &operator<<(std::ostream &os, const DriveMode &drivemode);
 
     enum class Orientation {
         NORTH,
@@ -34,7 +35,7 @@ namespace Robot::Kinematic {
     std::ostream &operator<<(std::ostream &os, const Orientation &orientation);
 
 
-    enum MotorPosition {
+    enum class MotorPosition {
         FRONT_LEFT = 0,
         FRONT_RIGHT = 1,
         REAR_LEFT = 2,

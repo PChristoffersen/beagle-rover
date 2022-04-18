@@ -56,10 +56,10 @@ void AbstractWheelSteering::cleanup()
 
 void AbstractWheelSteering::resetMotors(float throttle, float skew)
 {
-    motorSet(FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), throttle);
-    motorSet(FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), throttle);
-    motorSet(REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), throttle);
-    motorSet(REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), throttle);
+    motorSet(MotorPosition::FRONT_LEFT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), throttle);
+    motorSet(MotorPosition::FRONT_RIGHT,Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), throttle);
+    motorSet(MotorPosition::REAR_LEFT,  Value::fromAngle(WHEEL_STRAIGHT_ANGLE + skew), throttle);
+    motorSet(MotorPosition::REAR_RIGHT, Value::fromAngle(WHEEL_STRAIGHT_ANGLE - skew), throttle);
 }
 
 
@@ -68,6 +68,7 @@ void AbstractWheelSteering::resetMotors(float throttle, float skew)
 void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, float aux_y) 
 {
     setLastSteering(steering, throttle, aux_x, aux_y);
+
 
     const auto asteering = std::abs(steering);
     
@@ -95,7 +96,6 @@ void AbstractWheelSteering::steer(float steering, float throttle, float aux_x, f
     auto outer_angle = atan(m_wheel_base_factor/(inner_circle_dist+WHEEL_BASE_MM));
     // Outer turning circle radius
     auto outer_circle_dist = tan(M_PI_2-outer_angle) * m_wheel_base_factor;
-
 
     if (steering > 0.0) {
         setMotors(-outer_angle, inner_angle, skew);

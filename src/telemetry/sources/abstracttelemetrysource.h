@@ -11,9 +11,7 @@ namespace Robot::Telemetry {
     template<typename T>
     class AbstractSource : public Source, public std::enable_shared_from_this<T> {
         public:
-            AbstractSource() 
-            {
-            }
+            AbstractSource() { }
             virtual ~AbstractSource() = default;
 
     };
