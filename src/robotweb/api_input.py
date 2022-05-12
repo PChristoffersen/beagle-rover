@@ -60,6 +60,7 @@ def set_input_from_dict(input, json: dict):
         if key in INPUT_PROPERTIES:
             if key in ["axis_source", "kinematic_source", "led_source"]:
                 value = to_enum(InputSource, value)
+                print(f"SetAttr {key} {value}")
             setattr(input, key, value)
 
 def set_state_from_dict(interface: InputInterface, json: dict):
@@ -150,6 +151,7 @@ class InputNamespace(WatchableNamespace):
         #    self.notify_state()
 
     async def on_steer(self, sid, data):
+        logger.info(f"OnSteer: {data}")
         set_state_from_dict(self.robot.input.web, data)
         #return interface2dict(self.robot.input.web)
 

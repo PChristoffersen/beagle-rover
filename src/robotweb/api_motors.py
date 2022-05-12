@@ -54,7 +54,7 @@ def servo2dict(servo) -> Dict:
         "limit_max": servo.limit_max,
     }
 
-def servo2dict_update(servo) -> Dict:
+def servo2dict_telemetry(servo) -> Dict:
     return {
         "enabled": servo.enabled,
         "angle": servo.angle,
@@ -155,8 +155,11 @@ class MotorWatch(SubscriptionWatch):
                 data.update(motor2dict(self.target))
             if id == Motor.NOTIFY_TELEMETRY and not Motor.NOTIFY_DEFAULT in res:
                 data.update(motor2dict_telemetry(self.target))
+            
             if id == self.SERVO_OFFSET+Servo.NOTIFY_DEFAULT:
-                data["servo"] = servo2dict_update(self.target.servo)
+                data["servo"] = servo2dict(self.target.servo)
+            elif id == self.SERVO_OFFSET+Servo.NOTIFY_TELEMETRY:
+                data["servo"] = servo2dict_telemetry(self.target.servo)
         
         await self.owner.emit(self.name, data=data, room=self.name)
         await asyncio.sleep(self.UPDATE_GRACE_PERIOD)

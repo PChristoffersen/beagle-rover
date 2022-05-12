@@ -1,7 +1,7 @@
 import { robotApi } from './robot';
 import { handleUpdateQuery, handleUpdateSubscription, RecursivePartial } from './util';
 import { io, Socket } from 'socket.io-client';
-import { socketPrefix } from "./robot";
+import { socketPrefix } from "./websocket";
 import { InputControl, InputSourceDescriptionList, InputState } from './model';
 
 

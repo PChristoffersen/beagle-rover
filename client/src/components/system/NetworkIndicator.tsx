@@ -1,12 +1,9 @@
-import { Box, Stack, Tooltip, Typography } from "@mui/material";
+import { Tooltip, Typography } from "@mui/material";
 import SignalWifi0BarIcon from '@mui/icons-material/SignalWifi0Bar';
 import SignalWifi1BarIcon from '@mui/icons-material/SignalWifi1Bar';
 import SignalWifi2BarIcon from '@mui/icons-material/SignalWifi2Bar';
 import SignalWifi3BarIcon from '@mui/icons-material/SignalWifi3Bar';
 import SignalWifi4BarIcon from '@mui/icons-material/SignalWifi4Bar';
-import SignalWifiBadIcon from '@mui/icons-material/SignalWifiBad';
-import SignalWifiOffIcon from '@mui/icons-material/SignalWifiOff';
-import CableIcon from '@mui/icons-material/Cable';
 import WifiTetheringIcon from '@mui/icons-material/WifiTethering';
 import UsbIcon from '@mui/icons-material/Usb';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
@@ -185,7 +182,7 @@ function NetworkInterfaceIcon({ iface, fontSize }: NetworkInterfaceIconProps) {
                         <Typography variant="subtitle2">
                             Address: 
                         </Typography>
-                        { iface_.addresses.map(addr => (
+                        { iface_.addresses.map((addr: string) => (
                             <Typography variant="caption">
                                 {addr}
                             </Typography>

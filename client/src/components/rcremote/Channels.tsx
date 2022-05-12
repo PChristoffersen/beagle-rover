@@ -1,4 +1,4 @@
-import { Grid, LinearProgress, Slider, Stack, Table, TableBody, TableCell, TableHead, TableRow, useMediaQuery, useTheme } from "@mui/material";
+import { Grid, Table, TableBody, TableCell, TableRow, useMediaQuery, useTheme } from "@mui/material";
 import { range } from "lodash";
 import { RCChannels } from "../../services/model";
 import { useGetRCChannelsQuery } from "../../services/rcreceiver";

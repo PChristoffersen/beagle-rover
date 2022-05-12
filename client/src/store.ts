@@ -1,25 +1,25 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import type { PreloadedState } from '@reduxjs/toolkit'
-import counterReducer from './features/counter/counterSlice'
+import counterReducer from './features/counterSlice'
+import backendReducer from './features/backendSlice'
 import { robotApi } from './services/robot'
-
+import socketMiddleware from './services/websocket'
 
 
 const rootReducer = combineReducers({
     counter: counterReducer,
+    backend: backendReducer,
     [robotApi.reducerPath]: robotApi.reducer
 })
 
 
-export const setupStore = (preloadedState?: PreloadedState<RootState>) => {
-    return configureStore({
+export const store = configureStore({
         reducer: rootReducer,
-        middleware: (getDefaultMiddleware) =>
-            getDefaultMiddleware().concat(robotApi.middleware),
-        preloadedState,
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware()
+            .concat(robotApi.middleware)
+            .concat(socketMiddleware),
     })
-}
 
 export type RootState = ReturnType<typeof rootReducer>
-export type AppStore = ReturnType<typeof setupStore>
-export type AppDispatch = AppStore['dispatch']
+export type AppDispatch = typeof store.dispatch
+
+

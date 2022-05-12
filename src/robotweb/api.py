@@ -14,7 +14,7 @@ from .api_system import create_app as system_create_app
 from .error_handler import error_middleware
 from .serializer import json_request, json_response
 
-from robotsystem import Robot, InputSource, robot_version_full
+from robotsystem import Robot, InputSource, DriveMode, robot_version_full
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +72,8 @@ async def app_on_startup(app: Application):
     robot.init()
     robot.input.led_source = InputSource.WEB
     robot.input.axis_source = InputSource.WEB
+    robot.input.kinematic_source = InputSource.WEB
+    robot.kinematic.drive_mode = DriveMode.ALL
     app['robot'] = robot
 
 

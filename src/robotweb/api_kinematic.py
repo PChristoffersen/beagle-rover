@@ -47,13 +47,8 @@ def kinematic2dict(kinematic: Kinematic) -> dict:
     return {
         "drive_mode": str(kinematic.drive_mode),
         "orientation": str(kinematic.orientation),
-        "odometer": kinematic.odometer,
     }
 
-def kinematic2dict_telemetry(kinematic: Kinematic) -> dict:
-    return {
-        "odometer": kinematic.odometer,
-    }
 
 
 def set_kinematic_from_dict(kinematic: Kinematic, json: dict):
@@ -106,22 +101,8 @@ async def indicators(request: Request) -> Response:
 
 
 class KinematicWatch(SubscriptionWatch):
-    UPDATE_GRACE_PERIOD = 0.2
-
     def data(self):
         return kinematic2dict(self.target)
-
-    async def emit(self, res: tuple):
-        data = dict()
-        if Kinematic.NOTIFY_DEFAULT in res:
-            data.update(kinematic2dict(self.target))
-        elif Kinematic.NOTIFY_TELEMETRY in res:
-            data.update_telemetry(kinematic2dict(self.target))
-        else:
-            return
-
-        await self.owner.emit(self.name, data=data, room=self.name)
-        await asyncio.sleep(self.UPDATE_GRACE_PERIOD)
 
 
 class KinematicNamespace(WatchableNamespace):

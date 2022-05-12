@@ -1,5 +1,3 @@
-import { range } from 'lodash';
-import { LEDOutput } from '../../../services/model';
 import { DefaultColors } from './Colors';
 
 

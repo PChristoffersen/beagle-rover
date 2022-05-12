@@ -1,6 +1,5 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
-import { red } from '@mui/material/colors';
 import "@fontsource/varela-round";
 import "@fontsource/source-code-pro";
 

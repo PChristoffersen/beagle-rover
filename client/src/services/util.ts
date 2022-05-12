@@ -6,7 +6,7 @@ import { PatchCollection, Recipe, UpdateQueryDataThunk } from '@reduxjs/toolkit/
 import { TagDescription } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import { io } from 'socket.io-client';
 
-import { socketPrefix } from "./robot";
+import { socketPrefix } from "./websocket";
 
 
 export type RecursivePartial<T> = {

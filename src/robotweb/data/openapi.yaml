@@ -266,6 +266,65 @@ paths:
               schema:
                 $ref: "#/components/schemas/IMUData"
 
+  /telemetry/odometer:
+    get:
+      summary: Get odometer Telemetry
+      description: Current odometer telemetry values
+      operationId: telemetry_get_odometer
+      tags:
+        - Telemetry
+      responses:
+        '200':
+          description: Odometer telemetry
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/OdometerData"
+
+  /telemetry/history/{name}:
+    get:
+      summary: Get named history
+      operationId: telemetry_get_named_history
+      tags:
+        - Telemetry
+      parameters:
+        - name: name
+          in: path
+          description: Name of the telemetry to get
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: History data
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/TelemetryHistory"
+
+  /telemetry/history:
+    get:
+      summary: Get history
+      operationId: telemetry_get_history
+      tags:
+        - Telemetry
+      parameters:
+        - name: names
+          in: query
+          description: Comma separated list of history names
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: History data
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/TelemetryHistorySet"
+
 
   /rcreceiver:
     get:
@@ -737,6 +796,45 @@ components:
         - limit_min
         - limit_max
 
+    FloatArray:
+      type: array
+      items:
+        type: number
+    
+    IntegerArray:
+      type: array
+      items:
+        type: integer
+
+    TelemetryHistory:
+      type: object
+      properties:
+        time:
+          description: The time in ms of the lastes entry in the buffer
+          type: integer
+        interval:
+          description: The interval in ms between buffer entries
+          type: integer
+        head:
+          description: The position head of the buffer ring buffer
+          type: integer
+        buffer: 
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/FloatArray"
+              - $ref: "#/components/schemas/IntegerArray"
+      required:
+        - time
+        - interval
+        - head
+        - buffer
+
+    TelemetryHistorySet:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/TelemetryHistory"
+
     IMUData:
       type: object
       properties:
@@ -757,6 +855,15 @@ components:
         - yaw
         - roll
 
+    OdometerData:
+      type: object
+      properties:
+        value:
+          description: Current odometer value in mm
+          type: integer
+          readOnly: true
+      required:
+        - value
 
     Color:
       type: string

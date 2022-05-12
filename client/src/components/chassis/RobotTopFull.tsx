@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { LEDOutput } from "../../services/model";
 import { useGetMotorQuery } from "../../services/motors";
 import TopViewFull from "./beaglerover/TopViewFull";

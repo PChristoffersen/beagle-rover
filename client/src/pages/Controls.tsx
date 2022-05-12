@@ -11,9 +11,8 @@ import OrientationSelect from '../components/kinematics/OrientationSelect';
 import Page from '../components/Page';
 import { useGetKinematicQuery } from '../services/kinematic';
 import { useGetOutputQuery } from '../services/leds';
-import { DriveMode, InputSource } from '../services/model';
-import { useGetMotorControlQuery } from '../services/motors';
-import { useGetIMUQuery } from '../services/telemetry';
+import { DriveMode } from '../services/model';
+import { useGetIMUQuery, useGetOdometerQuery } from '../services/telemetry';
 
 
 
@@ -81,8 +80,7 @@ function distanceText(value: number|undefined): string {
     if (value === undefined) {
         return ""
     }
-    //return (value/1000.0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
-    return "2.4"
+    return (value/1000.0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 }
 
 
@@ -96,13 +94,13 @@ function InfoPaper({ children, ...props }: PaperProps) {
 
 
 function OdometerPaper() {
-    const { data } = useGetMotorControlQuery();
+    const { data } = useGetOdometerQuery();
 
     return (
         <InfoPaper>
             <Box sx={{ position: "absolute", top: 0, width: "100%", height: "100%" }} display="flex" justifyContent="center" alignItems="center">
                 <Typography variant='h4' textAlign="center">
-                    {distanceText(data?.odometer)}
+                    {distanceText(data?.value)}
                 </Typography>
             </Box>
             <Box sx={{ position: "absolute", top: 2, width: "100%" }}>

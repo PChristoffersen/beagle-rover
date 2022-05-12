@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 
 import Page from '../components/Page';
-import { Box, Grid, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import RobotRender from '../components/chassis/RobotRender';
 import { useGetVersionsQuery } from '../services/robot';
 

@@ -12,6 +12,7 @@ import Test from './pages/Test';
 import RestAPI from './pages/RestAPI';
 import FullscreenRestAPI from './pages/FullscreenRestAPI';
 import Receiver from './pages/Receiver';
+import Disconnected from './pages/Disconnected';
 
 
 interface PageDefinition {
@@ -22,12 +23,12 @@ interface PageDefinition {
 
 export const pages = [
     { id: "main",       name: 'Main',       to: '/' },
-    { id: "controls",   name: 'Controls',  to: '/controls' },
+    { id: "controls",   name: 'Controls',   to: '/controls' },
     { id: "telemetry",  name: 'Telemetry',  to: '/telemetry' },
     { id: "leds",       name: 'LEDS',       to: '/leds' },
     { id: "motors",     name: 'Motors',     to: '/motors' },
-    { id: "receiver",   name: 'Receiver',     to: '/receiver' },
-    { id: "rest",       name: 'API',     to: '/rest' },
+    { id: "receiver",   name: 'Receiver',   to: '/receiver' },
+    { id: "rest",       name: 'API',        to: '/rest' },
 ] as PageDefinition[];
 
 
@@ -56,6 +57,7 @@ export default function Router() {
                 children: [
                     { path: 'rest-full', element: <FullscreenRestAPI /> },
                     { path: 'fullscreen', element: <Test /> },
+                    { path: 'no-connection', element: <Disconnected /> },
                 ]
             },
         ])

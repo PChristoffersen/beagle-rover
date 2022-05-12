@@ -1,4 +1,4 @@
-import { Color, darken, lighten, Theme } from '@mui/material';
+import { darken, lighten, Theme } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 
