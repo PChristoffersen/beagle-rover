@@ -1,5 +1,8 @@
 .vscode/*
 !.vscode/launch.json
+!.vscode/extensions.json
+.env/
+.venv/
 build
 CMakeLists.txt.user
 CMakeCache.txt

@@ -49,6 +49,28 @@
             "program": "test_system.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/test"
+        },
+        {
+            "name": "Web Backend",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/web/src"
+        },
+        {
+            "name": "Web Frontend",
+            "command": "npm start",
+            "request": "launch",
+            "type": "node-terminal",
+            "cwd": "${workspaceFolder}/web/client"
         }
-    ]
+    ],
+    "compounds": [
+        {
+          "name": "Web Frontend/Backend",
+          "configurations": ["Web Backend", "Web Frontend"]
+        }
+      ]
+ 
 }

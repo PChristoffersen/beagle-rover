@@ -14,8 +14,10 @@ RUN dpkg --add-architecture i386 \
         libc6:i386 \
         build-essential \
         cmake \
+        gcc-8-arm-linux-gnueabihf \
         g++-8-arm-linux-gnueabihf \
-        python3-venv
+        python3-venv \
+        python3-pip
 
 # Download beaglebone rootfs snapshot from OneDrive
 RUN mkdir /opt/beaglebone && cd /opt/beaglebone \
