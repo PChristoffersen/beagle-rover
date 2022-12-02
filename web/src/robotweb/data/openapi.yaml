@@ -1,0 +1,1163 @@
+openapi: "3.0.0"
+
+info:
+  version: 1.0.0
+  title: Robot REST API
+  description: API for controlling robot cars
+
+servers:
+  - url: http://localhost:5000/api
+
+tags:
+  - name: Input
+    description: Input control
+  - name: Kinematic
+    description: Kinematic control
+  - name: Motors
+    description: Direct motor control
+  - name: RC Receiver
+    description: Remote control receiver
+  - name: LEDS
+    description: Control lights
+  - name: System
+    description: System information
+
+paths:
+
+
+  /input:
+    get:
+      summary: Get properties
+      description: The global Input controller properties
+      operationId: input_get
+      tags:
+        - Input
+      responses:
+        '200':
+          description: Input controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputControl"
+    put:
+      summary: Set properties
+      description: The global Input controller properties
+      operationId: input_set
+      tags:
+        - Input
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputControl"
+      responses:
+        '200':
+          description: Input controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputControl"
+
+  /input/state:
+    get:
+      summary: Get axis state
+      description: The current state of the WEB input steering
+      operationId: input_get_state
+      tags:
+        - Input
+      responses:
+        '200':
+          description: Input controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputState"
+    put:
+      summary: Set axis state
+      description: Set the current state of the WEB input steering
+      operationId: input_set_state
+      tags:
+        - Input
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputState"
+      responses:
+        '200':
+          description: Input controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/InputState"
+
+  /input/sources:
+    get:
+      summary: List input sources
+      description: List available input source
+      operationId: input_list_input_sources
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Available input source
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InputSourceDescriptionList"
+
+
+  /kinematic:
+    get:
+      summary: Get properties
+      description: The kinematic controller properties
+      operationId: kinematic_get
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Kinematic controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/KinematicControl"
+    put:
+      summary: Set properties
+      description: The kinematic controller properties
+      operationId: kinematic_set
+      tags:
+        - Kinematic
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/KinematicControl"
+      responses:
+        '200':
+          description: Kinematic controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/KinematicControl"
+
+  /kinematic/drive-modes:
+    get:
+      summary: List drive modes
+      description: List available drive modes
+      operationId: kinematic_list_drive_modes
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Available drive modes
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/DriveModeDescriptionList"
+
+  /kinematic/orientations:
+    get:
+      summary: List orientations
+      description: List available orientations
+      operationId: kinematic_list_orientations
+      tags:
+        - Kinematic
+      responses:
+        '200':
+          description: Available orientations
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/OrientationDescriptionList"
+
+  /kinematic/actions:
+    post:
+      summary: Perform control action
+      description: Kinematic action
+      operationId: kinematic_action
+      tags:
+        - Kinematic
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/ResetOdometerAction"
+      responses:
+        '200':
+          description: Success
+
+
+  /motors:
+    get:
+      summary: Control properties
+      description: Get global control motor properties
+      operationId: motors_properties
+      tags:
+        - Motors
+      responses:
+        '200':
+          description: Control properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MotorControl"
+      
+
+
+  /motors/{id}:
+    get:
+      summary: Get motor
+      operationId: motors_get
+      tags:
+        - Motors
+      parameters:
+        - name: id
+          in: path
+          description: Id of the motor
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Motor properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Motor"
+
+    put:
+      summary: Set motor
+      operationId: motors_set
+      tags:
+        - Motors
+      parameters:
+        - name: id
+          in: path
+          description: Id of the motor
+          required: true
+          schema:
+            type: integer
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Motor"
+      responses:
+        '200':
+          description: Motor properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Motor"
+
+  /telemetry/imu:
+    get:
+      summary: Get IMU Telemetry
+      description: Current IMU telemetry values
+      operationId: telemetry_get_imu
+      tags:
+        - Telemetry
+      responses:
+        '200':
+          description: IMU telemetry
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/IMUData"
+
+  /telemetry/odometer:
+    get:
+      summary: Get odometer Telemetry
+      description: Current odometer telemetry values
+      operationId: telemetry_get_odometer
+      tags:
+        - Telemetry
+      responses:
+        '200':
+          description: Odometer telemetry
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/OdometerData"
+
+  /telemetry/history/{name}:
+    get:
+      summary: Get named history
+      operationId: telemetry_get_named_history
+      tags:
+        - Telemetry
+      parameters:
+        - name: name
+          in: path
+          description: Name of the telemetry to get
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: History data
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/TelemetryHistory"
+
+  /telemetry/history:
+    get:
+      summary: Get history
+      operationId: telemetry_get_history
+      tags:
+        - Telemetry
+      parameters:
+        - name: names
+          in: query
+          description: Comma separated list of history names
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: History data
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/TelemetryHistorySet"
+
+
+  /rcreceiver:
+    get:
+      summary: Get properties
+      description: The remote receiver properties
+      operationId: rc_get
+      tags:
+        - RC Receiver
+      responses:
+        '200':
+          description: Receiver properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCReceiver"
+    put:
+      summary: Set properties
+      description: The remote receiver properties
+      operationId: rc_set
+      tags:
+        - RC Receiver
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCReceiver"
+      responses:
+        '200':
+          description: The remote receiver properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCReceiver"
+
+  /rcreceiver/channels:
+    get:
+      summary: Get channels
+      description: The current state of the receiver channels
+      operationId: rc_get_channels
+      tags:
+        - RC Receiver
+      responses:
+        '200':
+          description: Receiver chanels
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RCChannels"
+
+
+  /leds:
+    get:
+      summary: Get properties
+      description: The global LED controller properties
+      operationId: leds_get
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: LED controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+    put:
+      summary: Set properties
+      description: The global LED controller properties
+      operationId: leds_set
+      tags:
+        - LEDS
+      requestBody:
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+      responses:
+        '200':
+          description: LED controller properties
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDControl"
+
+  /leds/animations:
+    get:
+      summary: List animations
+      description: List available animations
+      operationId: leds_list_animations
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: LED Animations
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/AnimationModeDescriptionList"
+
+  /leds/indicators:
+    get:
+      summary: List indicators
+      description: List available indicators
+      operationId: leds_list_indicators
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: LED Indicators
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/IndicatorModeDescriptionList"
+
+  /leds/output:
+    get:
+      summary: Get Segment output
+      description: The colors currently being displayed on the robot LEDS grouped by segments
+      operationId: leds_get_output
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: Current led output
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LEDOutput"
+
+  /leds/strip-output:
+    get:
+      summary: Get Strip output
+      description: The colors currently being displayed on the robot LEDS
+      operationId: leds_get_strip_output
+      tags:
+        - LEDS
+      responses:
+        '200':
+          description: Current led output
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Color"
+                example:
+                - "FF0000"
+                - "00FF00"
+                - "0000FF"
+                - "000000"
+
+
+  /system/network:
+    get:
+      summary: Network interfaces
+      description: Get information about network interfaces
+      operationId: system_network_get
+      tags:
+        - System
+      responses:
+        '200':
+          description: Network interface state
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Network"
+
+  /system/power:
+    get:
+      summary: Power supply
+      description: Get information about network interfaces
+      operationId: system_power_get
+      tags:
+        - System
+      responses:
+        '200':
+          description: Current power supply information
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Power"
+
+
+components:
+  schemas:
+    Action:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+
+
+    InputControl:
+      type: object
+      properties:
+        axis_source:
+          $ref: "#/components/schemas/InputSource"
+        kinematic_source:
+          $ref: "#/components/schemas/InputSource"
+        led_source:
+          $ref: "#/components/schemas/InputSource"
+
+    InputSource:
+      type: string
+      enum:
+        - MANUAL
+        - RC
+        - WEB
+        - CONTROLLER
+      default: MANUAL
+
+    InputSourceDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/InputSource"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    InputSourceDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/InputSourceDescription"
+
+    InputAxis:
+      type: number
+      format: float
+      minimum: -1.0
+      maximum: 1.0
+      default: 0.0
+
+    InputState:
+      type: object
+      properties:
+        direction:
+          $ref: "#/components/schemas/InputAxis"
+        throttle:
+          $ref: "#/components/schemas/InputAxis"
+        aux_x:
+          $ref: "#/components/schemas/InputAxis"
+        aux_y:
+          $ref: "#/components/schemas/InputAxis"
+      required:
+        - direction
+        - throttle
+        - aux_x
+        - aux_y
+
+
+    DriveMode:
+      type: string
+      description: Mode used to translate input into robot movement
+      enum:
+        - NONE
+        - ALL
+        - FRONT
+        - REAR
+        - SKID
+        - SPINNING
+        - BALANCING
+        - PASSTHROUGH
+      default: IDLE
+
+    DriveModeDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/DriveMode"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    DriveModeDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/DriveModeDescription"
+
+    Orientation:
+      type: string
+      enum:
+        - NORTH
+        - SOUTH
+        - EAST
+        - WEST
+      default: NORTH
+
+    OrientationDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/Orientation"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    OrientationDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/OrientationDescription"
+
+
+    KinematicControl:
+      type: object
+      properties:
+        drive_mode:
+          $ref: "#/components/schemas/DriveMode"
+        orientation:
+          $ref: "#/components/schemas/Orientation"
+      required:
+        - drive_mode
+        - orientation
+
+
+    RCReceiver:
+      type: object
+      properties:
+        enabled:
+          description: Whether power to the receiver is enabled
+          type: boolean
+          default: false
+        connected:
+          description: True if the receiver has a connection to the transmitter
+          type: boolean
+          readOnly: true
+        rssi:
+          description: Signal strength
+          type: integer
+          minimum: 0
+          maximum: 100
+          readOnly: true
+      required:
+        - enabled
+        - connected
+        - rssi
+    RCValue:
+      type: integer
+      description: RC Channel value
+    RCChannels:
+      type: array
+      description: Array of RC channel values
+      items:
+        $ref: "#/components/schemas/RCValue"
+      example:
+        - 1500
+        - 1500
+        - 1500
+        - 1500
+
+
+    MotorControl:
+      description: Global motor control
+      type: object
+      properties:
+        odometer:
+          type: integer
+          description: Average motor odometer value in mm
+          readOnly: true
+        motor_count: 
+          type: integer
+          description: Number of motors
+          readOnly: true
+      required:
+        - odometer
+        - motor_count
+
+    ResetOdometerAction:
+      allOf:
+        - $ref: "#/components/schemas/Action"
+        - type: object
+          properties:
+            id: 
+              type: string
+              enum:
+                - resetOdometer
+
+    Motor:
+      description: Motor properties
+      type: object
+      properties:
+        id:
+          description: Motor
+          type: integer
+          readOnly: true
+        enabled:
+          description: Whether power to the motor is enabled
+          type: boolean
+          default: false
+        duty:
+          description: Motor duty cycle
+          type: number
+          format: float
+          minimum: -1.0
+          maximum: 1.0
+          default: 0.0
+        target_rpm:
+          description: Target RPM of motor
+          type: number
+          format: float
+          default: 0.0
+        rpm:
+          type: number
+          format: float
+          description: Motor RPM
+          readOnly: true
+        encoder:
+          type: integer
+          description: Value of the encoder counter
+          readOnly: true
+        odometer:
+          type: integer
+          description: Odometer value in mm
+          readOnly: true
+        servo:
+          $ref: "#/components/schemas/Servo"
+      required:
+        - id
+        - enabled
+        - duty
+        - target_rpm
+        - rpm
+        - encoder
+        - odometer
+
+    Servo:
+      description: Servo properties
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Whether power to the servo is enabled
+        pulse_us:
+          type: integer
+          description: The servo signal pulse width in micro seconds
+        angle:
+          type: number
+          format: float
+          description: Angle of the servo
+        limit_min:
+          type: number
+          format: float
+          readOnly: true
+          description: The minimum angle of the servo
+        limit_max:
+          type: number
+          format: float
+          readOnly: true
+          description: The maximum angle of the servo
+      required:
+        - enabled
+        - pulse_us
+        - angle
+        - limit_min
+        - limit_max
+
+    FloatArray:
+      type: array
+      items:
+        type: number
+    
+    IntegerArray:
+      type: array
+      items:
+        type: integer
+
+    TelemetryHistory:
+      type: object
+      properties:
+        time:
+          description: The time in ms of the lastes entry in the buffer
+          type: integer
+        interval:
+          description: The interval in ms between buffer entries
+          type: integer
+        head:
+          description: The position head of the buffer ring buffer
+          type: integer
+        buffer: 
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/FloatArray"
+              - $ref: "#/components/schemas/IntegerArray"
+      required:
+        - time
+        - interval
+        - head
+        - buffer
+
+    TelemetryHistorySet:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/TelemetryHistory"
+
+    IMUData:
+      type: object
+      properties:
+        pitch:
+          description: Pitch in radians
+          type: number
+          readOnly: true
+        yaw:
+          description: Yaw in radians
+          type: number
+          readOnly: true
+        roll:
+          description: Roll in radians
+          type: number
+          readOnly: true
+      required:
+        - pitch
+        - yaw
+        - roll
+
+    OdometerData:
+      type: object
+      properties:
+        value:
+          description: Current odometer value in mm
+          type: integer
+          readOnly: true
+      required:
+        - value
+
+    Color:
+      type: string
+      pattern: "^([a-fA-F0-9]{6}|[a-fA-F0-9]{8})$"
+      example: "aa33cc"
+      default: "00000000"
+
+    ColorArray:
+      type: array
+      items:
+        $ref: "#/components/schemas/Color"
+      example:
+        - "FF0000"
+        - "00FF00"
+        - "0000FF"
+
+    ColorSegment:
+      $ref: "#/components/schemas/ColorArray"
+
+
+    AnimationMode:
+      type: string
+      enum:
+        - NONE
+        - HEADLIGHTS
+        - CONSTRUCTION
+        - POLICE
+        - AMBULANCE
+        - RUNNING_LIGHT
+        - KNIGHT_RIDER
+        - RAINBOW
+        - RAINBOW_WAVE
+      default: NONE
+
+    AnimationModeDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/AnimationMode"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    AnimationModeDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/AnimationModeDescription"
+
+    IndicatorMode:
+      type: string
+      enum:
+        - NONE
+        - LEFT
+        - RIGHT
+        - HAZARD
+      default: NONE
+
+    IndicatorModeDescription:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/IndicatorMode"
+        name:
+          type: string
+        disabled:
+          type: boolean
+      required:
+        - mode
+        - name
+        - disabled
+
+    IndicatorModeDescriptionList:
+      type: array
+      items:
+        $ref: "#/components/schemas/IndicatorModeDescription"
+
+
+    LEDOutput:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/ColorSegment"
+      example:
+        front:
+          - "FFFFFF"
+          - "000000"
+        back:
+          - "FF0000"
+          - "000000"
+
+    LEDControl:
+      type: object
+      properties:
+        brightness:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 1.0
+        background:
+          $ref: "#/components/schemas/Color"
+        animation:
+          $ref: "#/components/schemas/AnimationMode"
+        indicators:
+          $ref: "#/components/schemas/IndicatorMode"
+      required:
+        - brightness
+        - background
+        - animation
+        - indicators
+        
+
+    PowerSourceType:
+      type: string
+      enum:
+        - UNKNOWN
+        - BATTERY
+      default: NONE
+
+    PowerSource:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/PowerSourceType"
+      required:
+        - type
+
+    PowerSourceUnknown:
+      allOf:
+        - $ref: "#/components/schemas/PowerSource"
+        - type: object
+
+    PowerSourceBattery:
+      allOf:
+        - $ref: "#/components/schemas/PowerSource"
+        - type: object
+          properties:
+            charging:
+              type: boolean
+              readOnly: true
+            on_battery:
+              type: boolean
+              readOnly: true
+            jack_voltage:
+              type: number
+              readOnly: true
+            percent:
+              type: number
+              readOnly: true
+            voltage:
+              type: number
+              readOnly: true
+          required:
+            - charging
+            - on_battery
+            - jack_voltage
+            - percent
+            - voltage
+
+    Power:
+      type: object
+      properties:
+        system:
+          description: System power source
+          oneOf:
+            - $ref: "#/components/schemas/PowerSourceUnknown"
+            - $ref: "#/components/schemas/PowerSourceBattery"
+          disctiminator:
+            propertyName: type
+            mapping:
+              UNKNOWN: "#/components/schemas/PowerSourceUnknown"
+              BATTERY: "#/components/schemas/PowerSourceBattery"
+      required:
+        - system
+
+
+    NetworkInterfaceType:
+      type: string
+      enum:
+        - ETHERNET
+        - WIRELESS
+        - WIRELESS_AP
+        - USB_GADGET
+
+    NetworkInterfaceBase:
+      type: object
+      properties:
+        name:
+          description: Interface name
+          type: string
+          readOnly: true
+        type:
+          readOnly: true
+          $ref: "#/components/schemas/NetworkInterfaceType"
+        active:
+          description: Whether the interface is currently active
+          type: boolean
+          readOnly: true
+        mac:
+          description: MAC Address of the interface
+          type: string
+          readOnly: true
+        addresses:
+          description: List of IpV4 addresses of the interface
+          type: array
+          items:
+            type: string
+
+      required:
+        - name
+        - type
+        - active
+        - mac
+        - addresses
+      
+    NetworkInterfaceEthernet:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceBase"
+
+    NetworkInterfaceWifiBase:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceBase"
+        - type: object
+          properties:
+            ssid:
+              description: Wifi SSID
+              type: string
+              readOnly: true
+            frequency:
+              description: Wifi Frequency
+              type: integer
+              readOnly: true
+            channel:
+              description: Wifi Channel
+              type: integer
+              readOnly: true
+            channel_width:
+              description: Wifi Channel width
+              type: string
+              readOnly: true
+          required:
+            - ssid
+            - frequency
+            - channel
+            - channel_width
+
+    NetworkInterfaceWifi:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceWifiBase"
+        - type: object
+          properties:
+            signal_dbm:
+              description: Wireless signal strength in dBm
+              type: integer
+              readOnly: true
+            signal_rssi:
+              description: Wireless signal strength in percent
+              type: integer
+              minimum: 0
+              maximum: 100
+              readOnly: true
+          required:
+            - signal_dbm
+            - signal_rssi
+    
+    NetworkInterfaceWifiAP:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceWifiBase"
+
+    NetworkInterfaceUSB:
+      allOf:
+        - $ref: "#/components/schemas/NetworkInterfaceBase"
+
+
+
+    Network:
+      type: object
+      additionalProperties:
+        oneOf:
+          - $ref: "#/components/schemas/NetworkInterfaceEthernet"
+          - $ref: "#/components/schemas/NetworkInterfaceWifi"
+          - $ref: "#/components/schemas/NetworkInterfaceWifiAP"
+          - $ref: "#/components/schemas/NetworkInterfaceUSB"
+        disctiminator:
+          propertyName: type
+          mapping:
+            ETHERNET: "#/components/schemas/NetworkInterfaceEthernet"
+            WIRELESS: "#/components/schemas/NetworkInterfaceWifi"
+            WIRELESS_AP: "#/components/schemas/NetworkInterfaceWifiAP"
+            USB_GADGET: "#/components/schemas/NetworkInterfaceUSB"
+
+
+
