@@ -2,3 +2,4 @@ aiohttp
 python-socketio
 orjson
 setproctitle
+numpy
