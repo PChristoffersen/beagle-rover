@@ -21,7 +21,7 @@ namespace Robot::Telemetry {
         public:
             using clock_type = std::chrono::high_resolution_clock;
 
-            explicit RobotControlMPU(const std::shared_ptr<Robot::Context> &context);
+            explicit RobotControlMPU(const std::shared_ptr<::Robot::Context> &context);
             RobotControlMPU(const RobotControlMPU&) = delete; // No copy constructor
             RobotControlMPU(RobotControlMPU&&) = delete; // No move constructor
             virtual ~RobotControlMPU();

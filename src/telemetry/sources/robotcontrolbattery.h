@@ -3,7 +3,6 @@
 
 #include <robotconfig.h>
 #if ROBOT_HAVE_ROBOTCONTROL_BATTERY
-
 #include <memory>
 #include <boost/asio.hpp>
 #include <robotcontrol.h>
@@ -17,7 +16,7 @@ namespace Robot::Telemetry {
 
     class RobotControlBattery : public AbstractSource<RobotControlBattery>, public WithStrand {
         public:
-            explicit RobotControlBattery(const std::shared_ptr<Robot::Context> &context);
+            explicit RobotControlBattery(const std::shared_ptr<::Robot::Context> &context);
             RobotControlBattery(const RobotControlBattery&) = delete; // No copy constructor
             RobotControlBattery(RobotControlBattery&&) = delete; // No move constructor
             virtual ~RobotControlBattery();

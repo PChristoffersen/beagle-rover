@@ -1,0 +1,6 @@
+[
+    {
+      "name": "Beaglebone am33xx",
+      "toolchainFile": "/opt/beaglebone/am33xx-toolchain.cmake"
+    }
+]  

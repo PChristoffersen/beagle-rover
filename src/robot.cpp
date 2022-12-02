@@ -27,7 +27,6 @@ namespace Robot {
 Robot *Robot::m_instance { nullptr };
 
 
-
 Robot::Robot() : 
     m_log_init { boost::log::trivial::debug },
     m_initialized { false },
@@ -71,10 +70,10 @@ void Robot::init()
     // Wire up telemetry sources
     m_telemetry->addSource(std::make_shared<Telemetry::Motors>(m_motor_control));
     #if ROBOT_HAVE_ROBOTCONTROL_BATTERY
-    m_telemetry->addSource(std::make_shared<RobotControlBattery>(m_context));
+    m_telemetry->addSource(std::make_shared<Telemetry::RobotControlBattery>(m_context));
     #endif
     #if ROBOT_HAVE_ROBOTCONTROL_MPU
-    m_telemetry->addSource(std::make_shared<RobotControlMPU>(context)));
+    m_telemetry->addSource(std::make_shared<Telemetry::RobotControlMPU>(m_context));
     #endif
 
 

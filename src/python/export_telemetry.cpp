@@ -59,10 +59,10 @@ static void map2dict(py::dict &out, const Robot::Telemetry::ValueMap &in)
 
 
 template<typename T>
-static py::tuple to_2d_array(const T &history, const py::object &owner, np::dtype dtype) {
+static py::tuple to_3d_array(std::int64_t timestamp, const T &history, const py::object &owner, np::dtype dtype) {
     auto shape = py::make_tuple(history.values.size(), history.values[0].size());
     auto strides = py::make_tuple(sizeof(history.values[0]), sizeof(history.values[0][0]));
-    return py::make_tuple(history.head, np::from_data(history.values.data(), dtype, shape, strides, owner));
+    return py::make_tuple(timestamp, history.head, np::from_data(history.values.data(), dtype, shape, strides, owner));
 }
 
 
@@ -90,15 +90,15 @@ void export_telemetry()
         .add_property("history_interval_ms", &Telemetry::historyIntervalMS)
         .add_property("history_imu", +[](const py::object &obj){ 
             const std::shared_ptr<Telemetry> self = py::extract<const std::shared_ptr<Telemetry>>(obj);
-            return to_2d_array(self->historyIMU(), obj, np::dtype::get_builtin<float>());
+            return to_3d_array(self->historyLastMS(), self->historyIMU(), obj, np::dtype::get_builtin<float>());
         })
         .add_property("history_motor_duty", +[](const py::object &obj){ 
             const std::shared_ptr<Telemetry> self = py::extract<const std::shared_ptr<Telemetry>>(obj);
-            return to_2d_array(self->historyMotorDuty(), obj, np::dtype::get_builtin<float>());
+            return to_3d_array(self->historyLastMS(), self->historyMotorDuty(), obj, np::dtype::get_builtin<float>());
         })
         .add_property("history_motor_rpm", +[](const py::object &obj){ 
             const std::shared_ptr<Telemetry> self = py::extract<const std::shared_ptr<Telemetry>>(obj);
-            return to_2d_array(self->historyMotorRPM(), obj, np::dtype::get_builtin<float>());
+            return to_3d_array(self->historyLastMS(), self->historyMotorRPM(), obj, np::dtype::get_builtin<float>());
         })
         ;
 

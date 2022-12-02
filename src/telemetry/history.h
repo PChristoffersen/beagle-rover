@@ -15,7 +15,7 @@ namespace Robot::Telemetry {
         using value_type = T;
         using array_type = std::array<T, HISTORY_VALUE_COUNT>;
 
-        array_type::size_type head;
+        typename array_type::size_type head;
         array_type values;
 
         HistoryData() :

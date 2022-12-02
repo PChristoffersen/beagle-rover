@@ -86,8 +86,12 @@ namespace Robot::Telemetry {
                 yaw { yaw }
             {
             }
+            EventIMU(const std::string_view &name) :
+                EventIMU { name, 0.0f, 0.0f, 0.0f }
+            {
+            }
             EventIMU() : 
-                EventIMU { "", 0.0f, 0.0f, 0.0f } 
+                EventIMU { "" } 
             {
             }
             float pitch;

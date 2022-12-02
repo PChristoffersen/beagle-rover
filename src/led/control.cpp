@@ -136,7 +136,7 @@ void Control::showPixels()
             BOOST_LOG_TRIVIAL(info) << *this << " (" << pixels.size() << ") " << sstream.str();
         #else
             // DUMMY
-            pixels.size();
+            //pixels.size();
         #endif
     #endif
 }

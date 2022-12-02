@@ -129,13 +129,13 @@ void Telemetry::process(const IMUData &data)
 
 std::int64_t Telemetry::historyLastMS() const
 { 
-    BOOST_LOG_TRIVIAL(info) << "Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(m_last_history-m_base_history).count();
+    //BOOST_LOG_TRIVIAL(info) << "Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(m_last_history-m_base_history).count();
     return std::chrono::duration_cast<std::chrono::milliseconds>(m_last_history-m_base_history).count(); 
 }
 
 std::int64_t Telemetry::historyIntervalMS() const
 {
-    BOOST_LOG_TRIVIAL(info) << "Interval: " << std::chrono::duration_cast<std::chrono::milliseconds>(TELEMETRY_HISTORY_INTERVAL).count();
+    //BOOST_LOG_TRIVIAL(info) << "Interval: " << std::chrono::duration_cast<std::chrono::milliseconds>(TELEMETRY_HISTORY_INTERVAL).count();
     return std::chrono::duration_cast<std::chrono::milliseconds>(TELEMETRY_HISTORY_INTERVAL).count();
 }
 
@@ -157,6 +157,15 @@ void Telemetry::timerSetup()
                 current[0] = m_imu_event.pitch;
                 current[1] = m_imu_event.roll;
                 current[2] = m_imu_event.yaw;
+            }
+            #else
+            { // Dummy IMU
+                static int cnt = 0;
+                cnt++;
+                auto &current = m_history_imu.next();
+                current[0] = (cnt%180-90)*M_PI/180.0;
+                current[1] = (((cnt/2)%180)-90) *M_PI/180.0;
+                current[2] = (((cnt/3)%180) -90  )*M_PI/180.0;
             }
             #endif
 

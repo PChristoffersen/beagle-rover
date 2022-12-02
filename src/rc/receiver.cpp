@@ -239,7 +239,7 @@ void Receiver::timer()
         }
     }
 
-    m_channels.setCount(16u);
+    m_channels.setCount(DEFAULT_CHANNELS);
     if (m_channels[15].asServoPulse() < Value::PULSE_CENTER) {
         m_channels[15] = Value::PULSE_MAX;
     }
