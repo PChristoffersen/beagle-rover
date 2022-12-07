@@ -5,7 +5,7 @@ import logging
 sys.path.append('../build')
 
 from time import sleep
-from robotsystem import Robot, DriveMode
+from beaglerover import Robot, DriveMode
 
 FORMAT = '[%(asctime)s.%(msecs)03dxxx] [%(threadName)-18s] [%(levelname)s] >  %(message)s'
 logging.basicConfig(format=FORMAT, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)

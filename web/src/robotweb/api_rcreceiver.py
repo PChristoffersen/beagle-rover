@@ -4,7 +4,7 @@ from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from dataclasses import dataclass
 
-from robotsystem import RCReceiver, Subscription
+from beaglerover import RCReceiver, Subscription
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch

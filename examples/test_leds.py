@@ -5,7 +5,7 @@ import logging
 sys.path.append('../build')
 
 from time import sleep
-from robotsystem import Robot, LEDControl, LEDColorLayer, LEDAnimation, LEDIndicator
+from beaglerover import Robot, LEDControl, LEDColorLayer, LEDAnimation, LEDIndicator
 
 FORMAT = '[%(asctime)s.%(msecs)03dxxx] [%(threadName)-18s] [%(levelname)s] >  %(message)s'
 logging.basicConfig(format=FORMAT, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)

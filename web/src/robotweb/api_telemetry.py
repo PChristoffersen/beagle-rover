@@ -5,7 +5,7 @@ from socketio import AsyncServer
 from .watches import WatchableNamespace, SubscriptionWatch
 from .serializer import json_response
 
-from robotsystem import Telemetry
+from beaglerover import Telemetry
 
 logger = logging.getLogger(__name__)
 

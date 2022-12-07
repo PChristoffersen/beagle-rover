@@ -8,7 +8,7 @@ import unittest
 import time
 import logging
 
-from robotsystem import LEDColorLayer, LEDColorSegment
+from beaglerover import LEDColorLayer, LEDColorSegment
 
 FORMAT = '[%(asctime)s.%(msecs)03dxxx] [%(threadName)-18s] [%(levelname)s] >  %(message)s'
 logging.basicConfig(format=FORMAT, datefmt='%H:%M:%S', level=logging.INFO)

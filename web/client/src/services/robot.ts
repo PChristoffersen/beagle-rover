@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 interface Versions {
     version: string;
-    robotsystem: string;
+    beaglerover: string;
 }
 
 

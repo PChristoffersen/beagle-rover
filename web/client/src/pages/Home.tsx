@@ -25,7 +25,7 @@ export default function Home() {
 
                 {data && 
                     <Typography variant="subtitle1" color="primary">
-                        Backend {data.version}, Library {data?.robotsystem}
+                        Backend {data.version}, Library {data?.beaglerover}
                     </Typography>
                 }
             </Stack>

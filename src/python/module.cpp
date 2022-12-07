@@ -20,7 +20,7 @@ namespace Robot::Python {
 }
 
 
-BOOST_PYTHON_MODULE(robotsystem) 
+BOOST_PYTHON_MODULE(beaglerover) 
 {
     using namespace Robot::Python;
 

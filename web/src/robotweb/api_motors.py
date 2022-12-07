@@ -8,7 +8,7 @@ from socketio import AsyncServer
 from .watches import WatchableNamespace, SubscriptionWatch
 from .serializer import json_request, json_response
 
-from robotsystem import Motor, Servo
+from beaglerover import Motor, Servo
 
 
 logger = logging.getLogger(__name__)

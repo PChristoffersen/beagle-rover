@@ -5,7 +5,7 @@ from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from dataclasses import dataclass
 
-from robotsystem import Robot, Network, NetworkInterface, Power, PowerSource, PowerSourceBattery
+from beaglerover import Robot, Network, NetworkInterface, Power, PowerSource, PowerSourceBattery
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch

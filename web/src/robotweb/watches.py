@@ -6,7 +6,7 @@ from typing import List
 from dataclasses import dataclass
 from socketio import AsyncNamespace
 
-from robotsystem import Subscription
+from beaglerover import Subscription
 
 
 logger = logging.getLogger(__name__)

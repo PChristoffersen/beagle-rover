@@ -3,11 +3,11 @@
 
 
 namespace Robot::Config {
-    constexpr inline auto VERSION_MAJOR { @robotsystem_VERSION_MAJOR@ };
-    constexpr inline auto VERSION_MINOR { @robotsystem_VERSION_MINOR@ };
+    constexpr inline auto VERSION_MAJOR { @beaglerover_VERSION_MAJOR@ };
+    constexpr inline auto VERSION_MINOR { @beaglerover_VERSION_MINOR@ };
     constexpr inline auto GIT_HASH { "@GIT_HASH@" };
-    constexpr inline auto VERSION { "@robotsystem_VERSION@" };
-    constexpr inline auto VERSION_FULL { "@robotsystem_VERSION@-@GIT_HASH@" };
+    constexpr inline auto VERSION { "@beaglerover_VERSION@" };
+    constexpr inline auto VERSION_FULL { "@beaglerover_VERSION@-@GIT_HASH@" };
 }
  
 

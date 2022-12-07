@@ -5,7 +5,7 @@ from aiohttp.web import Application, RouteTableDef, Request, Response, HTTPBadRe
 from socketio import AsyncServer
 from dataclasses import dataclass
 
-from robotsystem import Kinematic, Subscription, DriveMode, Orientation
+from beaglerover import Kinematic, Subscription, DriveMode, Orientation
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch

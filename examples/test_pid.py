@@ -7,7 +7,7 @@ from datetime import date, datetime
 sys.path.append('../build')
 
 from time import sleep
-from robotsystem import Robot
+from beaglerover import Robot
 
 from datetime import datetime
 

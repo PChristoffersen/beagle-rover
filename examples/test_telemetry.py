@@ -7,7 +7,7 @@ sys.path.append(str(Path(__file__).parent / '../build'))
 
 #import json
 from time import sleep
-from robotsystem import Robot, Telemetry
+from beaglerover import Robot, Telemetry
 
 from datetime import datetime
 

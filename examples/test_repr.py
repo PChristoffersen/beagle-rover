@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent / '../build'))
 
 from time import sleep
-from robotsystem import Robot, DriveMode, LEDColorLayer, LEDAnimation, DriveMode, InputSource, Orientation
+from beaglerover import Robot, DriveMode, LEDColorLayer, LEDAnimation, DriveMode, InputSource, Orientation
 
 from datetime import datetime
 

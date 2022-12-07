@@ -14,7 +14,7 @@ from .api_system import create_app as system_create_app
 from .error_handler import error_middleware
 from .serializer import json_request, json_response
 
-from robotsystem import Robot, InputSource, DriveMode, robot_version_full
+from beaglerover import Robot, InputSource, DriveMode, robot_version_full
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ async def properties_update(request: Request) -> Response:
 async def versions(request: Request) -> Response:
     return json_response({
         "version": request.config_dict["version"],
-        "robotsystem": robot_version_full(),
+        "beaglerover": robot_version_full(),
     })
 
 

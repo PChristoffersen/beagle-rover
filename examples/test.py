@@ -8,7 +8,7 @@ sys.path.append(str(Path(__file__).parent.parent / 'build'))
 print(sys.path)
 
 from time import sleep
-from robotsystem import Robot, DriveMode
+from beaglerover import Robot, DriveMode
 
 from datetime import datetime
 

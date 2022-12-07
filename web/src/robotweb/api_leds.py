@@ -6,7 +6,7 @@ from aiohttp.web import Application, RouteTableDef, Request, Response
 from socketio import AsyncServer
 from typing import List
 
-from robotsystem import LEDControl, LEDAnimation, LEDIndicator, LEDColorArray, LEDColorLayer, LEDColorSegment, LEDColorSegmentList
+from beaglerover import LEDControl, LEDAnimation, LEDIndicator, LEDColorArray, LEDColorLayer, LEDColorSegment, LEDColorSegmentList
 
 from .util import to_enum
 from .watches import WatchableNamespace, SubscriptionWatch

@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
-project(robotsystem VERSION 1.0)
+project(beaglerover VERSION 1.0)
 enable_testing()
 
 set(Boost_USE_STATIC_LIBS       OFF)
@@ -151,14 +151,14 @@ include_directories(BEFORE SYSTEM src)
 # -----------------------------------------------
 # C++ Library
 # -----------------------------------------------
-add_library(robotsystem SHARED 
+add_library(beaglerover SHARED 
     ${SRC}
 )
-set_property(TARGET robotsystem PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(robotsystem PRIVATE ${PYTHON_INCLUDE_DIRS} ${NL3_INCLUDE_DIRS})
-target_link_libraries(robotsystem PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${LibNL_LIBRARIES})
+set_property(TARGET beaglerover PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(beaglerover PRIVATE ${PYTHON_INCLUDE_DIRS} ${NL3_INCLUDE_DIRS})
+target_link_libraries(beaglerover PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${LibNL_LIBRARIES})
 if(ROBOTCONTROL)
-target_link_libraries(robotsystem PRIVATE robotcontrolext)
+target_link_libraries(beaglerover PRIVATE robotcontrolext)
 endif()
 
 
@@ -173,7 +173,7 @@ set(PYTHON_MODULE_POSTFIX "cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MIN
 endif()
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
-add_library(robotsystem_python MODULE 
+add_library(beaglerover_python MODULE 
     ${SRC}
     src/python/module.cpp
     src/python/util.cpp
@@ -187,12 +187,12 @@ add_library(robotsystem_python MODULE
     src/python/export_robot.cpp
     src/python/export_misc.cpp
 )
-set_property(TARGET robotsystem_python PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_target_properties(robotsystem_python PROPERTIES OUTPUT_NAME "robotsystem.${PYTHON_MODULE_POSTFIX}")
-target_include_directories(robotsystem_python PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(robotsystem_python PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_NUMPY_LIBRARY} ${LibNL_LIBRARIES})
+set_property(TARGET beaglerover_python PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_target_properties(beaglerover_python PROPERTIES OUTPUT_NAME "beaglerover.${PYTHON_MODULE_POSTFIX}")
+target_include_directories(beaglerover_python PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(beaglerover_python PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_NUMPY_LIBRARY} ${LibNL_LIBRARIES})
 if(ROBOTCONTROL)
-target_link_libraries(robotsystem_python PRIVATE robotcontrolext)
+target_link_libraries(beaglerover_python PRIVATE robotcontrolext)
 endif()
 
 
@@ -203,7 +203,7 @@ endif()
 # -----------------------------------------------
 add_executable(example_robot examples/example_robot.cpp )
 target_include_directories(example_robot PRIVATE src)
-target_link_libraries(example_robot robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_link_libraries(example_robot beaglerover Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 
 
 
@@ -212,32 +212,32 @@ target_link_libraries(example_robot robotsystem Threads::Threads ${Boost_SYSTEM_
 # -----------------------------------------------
 add_executable(test_robot test/test_robot.cpp )
 target_include_directories(test_robot PRIVATE src)
-target_link_libraries(test_robot robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_link_libraries(test_robot beaglerover Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Robot COMMAND test_robot)
  
 add_executable(test_leds test/test_leds.cpp )
 target_include_directories(test_leds PRIVATE src)
-target_link_libraries(test_leds robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_link_libraries(test_leds beaglerover Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME LEDS COMMAND test_leds)
 
 add_executable(test_color test/test_color.cpp )
 target_include_directories(test_color PRIVATE src)
-target_link_libraries(test_color robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_link_libraries(test_color beaglerover Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Color COMMAND test_color)
 
 add_executable(test_value test/test_value.cpp )
 target_include_directories(test_value PRIVATE src)
-target_link_libraries(test_value robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_link_libraries(test_value beaglerover Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Value COMMAND test_value)
 
 add_executable(test_subscription test/test_subscription.cpp )
 target_include_directories(test_subscription PRIVATE src)
-target_link_libraries(test_subscription robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_link_libraries(test_subscription beaglerover Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Subscription COMMAND test_subscription)
 
 add_executable(test_network test/test_network.cpp )
 target_include_directories(test_network PRIVATE src)
-target_link_libraries(test_network robotsystem Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
+target_link_libraries(test_network beaglerover Threads::Threads ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY})
 add_test(NAME Network COMMAND test_network)
 
 # Python tests

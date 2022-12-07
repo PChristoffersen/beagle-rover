@@ -6,7 +6,7 @@ from math import pi as PI
 sys.path.append('../build')
 
 from time import sleep
-from robotsystem import Robot, TelemetryListener, DriveMode
+from beaglerover import Robot, TelemetryListener, DriveMode
 
 from datetime import datetime
 
