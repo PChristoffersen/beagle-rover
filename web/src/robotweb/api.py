@@ -70,9 +70,9 @@ async def app_on_startup(app: Application):
     logger.info("Startup")
     robot = Robot()
     robot.init()
-    robot.input.led_source = InputSource.WEB
-    robot.input.axis_source = InputSource.WEB
-    robot.input.kinematic_source = InputSource.WEB
+    robot.input.led_source = InputSource.RC
+    robot.input.axis_source = InputSource.RC
+    robot.input.kinematic_source = InputSource.RC
     robot.kinematic.drive_mode = DriveMode.ALL
     app['robot'] = robot
 

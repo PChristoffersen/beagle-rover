@@ -19,7 +19,7 @@ interface NetworkInterfaceIconProps {
 
 
 function NetworkInterfaceIcon({ iface, fontSize }: NetworkInterfaceIconProps) {
-    console.log("Network", iface)
+    //console.log("Network", iface)
 
 
     if (iface.type===NetworkInterfaceType.ETHERNET) {

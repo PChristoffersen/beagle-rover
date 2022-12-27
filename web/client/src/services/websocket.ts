@@ -3,10 +3,10 @@ import { io, Socket } from "socket.io-client";
 import { backendActions } from "../features/backendSlice";
 
 
-//export const socketPrefix = "";
+export const socketPrefix = "";
 //export const socketPrefix = "http://localhost:5000";
-export const socketPrefix = "http://localhost:5000";
-//export const socketPrefix = "http://beaglebone-blue:5000";
+//export const socketPrefix = "http://localhost:5000";
+//export const socketPrefix = "http://beaglerover:5000";
 
 
 const socketMiddleware: Middleware = store => {

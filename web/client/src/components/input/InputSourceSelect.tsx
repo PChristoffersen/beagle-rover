@@ -26,7 +26,7 @@ export default function InputSourceSelect({ title, source }: Props) {
         led_source: "LEDS control",
     }
 
-    console.log("Input", input)
+    //console.log("Input", input)
 
     return (
         <FormControl fullWidth variant="standard" error={isError} >

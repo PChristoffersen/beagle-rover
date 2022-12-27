@@ -5,7 +5,8 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Orientation, OrientationDescription, OrientationDescriptionList } from '../../services/model';
+import { InputSource, Orientation, OrientationDescription, OrientationDescriptionList } from '../../services/model';
+import { useGetInputQuery } from '../../services/input';
 
 
 
@@ -21,6 +22,7 @@ export function orientationName(list: OrientationDescriptionList|undefined, orie
 export default function OrientationSelect() {
     const { data: orientations } = useGetOrientationsQuery();
     const { data: kinematic, isError, isSuccess } = useGetKinematicQuery();
+    const { data: input } = useGetInputQuery();
     const [ update ] = useSetKinematicMutation();
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -29,6 +31,8 @@ export default function OrientationSelect() {
     };
 
     const value = kinematic?.orientation || "unk";
+
+    const isDisabled = !isSuccess || input?.kinematic_source !== InputSource.WEB;
 
     return (
         <FormControl fullWidth variant="standard" error={isError} >
@@ -39,7 +43,7 @@ export default function OrientationSelect() {
                 value={value}
                 label="Orientation"
                 onChange={handleChange}
-                disabled={!isSuccess}
+                disabled={isDisabled}
                 renderValue={(selected) => {
                     if (selected.length === 0) {
                         return <em>Placeholder</em>;

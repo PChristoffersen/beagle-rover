@@ -5,7 +5,7 @@ import { useAppSelector } from "../hooks";
 export default function Disconnected() {
     const connection = useAppSelector((state) => state.backend.connection);
 
-    console.log("Yip");
+    //console.log("Yip");
 
     return (
         <Box>

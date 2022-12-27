@@ -5,7 +5,7 @@ from aiohttp import web
 from robotweb import create_application
 
 
-def main():
+def main(port: int = 5000):
     FORMAT = '[%(asctime)s.%(msecs)03dxxx] [%(threadName)-10s] [%(levelname)s] %(name)s: %(message)s'
     logging.basicConfig(format=FORMAT, datefmt='%H:%M:%S', level=logging.INFO)
     logging.getLogger('aiohttp').setLevel(logging.WARNING)
@@ -13,8 +13,8 @@ def main():
     #logging.getLogger('engineio').setLevel(logging.WARNING)
     logger = logging.getLogger('Main')
 
-    setproctitle.setproctitle("RobotWeb")
-    web.run_app(create_application(), port=5000)
+    setproctitle.setproctitle("BeagleRover")
+    web.run_app(create_application(), port=port)
 
 
 if __name__ == '__main__':

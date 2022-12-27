@@ -54,7 +54,7 @@ void SoftwareSource::setAxis(float direction, float throttle, float aux_x, float
     m_throttle = std::clamp(throttle, THROTTLE_MIN, THROTTLE_MAX);
     m_aux_x = std::clamp(aux_x, STEER_MIN, STEER_MAX);
     m_aux_y = std::clamp(aux_y, STEER_MIN, STEER_MAX);
-    BOOST_LOG_TRIVIAL(info) << *this << "  Dir: " << m_direction << " Throttle: " << m_throttle;
+    //BOOST_LOG_TRIVIAL(info) << *this << "  Dir: " << m_direction << " Throttle: " << m_throttle;
 
     _steer(m_direction, m_throttle, m_aux_x, m_aux_y);
     notify(NOTIFY_DEFAULT);

@@ -61,7 +61,7 @@ async def put(request: Request) -> Response:
 @route.get("/channels")
 async def channels(request: Request) -> Response:
     robot = request.config_dict["robot"]
-    return json_response(robot.rc_receiver.channels)
+    return json_response(robot.rc_receiver.channels.tolist())
 
 
 
@@ -85,7 +85,7 @@ class RCChannelWatch(SubscriptionWatch):
     UPDATE_GRACE_PERIOD = 0.1
 
     def data(self):
-        return self.target.channels
+        return self.target.channels.tolist()
 
     def _target_subscribe(self):
         if not self.sub:

@@ -1,5 +1,5 @@
 aiohttp
 python-socketio
-orjson
 setproctitle
 numpy
+orjson==3.8.2
